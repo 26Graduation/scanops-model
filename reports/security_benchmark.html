@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Security Benchmark — ScanOps</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f4f8;color:#1e293b;padding:24px}
+  h1{font-size:1.6rem;font-weight:700;margin-bottom:4px}
+  .sub{color:#64748b;font-size:.88rem;margin-bottom:24px}
+  code{font-family:'JetBrains Mono','Fira Code',monospace;font-size:.85em;background:#f1f5f9;
+        padding:1px 5px;border-radius:4px}
+
+  /* Summary */
+  .top-stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+  .hero{background:#1e293b;color:#fff;border-radius:12px;padding:18px 28px;flex:1;min-width:140px}
+  .hero-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;opacity:.6}
+  .hero-value{font-size:2rem;font-weight:800;margin-top:2px}
+
+  .lang-stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:28px}
+  .stat{background:#fff;border-radius:12px;padding:14px 18px;flex:1;min-width:140px;
+         box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  .stat-label{font-size:.72rem;font-weight:600;color:#64748b;margin-bottom:4px}
+  .stat-value{font-size:1.5rem;font-weight:800}
+  .stat-sub{font-size:.72rem;color:#94a3b8;margin-top:2px}
+
+  /* Charts */
+  .charts{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:28px}
+  .chart-box{background:#fff;border-radius:12px;padding:20px;flex:1;min-width:260px;
+              box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  .chart-box h2{font-size:.9rem;font-weight:600;color:#334155;margin-bottom:14px}
+  canvas{max-height:200px}
+
+  /* Lang section */
+  .lang-header{color:#fff;font-weight:700;font-size:.9rem;padding:10px 18px;
+                border-radius:10px 10px 0 0;letter-spacing:.03em}
+  section{margin-bottom:28px}
+
+  /* Case card */
+  .case-card{background:#fff;border-radius:0 0 10px 10px;margin-bottom:2px;
+              box-shadow:0 1px 4px rgba(0,0,0,.07);overflow:hidden}
+  .case-card+.case-card{border-radius:0;margin-top:1px}
+  section .case-card:last-child{border-radius:0 0 10px 10px}
+
+  .case-header{display:flex;align-items:center;gap:10px;padding:10px 16px;
+                background:#f8fafc;border-bottom:1px solid #e2e8f0;flex-wrap:wrap}
+  .case-num{font-weight:800;font-size:.8rem;color:#64748b}
+  .expected{font-size:.78rem;color:#475569;flex:1}
+  .tick{font-size:.78rem;font-weight:700}
+
+  .code-block{background:#0f172a;padding:12px 16px;overflow-x:auto}
+  .code-block pre{color:#e2e8f0;font-family:'JetBrains Mono','Fira Code',monospace;
+                   font-size:.8rem;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+
+  .response-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+  .resp-item{padding:10px 16px;border-right:1px solid #f1f5f9;border-bottom:1px solid #f1f5f9}
+  .resp-item.full{grid-column:1/-1;border-right:none}
+  .resp-label{display:block;font-size:.67rem;font-weight:700;text-transform:uppercase;
+               letter-spacing:.06em;color:#94a3b8;margin-bottom:3px}
+  .resp-value{font-size:.83rem;color:#334155;line-height:1.5}
+  .sev-badge{display:inline-block;color:#fff;font-size:.75rem;font-weight:700;
+              padding:2px 10px;border-radius:999px}
+  .fix-block{font-family:'JetBrains Mono','Fira Code',monospace;font-size:.78rem;
+              color:#1e293b;background:#f0fdf4;padding:8px 10px;border-radius:6px;
+              white-space:pre-wrap;word-break:break-word;line-height:1.6}
+
+  @media(max-width:640px){
+    .top-stats,.lang-stats,.charts{flex-direction:column}
+    .response-grid{grid-template-columns:1fr}
+    .resp-item.full{grid-column:1}
+  }
+</style>
+</head>
+<body>
+<h1>Gemma 2B — Security Code Benchmark</h1>
+<p class="sub">ScanOps Model · 2026-05-06 14:39 · 20 test cases · model: <code>gemma:2b</code></p>
+
+<div class="top-stats">
+  <div class="hero">
+    <div class="hero-label">Total Cases</div>
+    <div class="hero-value">20</div>
+  </div>
+  <div class="hero" style="background:#166534;">
+    <div class="hero-label">Detected</div>
+    <div class="hero-value">7 <span style="font-size:1rem;opacity:.8;">/ 20</span></div>
+  </div>
+  <div class="hero" style="background:#1d4ed8;">
+    <div class="hero-label">Detection Rate</div>
+    <div class="hero-value">35.0%</div>
+  </div>
+  <div class="hero" style="background:#7c3aed;">
+    <div class="hero-label">Avg Response</div>
+    <div class="hero-value">4.27s</div>
+  </div>
+</div>
+
+<div class="lang-stats">
+  
+        <div class="stat" style="border-top:4px solid #06b6d4;">
+          <div class="stat-label">React / Next.js</div>
+          <div class="stat-value" style="color:#06b6d4;">2.85s</div>
+          <div class="stat-sub">avg · 2/4 detected</div>
+        </div>
+        <div class="stat" style="border-top:4px solid #22c55e;">
+          <div class="stat-label">Node.js / Express</div>
+          <div class="stat-value" style="color:#22c55e;">3.73s</div>
+          <div class="stat-sub">avg · 2/4 detected</div>
+        </div>
+        <div class="stat" style="border-top:4px solid #f97316;">
+          <div class="stat-label">Java Spring Boot</div>
+          <div class="stat-value" style="color:#f97316;">5.9s</div>
+          <div class="stat-sub">avg · 1/4 detected</div>
+        </div>
+        <div class="stat" style="border-top:4px solid #a855f7;">
+          <div class="stat-label">Python</div>
+          <div class="stat-value" style="color:#a855f7;">2.9s</div>
+          <div class="stat-sub">avg · 2/4 detected</div>
+        </div>
+        <div class="stat" style="border-top:4px solid #64748b;">
+          <div class="stat-label">C</div>
+          <div class="stat-value" style="color:#64748b;">4.74s</div>
+          <div class="stat-sub">avg · 0/2 detected</div>
+        </div>
+        <div class="stat" style="border-top:4px solid #ec4899;">
+          <div class="stat-label">GitHub Actions YAML</div>
+          <div class="stat-value" style="color:#ec4899;">7.2s</div>
+          <div class="stat-sub">avg · 0/2 detected</div>
+        </div>
+</div>
+
+<div class="charts">
+  <div class="chart-box">
+    <h2>Avg Response Time by Language (s)</h2>
+    <canvas id="chartTime"></canvas>
+  </div>
+  <div class="chart-box">
+    <h2>Detection Rate by Language (%)</h2>
+    <canvas id="chartDet"></canvas>
+  </div>
+</div>
+
+
+        <section>
+          <div class="lang-header" style="background:#06b6d4;">React / Next.js</div>
+          
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#1</span>
+                <span class="expected">Expected: XSS</span>
+                <span class="tick" style="color:#22c55e;">✓ Detected</span>
+              </div>
+              <div class="code-block"><pre>return &lt;div dangerouslySetInnerHTML={{__html: userInput}} /&gt;;</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">Cross-Site Scripting (XSS)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">An attacker could inject malicious JavaScript into the `userInput` variable, which would be used to execute arbitrary code on the server.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">** Use `dangerouslySetInnerHTML` with a trusted source and carefully escape any user-provided HTML.</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#22c55e;font-weight:700;">1.96s</span>
+                </div>
+              </div>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#2</span>
+                <span class="expected">Expected: XSS (javascript: URI)</span>
+                <span class="tick" style="color:#22c55e;">✓ Detected</span>
+              </div>
+              <div class="code-block"><pre>return &lt;a href={`javascript:${userAction}`}&gt;Click&lt;/a&gt;;</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">Cross-Site Scripting (XSS)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">An attacker could inject malicious JavaScript into the page by clicking the link. This could allow them to steal sensitive information or take other unauthorized actions on the user's behalf.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">Escape the user input and use a library to sanitize the data before it is used to avoid XSS vulnerabilities.</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">2.22s</span>
+                </div>
+              </div>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#3</span>
+                <span class="expected">Expected: Code Injection via eval</span>
+                <span class="tick" style="color:#ef4444;">✗ Missed</span>
+              </div>
+              <div class="code-block"><pre>eval(searchParams.get('callback'));</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">Cross-Site Scripting (XSS)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">An attacker could inject malicious JavaScript code into the search parameters, which would then be executed on the user's browser.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">**
+
+```js
+eval(searchParams.get('callback'));
+```
+
+**Vulnerability Explanation:**
+
+The code attempts to execute a JavaScript expression stored in the `callback` query parameter using the `eval()` function. If an attacker can control the `callback` value, they can inject malicious JavaScript code into the expression, which will be executed on the user's browser. This could lead to the execution of harmful code, such as stealing sensitive information or taking control of the entire browser.
+
+**Mitigation:**
+
+To prevent this vulnerability, the `callback` query parameter should be sanitized and evaluated only using trusted sources. This can be achieved by using a library like `qs` to parse the query parameters and remove any unsafe characters.</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#ef4444;font-weight:700;">5.21s</span>
+                </div>
+              </div>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#4</span>
+                <span class="expected">Expected: XSS via event handler</span>
+                <span class="tick" style="color:#ef4444;">✗ Missed</span>
+              </div>
+              <div class="code-block"><pre>&lt;img src={user.avatar} onError={user.fallback} /&gt;</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">Cross-Origin Request Forgery (CSRF)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">An attacker could submit malicious HTML or JavaScript that would be executed on the user's browser.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">Add a `cross-origin-request-policy` attribute to the `img` tag, specifying the allowed origins.</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">2.02s</span>
+                </div>
+              </div>
+            </div>
+        </section>
+        <section>
+          <div class="lang-header" style="background:#22c55e;">Node.js / Express</div>
+          
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#5</span>
+                <span class="expected">Expected: SQL Injection</span>
+                <span class="tick" style="color:#22c55e;">✓ Detected</span>
+              </div>
+              <div class="code-block"><pre>db.query("SELECT * FROM users WHERE id=" + req.params.id);</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">SQL Injection</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">An attacker could inject malicious SQL code into the `id` parameter of the query, which could lead to the execution of arbitrary SQL queries on the database. This could potentially steal sensitive data, compromise the database, or even delete data.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">** The code should be sanitized to prevent SQL injection by using a prepared statement or a library like `mssql`, which automatically sanitize user input.</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">2.7s</span>
+                </div>
+              </div>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#6</span>
+                <span class="expected">Expected: Command Injection</span>
+                <span class="tick" style="color:#ef4444;">✗ Missed</span>
+              </div>
+              <div class="code-block"><pre>exec(req.body.command);</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">Exec vulnerability</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">An attacker could inject malicious commands into the `req.body.command` variable, which will be executed by the `exec()` function. This could allow an attacker to gain access to the server or another system on the network.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">**
+
+* Sanitize the `req.body.command` variable before passing it to the `exec()` function.
+* Use a library like `child_process` to execute commands without running them directly.
+
+**Example fix:**
+
+```javascript
+const sanitizeCommand = (command) =&gt; {
+  // Replace unsafe characters with their escape sequences
+  return command.replace(/\\/g, '\\\\\\');
+};
+
+const execCommand = sanitizeCommand(req.body.command);
+exec(execCommand);
+```
+
+**Additional notes:**
+
+* The `exec()` function is inherently dangerous if not used properly.
+* This vulnerability could be exploited to gain unauthorized access to a server or other systems.
+* It is important to carefully review and validate user-supplied data before using it in any context.</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#ef4444;font-weight:700;">6.05s</span>
+                </div>
+              </div>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#7</span>
+                <span class="expected">Expected: Insecure CORS</span>
+                <span class="tick" style="color:#22c55e;">✓ Detected</span>
+              </div>
+              <div class="code-block"><pre>res.setHeader('Access-Control-Allow-Origin', '*');</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">Cross-Origin Resource Sharing (CORS) vulnerability</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">Sending a request with an `Origin` header set to an external domain, such as ``, will allow an attacker to access sensitive data from the server.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">** 
+```javascript
+res.setHeader('Access-Control-Allow-Origin', res.header('Origin'));</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">2.44s</span>
+                </div>
+              </div>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#8</span>
+                <span class="expected">Expected: Hardcoded Secret</span>
+                <span class="tick" style="color:#ef4444;">✗ Missed</span>
+              </div>
+              <div class="code-block"><pre>jwt.verify(token, 'hardcoded_secret_key');</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">JWT Parsing Error</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">Malicious payload in the token</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">**
+```javascript
+jwt.verify(token, 'hardcoded_secret_key');
+```
+**Explanation:**
+The code attempts to verify a JWT token using a hardcoded secret key. This is a common security vulnerability known as a "JWT parsing error". An attacker could craft a JWT that contains malicious payload, such as an attacker-controlled payload. When the token is verified with this secret key, the vulnerability is exploited, allowing the attacker to access sensitive information or execute malicious actions on the user's behalf.</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">3.71s</span>
+                </div>
+              </div>
+            </div>
+        </section>
+        <section>
+          <div class="lang-header" style="background:#f97316;">Java Spring Boot</div>
+          
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#9</span>
+                <span class="expected">Expected: SQL Injection</span>
+                <span class="tick" style="color:#22c55e;">✓ Detected</span>
+              </div>
+              <div class="code-block"><pre>String query = "SELECT * FROM " + tableName;
+stmt.execute(query);</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">SQL Injection</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">User input can be injected directly into the SQL query, potentially compromising database security.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">**
+
+```java
+// Use parameterized queries to prevent SQL injection
+String query = "SELECT * FROM " + tableName + " WHERE id = ?";
+stmt.execute(query, Integer.parseInt(param));
+```
+
+**Explanation:**
+
+1. The code uses a string variable `query` to construct an SQL query.
+2. The query includes user input (`tableName`) in the `WHERE` clause.
+3. Attackers can inject malicious SQL statements through the input, potentially gaining access to sensitive data or executing unauthorized actions.
+
+**Additional Security Considerations:**
+
+* **Use prepared statements instead of string concatenation.** Prepared statements allow the compiler to parse the SQL query, preventing SQL injection.
+* **Validate user input before using it in queries.** Always check if the input is a valid integer or string before including it in the SQL query.
+* **Use parameterized queries with bind variables to prevent SQL injection.** Bind variables allow the database to escape user input, mitigating the risk of SQL injection.</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#ef4444;font-weight:700;">6.26s</span>
+                </div>
+              </div>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#10</span>
+                <span class="expected">Expected: Command Injection</span>
+                <span class="tick" style="color:#ef4444;">✗ Missed</span>
+              </div>
+              <div class="code-block"><pre>Runtime.getRuntime().exec(userInput);</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">Cross-site Request Forgery (CSRF)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">User input used to trigger malicious request</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">** Use parameterized queries with binding to prevent SQL injection
+
+**Explanation:**
+
+The code attempts to execute user input using `Runtime.getRuntime().exec(userInput)`. This allows an attacker to inject malicious content through the input field and execute arbitrary code on the server.
+
+**Example Attack:**
+
+```html
+&lt;form action="your_url"&gt;
+  &lt;input type="text" name="input" value="https://vuln.example.com/execute?id=1"&gt;
+  &lt;button type="submit"&gt;Submit&lt;/button&gt;
+&lt;/form&gt;
+```
+
+**After submission:**
+
+- The input is sent to the server through the `userInput` variable.
+- The code then executes the malicious query through `Runtime.getRuntime().exec()`.
+- This allows the attacker to take control of the server and potentially compromise its security.
+
+**Additional Notes:**
+
+- The code doesn't show any validation of the user input, which could potentially allow an attacker to inject malicious code.
+- This vulnerability could be exploited by an attacker with access to a web server running Spring Boot.</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#ef4444;font-weight:700;">7.77s</span>
+                </div>
+              </div>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#11</span>
+                <span class="expected">Expected: Overly Permissive Endpoint</span>
+                <span class="tick" style="color:#ef4444;">✗ Missed</span>
+              </div>
+              <div class="code-block"><pre>@RequestMapping(value="/**")
+public ResponseEntity&lt;?&gt; handle(HttpServletRequest req) { ... }</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">Cross-site scripting (XSS)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">An attacker could inject malicious JavaScript into the request parameter, which would be accessible in the request attributes or body.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">Use a parameterized request handler and validate the input data to prevent XSS attacks.
+
+**Vulnerability**: Injection of malicious HTML
+**Severity**: MEDIUM
+**Attack**: An attacker could inject malicious HTML into the request body or query parameters. This could be used to execute arbitrary code on the server.
+**Fix**: Sanitize all user-supplied input before using it in the application.
+
+**Vulnerability**: Log injection
+**Severity**: LOW
+**Attack**: An attacker could inject malicious SQL into the log message, which could be sent to a server log or sent in the request body.
+**Fix**: Use prepared statements or other secure logging mechanisms.
+
+**Additional security considerations**:
+
+* Use HTTPS instead of HTTP for all connections.
+* Use a web application firewall (WAF) to monitor and control incoming traffic.
+* Use a library like OWASP for XSS prevention and other security hardening techniques.
+
+**Note**: This is a simplified analysis and there may be other potential vulnerabilities in the code.</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#ef4444;font-weight:700;">6.8s</span>
+                </div>
+              </div>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#12</span>
+                <span class="expected">Expected: Timing Attack</span>
+                <span class="tick" style="color:#ef4444;">✗ Missed</span>
+              </div>
+              <div class="code-block"><pre>if (password.equals(inputPassword)) { grantAccess(); }</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">SQL Injection</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">An attacker could use this code to gain access to a database by injecting malicious SQL code into the `password` variable.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">**
+
+```java
+// Sanitize the password before comparing it to the input password
+String sanitizedPassword = password.replaceAll("\\\\", "");
+
+if (sanitizedPassword.equals(inputPassword)) {
+    grantAccess();
+}</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">2.76s</span>
+                </div>
+              </div>
+            </div>
+        </section>
+        <section>
+          <div class="lang-header" style="background:#a855f7;">Python</div>
+          
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#13</span>
+                <span class="expected">Expected: Insecure Deserialization</span>
+                <span class="tick" style="color:#ef4444;">✗ Missed</span>
+              </div>
+              <div class="code-block"><pre>import pickle
+obj = pickle.loads(user_data)</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">Memory leak</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">Loading a pickled object can leak memory, potentially causing a crash or affecting system performance.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">Use `pickle.unloads()` to explicitly unload the object after loading.</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#22c55e;font-weight:700;">1.49s</span>
+                </div>
+              </div>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#14</span>
+                <span class="expected">Expected: Command Injection</span>
+                <span class="tick" style="color:#22c55e;">✓ Detected</span>
+              </div>
+              <div class="code-block"><pre>import subprocess
+subprocess.call(user_input, shell=True)</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">Shell Injection</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">User enters a command that is executed through the subprocess call.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">** Use `subprocess.run` instead of `subprocess.call` and escape the user input to prevent injection.</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#22c55e;font-weight:700;">1.63s</span>
+                </div>
+              </div>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#15</span>
+                <span class="expected">Expected: Arbitrary Code Execution via YAML</span>
+                <span class="tick" style="color:#22c55e;">✓ Detected</span>
+              </div>
+              <div class="code-block"><pre>import yaml
+data = yaml.load(user_input)  # not safe_load</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">yaml.load</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">Malicious user input</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">** Use `safe_load` function for loading YAML data
+
+**Explanation:**
+
+1. `user_input` is used to load YAML data using `yaml.load`.
+2. `yaml.load` allows user input as the `data` argument, which is not properly sanitized.
+3. This allows an attacker to inject malicious YAML data into the `data` variable.
+4. The code then tries to load the data using `yaml.load(data)`, which can be vulnerable to attacks if the YAML data is malicious.
+5. The vulnerability allows an attacker to execute arbitrary code on the server or control the server's behavior.
+
+**Example:**
+
+```yaml
+&lt;script&gt;
+  alert("Malicious code injected!")
+&lt;/script&gt;
+```
+
+**Note:**
+
+* This vulnerability can be mitigated by using the `safe_load` function provided by the `yaml` module.
+* The `safe_load` function validates the YAML data against a defined schema, preventing malicious content from being loaded.</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#ef4444;font-weight:700;">6.49s</span>
+                </div>
+              </div>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#16</span>
+                <span class="expected">Expected: Command Injection</span>
+                <span class="tick" style="color:#ef4444;">✗ Missed</span>
+              </div>
+              <div class="code-block"><pre>import os
+os.system(f"ping {host}")</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">Ping vulnerability</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">Pinging a specific host can reveal sensitive information or allow an attacker to take control of the system.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">Use the `ping` module to check the status of a host, but do not use the `host` variable in the `f` string.**</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">2.01s</span>
+                </div>
+              </div>
+            </div>
+        </section>
+        <section>
+          <div class="lang-header" style="background:#64748b;">C</div>
+          
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#17</span>
+                <span class="expected">Expected: Format String Attack</span>
+                <span class="tick" style="color:#ef4444;">✗ Missed</span>
+              </div>
+              <div class="code-block"><pre>printf(user_input);  // user-controlled format string</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">Buffer overflow</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">An attacker could craft a user input that overflows the buffer and overwrites part of the memory containing sensitive information. This could lead to a complete compromise of the system.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">** Use a larger buffer and validate all user inputs to ensure the size of the input does not exceed the allocated space.
+
+**Additional Notes:**
+
+* The code does not show any validation of user_input before printing it. This could allow an attacker to input a malicious string that could cause a denial-of-service attack.
+* The code does not use any input sanitization, which could allow an attacker to inject malicious code into the input.
+* The code does not use any authentication or authorization mechanisms, which could allow an attacker to access sensitive data or perform malicious actions on the system.</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">4.7s</span>
+                </div>
+              </div>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#18</span>
+                <span class="expected">Expected: Buffer Overflow</span>
+                <span class="tick" style="color:#ef4444;">✗ Missed</span>
+              </div>
+              <div class="code-block"><pre>char buf[64];
+strcpy(buf, argv[1]);  // no bounds check</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">Strcpy without size check</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">An attacker could pass a malicious string longer than 64 characters to the `buf` array. This could allow an attacker to overwrite the memory allocated for the `buf` array and execute malicious code.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">**
+
+```c
+size_t len = strlen(argv[1]);
+strcpy(buf, argv[1]);
+if (len &gt; sizeof(buf)) {
+  // Handle out-of-memory error
+}
+```
+
+**Additional notes:**
+
+* The code is vulnerable to a type 2 buffer overflow attack if the length of the `argv[1]` string is longer than 64 characters.
+* This vulnerability could be exploited in a real-world scenario where an attacker is able to control the input to a program.</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">4.78s</span>
+                </div>
+              </div>
+            </div>
+        </section>
+        <section>
+          <div class="lang-header" style="background:#ec4899;">GitHub Actions YAML</div>
+          
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#19</span>
+                <span class="expected">Expected: Script Injection via untrusted input</span>
+                <span class="tick" style="color:#ef4444;">✗ Missed</span>
+              </div>
+              <div class="code-block"><pre>- run: echo ${{ github.event.issue.title }}</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">Missing credential management</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">Improper authorization header</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">**
+
+```yaml
+- run: echo ${{ github.event.issue.title }}
+
+```
+
+**Explanation:**
+
+The code retrieves the issue title from the GitHub event and prints it to the console. This action assumes that the title contains sensitive information that should not be exposed.
+
+**Vulnerability:**
+
+An attacker could potentially capture the issue title and use it to gain access to sensitive information, such as project secrets or credentials.
+
+**Recommendation:**
+
+To mitigate this vulnerability, the code should be modified to properly manage credentials or use a secure authentication mechanism. For example, the following code would be more secure:
+
+```yaml
+- run: echo ${{ github.event.issue.title }}
+  env:
+    CREDENTIALS_FILE: secrets.yaml
+
+- use: secrets/credentials ${{ secrets.CREDENTIALS_FILE }}</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#ef4444;font-weight:700;">5.19s</span>
+                </div>
+              </div>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#20</span>
+                <span class="expected">Expected: Supply Chain Attack (unpinned action)</span>
+                <span class="tick" style="color:#ef4444;">✗ Missed</span>
+              </div>
+              <div class="code-block"><pre>- uses: actions/checkout@main  # unpinned version</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">Unauthorized access to GitHub repository</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">Potential user injection through `github_token` environment variable</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">**
+
+```yaml
+- uses: actions/checkout@main  # unpinned version
+
+# Define the environment variable to store GitHub access token
+env:
+  github_token: 'YOUR_GITHUB_TOKEN'
+
+  # Update the checkout command to use the environment variable
+  run: echo "$github_token" &gt;&gt; ~/.github/environment.yaml &amp;&amp; \
+       git checkout ${{ github_token }}
+```
+
+**Explanation:**
+
+1. The code uses an un-pinned version of the `actions/checkout` action, which may introduce vulnerabilities.
+2. The `github_token` environment variable is used to store the GitHub access token.
+3. The `run` section uses the `echo` and `git checkout` commands to set the checkout branch using the `github_token` and update the `environment.yaml` file with the token.
+4. This allows an attacker to inject malicious code into the `github_token` variable, granting unauthorized access to the repository.
+5. The `FIX` section provides a fix by using a `const` block to define the environment variable and specify the checkout command with the `github_token` variable.
+
+**Additional concerns:**
+
+* The code uses a `RUN` job without specifying any security policies or restrictions.
+* The code uses a `github_token` variable, which should be handled securely, such as using a managed workflow or requiring authentication for each workflow run.
+* The code does not use any authentication mechanisms for accessing the repository, making it vulnerable to unauthorized access.</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#ef4444;font-weight:700;">9.2s</span>
+                </div>
+              </div>
+            </div>
+        </section>
+
+<script>
+const labels = ["React / Next.js", "Node.js / Express", "Java Spring Boot", "Python", "C", "GitHub Actions YAML"];
+const timeData = [2.85, 3.73, 5.9, 2.9, 4.74, 7.2];
+const detData  = [50.0, 50.0, 25.0, 50.0, 0.0, 0.0];
+const colors   = ["#06b6d4", "#22c55e", "#f97316", "#a855f7", "#64748b", "#ec4899"];
+
+new Chart(document.getElementById('chartTime'), {
+  type: 'bar',
+  data: { labels, datasets: [{ label: 'Avg Time (s)', data: timeData,
+    backgroundColor: colors, borderRadius: 5, borderSkipped: false }] },
+  options: { responsive: true, plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: true }, x: { grid: { display: false } } } }
+});
+
+new Chart(document.getElementById('chartDet'), {
+  type: 'bar',
+  data: { labels, datasets: [{ label: 'Detection %', data: detData,
+    backgroundColor: colors, borderRadius: 5, borderSkipped: false }] },
+  options: { responsive: true, plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: true, max: 100 }, x: { grid: { display: false } } } }
+});
+</script>
+</body>
+</html>

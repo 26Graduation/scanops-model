@@ -2,7 +2,10 @@ __pycache__/
 *.pyc
 *.pth
 *.bin
+*.safetensors
+optimizer.pt
 .env
 .DS_Store
 data/*.json
 data/*.jsonl
+chroma_db/

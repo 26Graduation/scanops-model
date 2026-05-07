@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gemma 2B Benchmark Comparison — ScanOps</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f4f8;color:#1e293b;padding:24px}
+  h1{font-size:1.6rem;font-weight:700;margin-bottom:4px}
+  .sub{color:#64748b;font-size:.9rem;margin-bottom:24px}
+
+  .summary{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:28px}
+  .stat{background:#fff;border-radius:12px;padding:18px 24px;flex:1;min-width:140px;
+         box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  .stat-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:#64748b}
+  .stat-value{font-size:1.8rem;font-weight:700;margin-top:4px}
+  .blue{color:#3b82f6}.green{color:#22c55e}.purple{color:#a855f7}
+  .orange{color:#f97316}.red{color:#ef4444}
+
+  .chart-box{background:#fff;border-radius:12px;padding:24px;margin-bottom:28px;
+              box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  .chart-box h2{font-size:1rem;font-weight:600;margin-bottom:16px;color:#334155}
+  canvas{max-height:260px}
+
+  .card{background:#fff;border-radius:12px;margin-bottom:20px;overflow:hidden;
+         box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  .question{background:#2563eb;color:#fff;padding:13px 20px;font-weight:600;font-size:.93rem;line-height:1.4}
+
+  .compare-row{display:flex;align-items:center;gap:0}
+  .col-label{flex:1;text-align:center;font-size:.72rem;font-weight:600;
+              text-transform:uppercase;letter-spacing:.04em;padding:7px 12px}
+  .old-label{background:#fef3c7;color:#92400e;border-right:1px solid #fde68a}
+  .new-label{background:#dcfce7;color:#166534}
+
+  .meta-row{padding:8px 16px;border-top:1px solid #f1f5f9;border-bottom:1px solid #f1f5f9;
+             background:#fafafa;justify-content:space-between;align-items:center}
+  .meta-cell{display:flex;align-items:center;gap:8px;flex:1}
+  .meta-cell:last-child{justify-content:flex-end}
+  .delta{font-size:.85rem;font-weight:700;padding:0 12px;white-space:nowrap}
+  .badge{color:#fff;font-size:.76rem;font-weight:700;padding:3px 10px;border-radius:999px}
+  .words{font-size:.76rem;color:#94a3b8}
+
+  .answer-label{font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;
+                 color:#64748b;padding:12px 20px 4px;background:#f8fafc}
+  .answer{padding:12px 20px 18px;font-size:.88rem;line-height:1.7;color:#334155;
+           white-space:pre-wrap;word-break:break-word;background:#f8fafc}
+
+  @media(max-width:600px){
+    .summary{flex-direction:column}
+    .stat-value{font-size:1.4rem}
+    .delta{padding:0 6px;font-size:.78rem}
+  }
+</style>
+</head>
+<body>
+<h1>Gemma 2B — Constraint Comparison</h1>
+<p class="sub">ScanOps Model · 2026-05-06 14:28 · Prompt suffix: <code>"Answer in 3 sentences maximum."</code></p>
+
+<div class="summary">
+  <div class="stat">
+    <div class="stat-label">Model</div>
+    <div class="stat-value blue" style="font-size:1.1rem">gemma:2b</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Avg (no constraint)</div>
+    <div class="stat-value red">9.56s</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Avg (constrained)</div>
+    <div class="stat-value green">1.58s</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Speed-up</div>
+    <div class="stat-value orange">83.5%</div>
+  </div>
+</div>
+
+<div class="chart-box">
+  <h2>Response Time Comparison per Question (seconds)</h2>
+  <canvas id="chart"></canvas>
+</div>
+
+
+        <div class="card">
+          <div class="question">Q1. What is SQL injection and how does it work?</div>
+          <div class="compare-row">
+            <div class="col-label old-label">No constraint</div>
+            <div class="col-label new-label">3-sentence max</div>
+          </div>
+          <div class="compare-row meta-row">
+            <div class="meta-cell">
+              <span class="badge" style="background:#ef4444;">13.09s</span>
+              <span class="words">359 words</span>
+            </div>
+            <div class="delta" style="color:#22c55e;">−11.00s</div>
+            <div class="meta-cell">
+              <span class="badge" style="background:#eab308;">2.09s</span>
+              <span class="words">65 words</span>
+            </div>
+          </div>
+          <div class="answer-label">Response (constrained)</div>
+          <div class="answer">Sure, here's a 3-sentence explanation of SQL injection:<br><br>1. SQL injection is a technique used by attackers to inject malicious SQL code into a database.<br>2. This code can then be executed by the attacker, potentially granting them access to sensitive data or executing malicious actions.<br>3. SQL injection attacks can be difficult to detect and prevent, as they often exploit vulnerabilities in database systems.</div>
+        </div>
+        <div class="card">
+          <div class="question">Q2. Explain XSS (Cross-Site Scripting) attack</div>
+          <div class="compare-row">
+            <div class="col-label old-label">No constraint</div>
+            <div class="col-label new-label">3-sentence max</div>
+          </div>
+          <div class="compare-row meta-row">
+            <div class="meta-cell">
+              <span class="badge" style="background:#ef4444;">10.96s</span>
+              <span class="words">342 words</span>
+            </div>
+            <div class="delta" style="color:#22c55e;">−9.02s</div>
+            <div class="meta-cell">
+              <span class="badge" style="background:#eab308;">1.94s</span>
+              <span class="words">59 words</span>
+            </div>
+          </div>
+          <div class="answer-label">Response (constrained)</div>
+          <div class="answer">Sure, here's a 3-sentence explanation of XSS attacks:<br><br>1. XSS attacks exploit vulnerabilities in web pages to inject malicious code into a user's browser.<br>2. This malicious code can be used to steal sensitive information, such as passwords and credit card numbers.<br>3. By exploiting XSS vulnerabilities, attackers can compromise the security of web applications and steal sensitive data.</div>
+        </div>
+        <div class="card">
+          <div class="question">Q3. What is CVE-2026-6747 and how severe is it?</div>
+          <div class="compare-row">
+            <div class="col-label old-label">No constraint</div>
+            <div class="col-label new-label">3-sentence max</div>
+          </div>
+          <div class="compare-row meta-row">
+            <div class="meta-cell">
+              <span class="badge" style="background:#ef4444;">6.33s</span>
+              <span class="words">186 words</span>
+            </div>
+            <div class="delta" style="color:#22c55e;">−5.02s</div>
+            <div class="meta-cell">
+              <span class="badge" style="background:#eab308;">1.31s</span>
+              <span class="words">35 words</span>
+            </div>
+          </div>
+          <div class="answer-label">Response (constrained)</div>
+          <div class="answer">CVE-2026-6747 is a critical vulnerability that could allow attackers to gain access to sensitive user data on vulnerable web servers. This vulnerability could allow attackers to steal personal information, financial data, and other sensitive information.</div>
+        </div>
+        <div class="card">
+          <div class="question">Q4. How does a buffer overflow attack work?</div>
+          <div class="compare-row">
+            <div class="col-label old-label">No constraint</div>
+            <div class="col-label new-label">3-sentence max</div>
+          </div>
+          <div class="compare-row meta-row">
+            <div class="meta-cell">
+              <span class="badge" style="background:#ef4444;">8.81s</span>
+              <span class="words">285 words</span>
+            </div>
+            <div class="delta" style="color:#22c55e;">−7.45s</div>
+            <div class="meta-cell">
+              <span class="badge" style="background:#eab308;">1.36s</span>
+              <span class="words">45 words</span>
+            </div>
+          </div>
+          <div class="answer-label">Response (constrained)</div>
+          <div class="answer">Sure, here's the answer:<br><br>A buffer overflow attack occurs when an attacker provides malicious data that exceeds the allocated space for a data structure, leading to a memory access out of bounds. This can result in malicious code being executed or sensitive information being compromised.</div>
+        </div>
+        <div class="card">
+          <div class="question">Q5. What is CSRF attack? Give an example.</div>
+          <div class="compare-row">
+            <div class="col-label old-label">No constraint</div>
+            <div class="col-label new-label">3-sentence max</div>
+          </div>
+          <div class="compare-row meta-row">
+            <div class="meta-cell">
+              <span class="badge" style="background:#ef4444;">8.68s</span>
+              <span class="words">303 words</span>
+            </div>
+            <div class="delta" style="color:#22c55e;">−6.83s</div>
+            <div class="meta-cell">
+              <span class="badge" style="background:#eab308;">1.85s</span>
+              <span class="words">61 words</span>
+            </div>
+          </div>
+          <div class="answer-label">Response (constrained)</div>
+          <div class="answer">A Cross-Site Request Forgery (CSRF) attack is a type of web attack where an attacker tricks a victim into executing malicious code on a website they visit. <br><br>For example, an attacker could send a link to a victim that appears to be from a legitimate source, but which actually contains a hidden form that submits personal information to the attacker's server.</div>
+        </div>
+        <div class="card">
+          <div class="question">Q6. Explain the difference between authentication and authorization vulnerabilities</div>
+          <div class="compare-row">
+            <div class="col-label old-label">No constraint</div>
+            <div class="col-label new-label">3-sentence max</div>
+          </div>
+          <div class="compare-row meta-row">
+            <div class="meta-cell">
+              <span class="badge" style="background:#ef4444;">9.52s</span>
+              <span class="words">310 words</span>
+            </div>
+            <div class="delta" style="color:#22c55e;">−8.61s</div>
+            <div class="meta-cell">
+              <span class="badge" style="background:#22c55e;">< 1s</span>
+              <span class="words">31 words</span>
+            </div>
+          </div>
+          <div class="answer-label">Response (constrained)</div>
+          <div class="answer">Authentication vulnerabilities allow an attacker to gain access to a system without proper identification, while authorization vulnerabilities allow an attacker to access resources or perform actions they are not supposed to.</div>
+        </div>
+
+<script>
+new Chart(document.getElementById('chart'), {
+  type: 'bar',
+  data: {
+    labels: ["Q1", "Q2", "Q3", "Q4", "Q5", "Q6"],
+    datasets: [
+      {
+        label: 'No constraint',
+        data: [13.09, 10.96, 6.33, 8.81, 8.68, 9.52],
+        backgroundColor: 'rgba(239,68,68,0.7)',
+        borderRadius: 4,
+        borderSkipped: false,
+      },
+      {
+        label: '3-sentence max',
+        data: [2.09, 1.94, 1.31, 1.36, 1.85, 0.91],
+        backgroundColor: 'rgba(34,197,94,0.7)',
+        borderRadius: 4,
+        borderSkipped: false,
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: 'top' },
+      tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y}s` } }
+    },
+    scales: {
+      y: { beginAtZero: true, title: { display: true, text: 'seconds' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+</script>
+</body>
+</html>
