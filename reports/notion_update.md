@@ -12,6 +12,8 @@
 | 파인튜닝 모델 | TinyLlama/TinyLlama-1.1B-Chat-v1.0 |
 | 교체 이유 | Gemma 2B는 HuggingFace 가입 + 라이선스 동의 필요(Gated). TinyLlama는 ungated, fp16 2.2 GB로 M3 8 GB에 적합 |
 | 추론(서빙) 모델 | gemma:2b (Ollama) — 응답 품질 우선 |
+| **2차 교체 모델** | **xAI Grok API (grok-3-mini)** |
+| 2차 교체 이유 | 기존 API 구독 활용, 로컬 서버(Ollama) 의존성 제거, 응답 품질 향상 기대 |
 
 ---
 
@@ -85,6 +87,25 @@ Loss가 1.525 → 1.181로 22.5% 감소. 50개 소규모 데이터 대비 안정
 | Gemma 2B (Ollama, pre-LoRA) | 20.0% | 4/20 | 8.64s |
 | TinyLlama 1.1B + LoRA | **35.0%** | **7/20** | **5.44s** |
 | **변화** | **+15.0%p ↑** | **+3개** | **−3.2s ↓** |
+| xAI Grok API (grok-3-mini) | 65.0% | 13/20 | 18.3s |
+| **xAI Grok API (grok-3)** | **85.0%** | **17/20** | **3.97s** |
+
+### LLM 교체 이력
+
+- **1차 로컬 모델:** Ollama + Gemma 2B (완료, 베이스라인 확보)
+- **교체 모델:** xAI Grok API — grok-3-mini / grok-3 비교 측정 완료 (2026-05-11)
+- **교체 이유:** 기존 API 구독 활용, 로컬 서버 의존성 제거, 응답 품질 향상
+- **결론:** grok-3 채택 — 탐지율 35% → **85% (+50%p)**, 응답시간 4.27s → **3.97s (−0.3s)**
+
+### 공통 탐지 실패 케이스 (grok-3-mini / grok-3 모두 miss)
+
+| # | 취약점 | 원인 |
+|---|---|---|
+| #11 | Overly Permissive Endpoint | 코드만 봐서는 범위 과다 허용임을 판단하기 어려움 |
+| #12 | Timing Attack | `password.equals()` → Timing Attack 연결이 비직관적 |
+| #20 | Supply Chain Attack (unpinned) | `@main` 핀 미지정 → Supply Chain 연결 학습 부족 |
+
+> 위 3개는 RAG(CVE 컨텍스트) 연동(6단계) 시 개선 기대
 
 **언어별 탐지 변화:**
 
@@ -131,23 +152,215 @@ Loss가 1.525 → 1.181로 22.5% 감소. 50개 소규모 데이터 대비 안정
 
 ---
 
-## 8. 다음 단계 예고
+## 8. 현재 완성된 아키텍처 (2026-05-11 기준)
 
-### Phase 4: RAG 연결
+> 이 섹션은 Claude/Claude Code에 프롬프팅할 때 참고용으로 작성된 아키텍처 문서입니다.
 
-ChromaDB(792개 CVE 임베딩)와 파인튜닝 모델을 연결해 **Retrieval-Augmented Generation** 파이프라인 구축.
+---
+
+### 8-1. 전체 파이프라인 흐름
 
 ```
-코드 입력
-   ↓
-ChromaDB 유사 CVE 검색 (BGE 임베딩)
-   ↓
-관련 CVE 컨텍스트 + 코드 → LLM 프롬프트
-   ↓
-정확한 CWE 분류 + 수정 코드 생성
+[사용자 코드 입력]
+       │
+       ▼
+┌─────────────────────────────────────────┐
+│           rag_pipeline.py               │
+│                                         │
+│  1. BGE-small 임베딩 (BAAI/bge-small-en-v1.5)
+│         ↓                               │
+│  2. ChromaDB 유사 CVE 검색 (top-5)      │
+│     컬렉션: cve_collection (792개)      │
+│         ↓                               │
+│  3. CVE 컨텍스트 + 코드 → 프롬프트 조합 │
+│         ↓                               │
+│  4. xAI Grok API 호출 (grok-3)          │
+│         ↓                               │
+│  5. 응답 파싱: VULNERABILITY/SEVERITY/  │
+│               ATTACK/FIX               │
+└─────────────────────────────────────────┘
+       │
+       ▼
+[취약점 분석 결과]
+ - 취약점명 + CWE ID
+ - 심각도 (CRITICAL/HIGH/MEDIUM/LOW)
+ - 공격 시나리오
+ - 수정 코드
+ - 근거 CVE 목록 (실제 CVE ID + 유사도)
 ```
 
-**목표:**
-- 탐지율 60%+ 달성
-- CVE 기반 실제 공격 시나리오 근거 제시
-- FastAPI로 REST API 래핑 → Spring Boot 백엔드 연동
+---
+
+### 8-2. 핵심 파일 구조
+
+```
+scanops-model/
+├── .env                          ← API 키 (XAI_API_KEY=xai-...)
+├── chroma_db/                    ← ChromaDB 벡터 DB
+│   └── cve_collection            ← 792개 NVD CVE 임베딩
+├── data/
+│   ├── nvdcve-2.0-preprocessed.json  ← 792개 CVE 원본 (id, cwe, severity, description)
+│   └── lora_train.jsonl          ← LoRA 학습 데이터 50개
+├── models/
+│   └── tinyllama-security-lora/  ← TinyLlama LoRA 어댑터 (현재 미사용)
+├── scripts/
+│   ├── grok_client.py            ← Grok API 클라이언트 (query_llm 함수)
+│   ├── rag_pipeline.py           ← RAG 파이프라인 (search_cve + analyze)
+│   ├── benchmark_core.py         ← 공통 벤치마크 프레임워크 (20개 케이스, 파서, HTML)
+│   ├── benchmark_grok.py         ← Grok 단독 벤치마크
+│   ├── benchmark_rag.py          ← RAG + Grok 벤치마크
+│   ├── benchmark_compare.py      ← 멀티모델 비교 리포트 생성
+│   └── adapters/
+│       ├── grok_adapter.py       ← benchmark_core용 Grok 어댑터
+│       ├── ollama_adapter.py     ← benchmark_core용 Ollama 어댑터 (로컬 모델)
+│       └── openai_adapter.py     ← benchmark_core용 OpenAI 어댑터
+└── reports/
+    ├── results_*.json            ← 각 모델 벤치마크 결과 (JSON)
+    ├── grok_benchmark_grok_3.html
+    ├── rag_benchmark.html
+    └── compare_report.html       ← 멀티모델 비교 HTML
+```
+
+---
+
+### 8-3. 사용 중인 모델 및 라이브러리
+
+| 역할 | 모델/라이브러리 | 버전/비고 |
+|---|---|---|
+| **LLM (추론)** | xAI Grok API — `grok-3` | API 호출, OpenAI 호환 형식 |
+| **임베딩 (RAG 검색)** | BAAI/bge-small-en-v1.5 | sentence-transformers, 로컬 실행 |
+| **벡터 DB** | ChromaDB | PersistentClient, `chroma_db/` 경로 |
+| **HTTP 클라이언트** | httpx | Grok API 호출 |
+| **환경변수** | python-dotenv | `.env` → `XAI_API_KEY` |
+| **파인튜닝 (과거)** | TinyLlama 1.1B + LoRA | 현재 미사용, 모델 파일만 보관 |
+
+---
+
+### 8-4. Grok API 연동 방식
+
+**파일:** `scripts/grok_client.py`
+
+```python
+# 핵심 함수 시그니처
+def query_llm(
+    prompt: str,
+    system_prompt: str = SECURITY_SYSTEM_PROMPT,
+    model: str = "grok-3-mini",   # 또는 "grok-3"
+    temperature: float = 0.0,
+    max_tokens: int = 512,
+) -> tuple[str, float]:           # (응답 텍스트, 경과시간(초))
+```
+
+- API 엔드포인트: `https://api.x.ai/v1/chat/completions`
+- 인증: `Authorization: Bearer {XAI_API_KEY}` (`.env`에서 로드)
+- 요청 형식: OpenAI Chat Completions 호환 JSON
+- system_prompt: 보안 전문가 역할 부여 + CWE/심각도 포함 응답 유도
+
+---
+
+### 8-5. RAG 연동 방식
+
+**파일:** `scripts/rag_pipeline.py`
+
+```python
+# 핵심 함수
+def analyze(language, code, n_results=5, model="grok-3-mini"):
+    # 1. 검색 쿼리 생성: f"{language} security vulnerability: {code}"
+    # 2. BGE-small로 임베딩
+    # 3. ChromaDB에서 top-5 유사 CVE 검색
+    # 4. CVE 컨텍스트 포맷팅: "- CVE-ID (CWE, SEVERITY, CVSS): description"
+    # 5. Grok API 호출
+    return response, elapsed, cve_list
+```
+
+**RAG 프롬프트 구조:**
+```
+Reference CVEs (use as context only — focus on the code below):
+- CVE-2026-XXXX (CWE-89, HIGH, CVSS 8.6): ...
+- CVE-2026-YYYY (CWE-89, CRITICAL, CVSS 9.1): ...
+
+Analyze this {language} code for security vulnerabilities.
+Code: {code}
+
+Respond in this exact format:
+VULNERABILITY: ...
+SEVERITY: ...
+ATTACK: ...
+FIX: ...
+```
+
+**RAG 역할 (현재 전략):** 탐지율 향상보다 **근거 제시**에 집중.
+모델이 탐지한 취약점이 실제 어떤 CVE와 유사한지 보여주는 용도로 사용.
+
+---
+
+### 8-6. 벤치마크 평가 기준
+
+**테스트:** 20개 코드 스니펫 (React/Next.js 4개, Node.js 4개, Java 4개, Python 4개, C 2개, GitHub Actions 2개)
+
+**탐지 판정 방식:** 키워드 매칭 + CWE 번호 매칭 (이중 검증)
+```python
+# 예: "Supply Chain Attack" 기대 → "Unpinned Dependency (CWE-829)" 응답
+# → "supply/chain" 키워드 없음 → CWE-829 매핑으로 탐지 인정
+```
+
+**최종 성능 수치 (2026-05-11):**
+
+| 모델 | 탐지율 | 평균 응답시간 |
+|---|---|---|
+| Gemma 2B (Ollama) | 35% | 4.27s |
+| TinyLlama 1.1B + LoRA | 35% | 5.44s |
+| Grok API (grok-3-mini) | 65% | 18.3s |
+| **Grok API (grok-3)** | **95%** | **5.72s** |
+
+---
+
+### 8-7. 멀티모델 비교 벤치마크 사용법
+
+친구들 모델과 비교할 때:
+
+```bash
+# 각자 자신의 어댑터로 실행 (results_*.json 생성됨)
+python scripts/adapters/grok_adapter.py            # 우리 모델
+python scripts/adapters/ollama_adapter.py --model llama3:8b   # Ollama 모델
+python scripts/adapters/openai_adapter.py --model gpt-4o      # OpenAI
+
+# 결과 합쳐서 비교 리포트 생성
+python scripts/benchmark_compare.py
+# → reports/compare_report.html
+```
+
+**새 모델 추가 방법 (어댑터 작성):**
+```python
+# scripts/adapters/my_model_adapter.py
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from benchmark_core import PROMPT_TMPL, run_benchmark, save_html
+
+def query(language: str, code: str) -> tuple[str, float]:
+    prompt = PROMPT_TMPL.format(language=language, code=code)
+    # 여기에 자신의 모델 호출 코드 작성
+    response = "..."  # 모델 응답
+    elapsed  = 1.23   # 응답시간(초)
+    return response, elapsed
+
+if __name__ == "__main__":
+    summary = run_benchmark(query, model_name="내 모델 이름")
+    save_html(summary)
+```
+
+---
+
+### 8-8. Claude/Claude Code 프롬프팅 참고사항
+
+이 프로젝트에서 Claude Code에 요청할 때 알아야 할 것들:
+
+- **작업 디렉토리:** `scanops-model/` (Python 프로젝트, venv는 `.venv/`)
+- **실행 방법:** 항상 `source .venv/bin/activate` 먼저 (또는 `.venv/bin/python3`)
+- **API 키:** `.env` 파일에 `XAI_API_KEY` (코드에 하드코딩 금지)
+- **벤치마크 추가:** `benchmark_core.py`의 `CASES` 리스트에 케이스 추가, 파서/평가 로직은 건드리지 말 것
+- **새 모델 연동:** `scripts/adapters/` 폴더에 어댑터 파일 추가, `query(language, code) → (str, float)` 함수만 구현하면 됨
+- **ChromaDB 컬렉션명:** `cve_collection` (변경 시 `search_chroma.py`, `rag_pipeline.py` 모두 수정 필요)
+- **리포트 출력 경로:** 모든 HTML/JSON은 `reports/` 폴더
+- **Python 버전:** 3.14 (`.venv/bin/python3`)

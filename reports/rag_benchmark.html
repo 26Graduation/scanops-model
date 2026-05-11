@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RAG Benchmark — ScanOps</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f4f8;color:#1e293b;padding:24px}
+  h1{font-size:1.6rem;font-weight:700;margin-bottom:4px}
+  .sub{color:#64748b;font-size:.88rem;margin-bottom:24px}
+  code{font-family:'JetBrains Mono','Fira Code',monospace;font-size:.85em;background:#f1f5f9;padding:1px 5px;border-radius:4px}
+  .rag-badge{display:inline-block;background:#0891b2;color:#fff;font-size:.78rem;font-weight:700;padding:3px 12px;border-radius:999px;margin-left:8px;vertical-align:middle}
+
+  .top-stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+  .hero{background:#1e293b;color:#fff;border-radius:12px;padding:18px 28px;flex:1;min-width:140px}
+  .hero-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;opacity:.6}
+  .hero-value{font-size:2rem;font-weight:800;margin-top:2px}
+
+  .baseline-row{background:#fff;border-radius:12px;padding:14px 20px;margin-bottom:20px;
+                 box-shadow:0 1px 4px rgba(0,0,0,.08);display:flex;gap:24px;flex-wrap:wrap;align-items:center}
+  .bl-label{font-size:.72rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.05em}
+  .bl-val{font-size:.95rem;font-weight:700;color:#475569}
+  .bl-delta{font-size:.9rem;font-weight:700}
+
+  .lang-stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:28px}
+  .stat{background:#fff;border-radius:12px;padding:14px 18px;flex:1;min-width:140px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  .stat-label{font-size:.72rem;font-weight:600;color:#64748b;margin-bottom:4px}
+  .stat-value{font-size:1.5rem;font-weight:800}
+  .stat-sub{font-size:.72rem;color:#94a3b8;margin-top:2px}
+
+  .charts{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:28px}
+  .chart-box{background:#fff;border-radius:12px;padding:20px;flex:1;min-width:260px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  .chart-box h2{font-size:.9rem;font-weight:600;color:#334155;margin-bottom:14px}
+  canvas{max-height:200px}
+
+  .lang-header{color:#fff;font-weight:700;font-size:.9rem;padding:10px 18px;border-radius:10px 10px 0 0}
+  section{margin-bottom:28px}
+
+  .case-card{background:#fff;border-radius:0 0 10px 10px;margin-bottom:2px;box-shadow:0 1px 4px rgba(0,0,0,.07);overflow:hidden}
+  .case-card+.case-card{border-radius:0;margin-top:1px}
+  section .case-card:last-child{border-radius:0 0 10px 10px}
+  .case-header{display:flex;align-items:center;gap:10px;padding:10px 16px;background:#f8fafc;border-bottom:1px solid #e2e8f0;flex-wrap:wrap}
+  .case-num{font-weight:800;font-size:.8rem;color:#64748b}
+  .expected{font-size:.78rem;color:#475569;flex:1}
+  .tick{font-size:.78rem;font-weight:700}
+
+  .code-block{background:#0f172a;padding:12px 16px;overflow-x:auto}
+  .code-block pre{color:#e2e8f0;font-family:'JetBrains Mono','Fira Code',monospace;font-size:.8rem;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+
+  .cve-details{background:#f0f9ff;border-bottom:1px solid #bae6fd}
+  .cve-details summary{padding:8px 16px;font-size:.78rem;font-weight:600;color:#0369a1;cursor:pointer}
+  .cve-table{width:100%;border-collapse:collapse;font-size:.75rem}
+  .cve-table th{background:#e0f2fe;padding:5px 10px;text-align:left;font-weight:700;color:#0369a1}
+  .cve-table td{padding:5px 10px;border-bottom:1px solid #e0f2fe;color:#334155;vertical-align:top}
+  .cve-table tr:last-child td{border-bottom:none}
+
+  .response-grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+  .resp-item{padding:10px 16px;border-right:1px solid #f1f5f9;border-bottom:1px solid #f1f5f9}
+  .resp-item.full{grid-column:1/-1;border-right:none}
+  .resp-label{display:block;font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#94a3b8;margin-bottom:3px}
+  .resp-value{font-size:.83rem;color:#334155;line-height:1.5}
+  .sev-badge{display:inline-block;color:#fff;font-size:.75rem;font-weight:700;padding:2px 10px;border-radius:999px}
+  .fix-block{font-family:'JetBrains Mono','Fira Code',monospace;font-size:.78rem;color:#1e293b;background:#f0fdf4;padding:8px 10px;border-radius:6px;white-space:pre-wrap;word-break:break-word;line-height:1.6}
+
+  @media(max-width:640px){
+    .top-stats,.lang-stats,.charts{flex-direction:column}
+    .response-grid{grid-template-columns:1fr}
+    .resp-item.full{grid-column:1}
+  }
+</style>
+</head>
+<body>
+<h1>RAG Pipeline — Security Benchmark <span class="rag-badge">ChromaDB + Grok API</span></h1>
+<p class="sub">ScanOps Model · 2026-05-11 21:56 · 20 test cases · model: <code>grok-3</code> · CVE top-5 context</p>
+
+<div class="top-stats">
+  <div class="hero"><div class="hero-label">Total Cases</div><div class="hero-value">20</div></div>
+  <div class="hero" style="background:#166534;"><div class="hero-label">Detected</div><div class="hero-value">15 <span style="font-size:1rem;opacity:.8;">/ 20</span></div></div>
+  <div class="hero" style="background:#1d4ed8;"><div class="hero-label">Detection Rate</div><div class="hero-value">75.0%</div></div>
+  <div class="hero" style="background:#0891b2;"><div class="hero-label">Avg Response</div><div class="hero-value">4.48s</div></div>
+</div>
+
+<div class="baseline-row">
+  <div><div class="bl-label">Baseline (grok-3 no RAG)</div><div class="bl-val">85.0% detection · 3.97s avg</div></div>
+  <div><div class="bl-label">Detection Rate Δ</div><div class="bl-delta" style="color:#ef4444;">-10.0%p</div></div>
+  <div><div class="bl-label">Response Time Δ</div><div class="bl-delta" style="color:#ef4444;">+0.51s</div></div>
+</div>
+
+<div class="lang-stats">
+        <div class="stat" style="border-top:4px solid #06b6d4;">
+          <div class="stat-label">React / Next.js</div>
+          <div class="stat-value" style="color:#06b6d4;">3.8s</div>
+          <div class="stat-sub">avg · 4/4 detected</div>
+        </div>
+        <div class="stat" style="border-top:4px solid #22c55e;">
+          <div class="stat-label">Node.js / Express</div>
+          <div class="stat-value" style="color:#22c55e;">4.54s</div>
+          <div class="stat-sub">avg · 3/4 detected</div>
+        </div>
+        <div class="stat" style="border-top:4px solid #f97316;">
+          <div class="stat-label">Java Spring Boot</div>
+          <div class="stat-value" style="color:#f97316;">4.56s</div>
+          <div class="stat-sub">avg · 2/4 detected</div>
+        </div>
+        <div class="stat" style="border-top:4px solid #a855f7;">
+          <div class="stat-label">Python</div>
+          <div class="stat-value" style="color:#a855f7;">3.73s</div>
+          <div class="stat-sub">avg · 3/4 detected</div>
+        </div>
+        <div class="stat" style="border-top:4px solid #64748b;">
+          <div class="stat-label">C</div>
+          <div class="stat-value" style="color:#64748b;">6.72s</div>
+          <div class="stat-sub">avg · 2/2 detected</div>
+        </div>
+        <div class="stat" style="border-top:4px solid #ec4899;">
+          <div class="stat-label">GitHub Actions YAML</div>
+          <div class="stat-value" style="color:#ec4899;">4.79s</div>
+          <div class="stat-sub">avg · 1/2 detected</div>
+        </div></div>
+
+<div class="charts">
+  <div class="chart-box"><h2>Avg Response Time by Language (s)</h2><canvas id="chartTime"></canvas></div>
+  <div class="chart-box"><h2>Detection Rate by Language (%)</h2><canvas id="chartDet"></canvas></div>
+</div>
+
+
+        <section>
+          <div class="lang-header" style="background:#06b6d4;">React / Next.js</div>
+          
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#1</span>
+                <span class="expected">Expected: XSS</span>
+                <span class="tick" style="color:#22c55e;">✓ Detected</span>
+              </div>
+              <div class="code-block"><pre>return &lt;div dangerouslySetInnerHTML={{__html: userInput}} /&gt;;</pre></div>
+              <details class="cve-details">
+                <summary>Retrieved CVEs (top-5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE</th><th>CWE</th><th>Severity</th><th>Sim</th><th>Description</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-6919</td>
+                  <td>CWE-416</td>
+                  <td>CRITICAL</td>
+                  <td style="color:#92400e;font-weight:700;">0.7521</td>
+                  <td>Use after free in DevTools in Google Chrome prior to 147.0.7727.117 allowed a re…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-6774</td>
+                  <td>CWE-693</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#92400e;font-weight:700;">0.7479</td>
+                  <td>Mitigation bypass in the DOM: Security component. This vulnerability was fixed i…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-7055</td>
+                  <td>CWE-119</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7405</td>
+                  <td>A security vulnerability has been detected in Tenda F456 1.0.0.5. This issue aff…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-6771</td>
+                  <td>CWE-288</td>
+                  <td>CRITICAL</td>
+                  <td style="color:#92400e;font-weight:700;">0.7367</td>
+                  <td>Mitigation bypass in the DOM: Security component. This vulnerability was fixed i…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-6779</td>
+                  <td>CWE-20</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#92400e;font-weight:700;">0.7345</td>
+                  <td>Other issue in the JavaScript Engine component. This vulnerability was fixed in …</td>
+                </tr></tbody>
+                </table>
+              </details>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">Cross-Site Scripting (XSS) with CWE-79</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">An attacker can inject malicious scripts through userInput, leading to execution of arbitrary code in the user's browser.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">return &lt;div&gt;{userInput}&lt;/div&gt;;</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#22c55e;font-weight:700;">2.97s</span>
+                </div>
+              </div>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#2</span>
+                <span class="expected">Expected: XSS (javascript: URI)</span>
+                <span class="tick" style="color:#22c55e;">✓ Detected</span>
+              </div>
+              <div class="code-block"><pre>return &lt;a href={`javascript:${userAction}`}&gt;Click&lt;/a&gt;;</pre></div>
+              <details class="cve-details">
+                <summary>Retrieved CVEs (top-5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE</th><th>CWE</th><th>Severity</th><th>Sim</th><th>Description</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-7055</td>
+                  <td>CWE-119</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7436</td>
+                  <td>A security vulnerability has been detected in Tenda F456 1.0.0.5. This issue aff…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-6919</td>
+                  <td>CWE-416</td>
+                  <td>CRITICAL</td>
+                  <td style="color:#92400e;font-weight:700;">0.7354</td>
+                  <td>Use after free in DevTools in Google Chrome prior to 147.0.7727.117 allowed a re…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-4919</td>
+                  <td>CWE-79</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#92400e;font-weight:700;">0.7332</td>
+                  <td>IBM Guardium Data Protection 12.1 is vulnerable to cross-site scripting. This vu…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-4918</td>
+                  <td>CWE-79</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#92400e;font-weight:700;">0.7312</td>
+                  <td>IBM Guardium Data Protection 12.1 is vulnerable to stored cross-site scripting. …</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-41472</td>
+                  <td>CWE-79</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#92400e;font-weight:700;">0.7269</td>
+                  <td>CyberPanel versions prior to 2.4.4 contain a stored cross-site scripting vulnera…</td>
+                </tr></tbody>
+                </table>
+              </details>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">Cross-Site Scripting (XSS) with CWE-79</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">An attacker can inject malicious JavaScript code through the `userAction` variable, executing arbitrary scripts in the user's browser when the link is clicked.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">return &lt;a href="#" onClick={() =&gt; { if (typeof userAction === 'function') userAction(); }}&gt;Click&lt;/a&gt;;</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">4.2s</span>
+                </div>
+              </div>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#3</span>
+                <span class="expected">Expected: Code Injection via eval</span>
+                <span class="tick" style="color:#22c55e;">✓ Detected</span>
+              </div>
+              <div class="code-block"><pre>eval(searchParams.get('callback'));</pre></div>
+              <details class="cve-details">
+                <summary>Retrieved CVEs (top-5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE</th><th>CWE</th><th>Severity</th><th>Sim</th><th>Description</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-42044</td>
+                  <td>CWE-915</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#92400e;font-weight:700;">0.7531</td>
+                  <td>Axios is a promise based HTTP client for the browser and Node.js. From 1.0.0 to …</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-42039</td>
+                  <td>CWE-674</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#92400e;font-weight:700;">0.7302</td>
+                  <td>Axios is a promise based HTTP client for the browser and Node.js. Prior to 1.15.…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-41472</td>
+                  <td>CWE-79</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#92400e;font-weight:700;">0.7302</td>
+                  <td>CyberPanel versions prior to 2.4.4 contain a stored cross-site scripting vulnera…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-42043</td>
+                  <td>CWE-183</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7252</td>
+                  <td>Axios is a promise based HTTP client for the browser and Node.js. Prior to 1.15.…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-42033</td>
+                  <td>CWE-1321</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7244</td>
+                  <td>Axios is a promise based HTTP client for the browser and Node.js. Prior to 1.15.…</td>
+                </tr></tbody>
+                </table>
+              </details>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">Direct Code Injection (CWE-94)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">An attacker can inject malicious JavaScript code via the 'callback' search parameter, leading to arbitrary code execution in the browser.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">// Remove eval and safely handle the callback if needed
+const callback = searchParams.get('callback');
+if (callback &amp;&amp; typeof window[callback] === 'function') {
+  window[callback]();
+} else {
+  console.warn('Invalid or unsafe callback provided');
+}</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">4.52s</span>
+                </div>
+              </div>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#4</span>
+                <span class="expected">Expected: XSS via event handler</span>
+                <span class="tick" style="color:#22c55e;">✓ Detected</span>
+              </div>
+              <div class="code-block"><pre>&lt;img src={user.avatar} onError={user.fallback} /&gt;</pre></div>
+              <details class="cve-details">
+                <summary>Retrieved CVEs (top-5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE</th><th>CWE</th><th>Severity</th><th>Sim</th><th>Description</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-7055</td>
+                  <td>CWE-119</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7216</td>
+                  <td>A security vulnerability has been detected in Tenda F456 1.0.0.5. This issue aff…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-5652</td>
+                  <td>CWE-639</td>
+                  <td>CRITICAL</td>
+                  <td style="color:#92400e;font-weight:700;">0.7203</td>
+                  <td>An insecure direct object reference vulnerability in the Users API component of …</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-41472</td>
+                  <td>CWE-79</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#92400e;font-weight:700;">0.7199</td>
+                  <td>CyberPanel versions prior to 2.4.4 contain a stored cross-site scripting vulnera…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-41461</td>
+                  <td>CWE-918</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#92400e;font-weight:700;">0.7166</td>
+                  <td>SocialEngine versions 7.8.0 and prior contain a blind server-side request forger…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-31953</td>
+                  <td>CWE-79</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#92400e;font-weight:700;">0.7127</td>
+                  <td>Xibo is an open source digital signage platform with a web content management sy…</td>
+                </tr></tbody>
+                </table>
+              </details>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">Cross-Site Scripting (XSS) - CWE-79</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#ca8a04;">MEDIUM</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">An attacker can inject malicious scripts through the `user.avatar` or `user.fallback` properties, leading to execution of arbitrary code in the user's browser.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">&lt;img src={user.avatar} onError={() =&gt; {}} alt="User Avatar" /&gt;</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">3.5s</span>
+                </div>
+              </div>
+            </div>
+        </section>
+        <section>
+          <div class="lang-header" style="background:#22c55e;">Node.js / Express</div>
+          
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#5</span>
+                <span class="expected">Expected: SQL Injection</span>
+                <span class="tick" style="color:#22c55e;">✓ Detected</span>
+              </div>
+              <div class="code-block"><pre>db.query("SELECT * FROM users WHERE id=" + req.params.id);</pre></div>
+              <details class="cve-details">
+                <summary>Retrieved CVEs (top-5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE</th><th>CWE</th><th>Severity</th><th>Sim</th><th>Description</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-41460</td>
+                  <td>CWE-89</td>
+                  <td>CRITICAL</td>
+                  <td style="color:#92400e;font-weight:700;">0.7416</td>
+                  <td>SocialEngine versions 7.8.0 and prior contain a SQL injection vulnerability in t…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-41270</td>
+                  <td>CWE-284</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7339</td>
+                  <td>Flowise is a drag &amp; drop user interface to build a customized large language mod…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-41241</td>
+                  <td>CWE-79</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7233</td>
+                  <td>pretalx is a conference planning tool. Prior to 2026.1.0, The organiser search i…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-33602</td>
+                  <td>CWE-122</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#92400e;font-weight:700;">0.7157</td>
+                  <td>A rogue backend can send a crafted UDP response with a query ID off by one relat…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-5652</td>
+                  <td>CWE-639</td>
+                  <td>CRITICAL</td>
+                  <td style="color:#92400e;font-weight:700;">0.7145</td>
+                  <td>An insecure direct object reference vulnerability in the Users API component of …</td>
+                </tr></tbody>
+                </table>
+              </details>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">SQL Injection (CWE-89)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">An attacker can manipulate the 'id' parameter in the request to execute arbitrary SQL code, potentially accessing or modifying unauthorized data.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">db.query("SELECT * FROM users WHERE id = ?", [req.params.id]);</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">3.61s</span>
+                </div>
+              </div>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#6</span>
+                <span class="expected">Expected: Command Injection</span>
+                <span class="tick" style="color:#22c55e;">✓ Detected</span>
+              </div>
+              <div class="code-block"><pre>exec(req.body.command);</pre></div>
+              <details class="cve-details">
+                <summary>Retrieved CVEs (top-5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE</th><th>CWE</th><th>Severity</th><th>Sim</th><th>Description</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-6986</td>
+                  <td>CWE-345</td>
+                  <td>LOW</td>
+                  <td style="color:#92400e;font-weight:700;">0.7184</td>
+                  <td>A security vulnerability has been detected in Cesanta Mongoose up to 7.20. This …</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-40520</td>
+                  <td>CWE-78</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.718</td>
+                  <td>FreePBX api module version 17.0.8 and prior contain a command injection vulnerab…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-4821</td>
+                  <td>CWE-78</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7116</td>
+                  <td>An improper neutralization of special elements vulnerability was identified in G…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-38834</td>
+                  <td>CWE-77</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7026</td>
+                  <td>Tenda W30E V2.0 V16.01.0.21 was found to contain a command injection vulnerabili…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-41268</td>
+                  <td>CWE-20</td>
+                  <td>CRITICAL</td>
+                  <td style="color:#92400e;font-weight:700;">0.7012</td>
+                  <td>Flowise is a drag &amp; drop user interface to build a customized large language mod…</td>
+                </tr></tbody>
+                </table>
+              </details>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">Command Injection (CWE-78)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">An attacker can execute arbitrary system commands by injecting malicious input through req.body.command.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">const { exec } = require('child_process');
+const allowedCommands = ['ls', 'pwd', 'echo'];
+if (allowedCommands.includes(req.body.command)) {
+    exec(req.body.command, (error, stdout, stderr) =&gt; {
+        if (error) {
+            res.status(500).send(`Error: ${error.message}`);
+            return;
+        }
+        res.send(stdout);
+    });
+} else {
+    res.status(400).send('Invalid command');
+}</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">5.18s</span>
+                </div>
+              </div>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#7</span>
+                <span class="expected">Expected: Insecure CORS</span>
+                <span class="tick" style="color:#ef4444;">✗ Missed</span>
+              </div>
+              <div class="code-block"><pre>res.setHeader('Access-Control-Allow-Origin', '*');</pre></div>
+              <details class="cve-details">
+                <summary>Retrieved CVEs (top-5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE</th><th>CWE</th><th>Severity</th><th>Sim</th><th>Description</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-42042</td>
+                  <td>CWE-183</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#92400e;font-weight:700;">0.7599</td>
+                  <td>Axios is a promise based HTTP client for the browser and Node.js. Prior to 1.15.…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-42033</td>
+                  <td>CWE-1321</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7531</td>
+                  <td>Axios is a promise based HTTP client for the browser and Node.js. Prior to 1.15.…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-42043</td>
+                  <td>CWE-183</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7487</td>
+                  <td>Axios is a promise based HTTP client for the browser and Node.js. Prior to 1.15.…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-42039</td>
+                  <td>CWE-674</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#92400e;font-weight:700;">0.7423</td>
+                  <td>Axios is a promise based HTTP client for the browser and Node.js. Prior to 1.15.…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-42035</td>
+                  <td>CWE-113</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7395</td>
+                  <td>Axios is a promise based HTTP client for the browser and Node.js. Prior to 1.15.…</td>
+                </tr></tbody>
+                </table>
+              </details>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">Improper Access Control (CWE-284)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#ca8a04;">MEDIUM</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">Setting 'Access-Control-Allow-Origin' to '' allows any origin to access the server's resources, potentially exposing sensitive data to unauthorized domains.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">res.setHeader('Access-Control-Allow-Origin', 'https://trusted-domain.com');</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">3.6s</span>
+                </div>
+              </div>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#8</span>
+                <span class="expected">Expected: Hardcoded Secret</span>
+                <span class="tick" style="color:#22c55e;">✓ Detected</span>
+              </div>
+              <div class="code-block"><pre>jwt.verify(token, 'hardcoded_secret_key');</pre></div>
+              <details class="cve-details">
+                <summary>Retrieved CVEs (top-5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE</th><th>CWE</th><th>Severity</th><th>Sim</th><th>Description</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-42042</td>
+                  <td>CWE-183</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#92400e;font-weight:700;">0.7498</td>
+                  <td>Axios is a promise based HTTP client for the browser and Node.js. Prior to 1.15.…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-41270</td>
+                  <td>CWE-284</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7321</td>
+                  <td>Flowise is a drag &amp; drop user interface to build a customized large language mod…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-35503</td>
+                  <td>CWE-798</td>
+                  <td>CRITICAL</td>
+                  <td style="color:#92400e;font-weight:700;">0.7208</td>
+                  <td>A vulnerability in SenseLive X3050’s web management interface allows authenticat…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-40372</td>
+                  <td>CWE-347</td>
+                  <td>CRITICAL</td>
+                  <td style="color:#92400e;font-weight:700;">0.7131</td>
+                  <td>Improper verification of cryptographic signature in ASP.NET Core allows an unaut…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-41461</td>
+                  <td>CWE-918</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#92400e;font-weight:700;">0.7109</td>
+                  <td>SocialEngine versions 7.8.0 and prior contain a blind server-side request forger…</td>
+                </tr></tbody>
+                </table>
+              </details>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">Hardcoded Credentials (CWE-798)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">An attacker can extract the hardcoded secret key from the source code to forge or decrypt JWT tokens, gaining unauthorized access.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">const secretKey = process.env.JWT_SECRET_KEY || 'default_secure_key';
+jwt.verify(token, secretKey);</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">5.78s</span>
+                </div>
+              </div>
+            </div>
+        </section>
+        <section>
+          <div class="lang-header" style="background:#f97316;">Java Spring Boot</div>
+          
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#9</span>
+                <span class="expected">Expected: SQL Injection</span>
+                <span class="tick" style="color:#22c55e;">✓ Detected</span>
+              </div>
+              <div class="code-block"><pre>String query = "SELECT * FROM " + tableName;
+stmt.execute(query);</pre></div>
+              <details class="cve-details">
+                <summary>Retrieved CVEs (top-5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE</th><th>CWE</th><th>Severity</th><th>Sim</th><th>Description</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-40978</td>
+                  <td>CWE-89</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7438</td>
+                  <td>SQL injection vulnerability in Spring AI's `CosmosDBVectorStore` allows attacker…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-41044</td>
+                  <td>CWE-20</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7377</td>
+                  <td>Improper Input Validation, Improper Control of Generation of Code ('Code Injecti…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-22753</td>
+                  <td>CWE-693</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7165</td>
+                  <td>Vulnerability in Spring Spring Security. If an application is using securityMatc…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-40466</td>
+                  <td>CWE-20</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7073</td>
+                  <td>Improper Input Validation, Improper Control of Generation of Code ('Code Injecti…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-41460</td>
+                  <td>CWE-89</td>
+                  <td>CRITICAL</td>
+                  <td style="color:#92400e;font-weight:700;">0.6993</td>
+                  <td>SocialEngine versions 7.8.0 and prior contain a SQL injection vulnerability in t…</td>
+                </tr></tbody>
+                </table>
+              </details>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">SQL Injection (CWE-89)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">An attacker can manipulate the `tableName` variable to inject malicious SQL code, potentially accessing or modifying unauthorized data.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">String query = "SELECT * FROM ?";
+PreparedStatement pstmt = connection.prepareStatement(query);
+pstmt.setString(1, tableName);
+pstmt.execute();</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">3.86s</span>
+                </div>
+              </div>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#10</span>
+                <span class="expected">Expected: Command Injection</span>
+                <span class="tick" style="color:#22c55e;">✓ Detected</span>
+              </div>
+              <div class="code-block"><pre>Runtime.getRuntime().exec(userInput);</pre></div>
+              <details class="cve-details">
+                <summary>Retrieved CVEs (top-5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE</th><th>CWE</th><th>Severity</th><th>Sim</th><th>Description</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-22746</td>
+                  <td>CWE-208</td>
+                  <td>LOW</td>
+                  <td style="color:#92400e;font-weight:700;">0.711</td>
+                  <td>Vulnerability in Spring Spring Security. If an application is using the UserDeta…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-35368</td>
+                  <td>CWE-426</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7097</td>
+                  <td>A vulnerability exists in the chroot utility of uutils coreutils when using the …</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-22003</td>
+                  <td>CWE-400</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#92400e;font-weight:700;">0.6994</td>
+                  <td>Vulnerability in the Oracle Java SE, Oracle GraalVM Enterprise Edition product o…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-41044</td>
+                  <td>CWE-20</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.6959</td>
+                  <td>Improper Input Validation, Improper Control of Generation of Code ('Code Injecti…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-22753</td>
+                  <td>CWE-693</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.6906</td>
+                  <td>Vulnerability in Spring Spring Security. If an application is using securityMatc…</td>
+                </tr></tbody>
+                </table>
+              </details>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">Command Injection (CWE-78)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">An attacker can execute arbitrary system commands by providing malicious input to userInput, leading to full system compromise.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">// Avoid direct execution of user input
+throw new UnsupportedOperationException("Direct command execution is not allowed");</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">4.81s</span>
+                </div>
+              </div>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#11</span>
+                <span class="expected">Expected: Overly Permissive Endpoint</span>
+                <span class="tick" style="color:#ef4444;">✗ Missed</span>
+              </div>
+              <div class="code-block"><pre>@RequestMapping(value="/**")
+public ResponseEntity&lt;?&gt; handle(HttpServletRequest req) { ... }</pre></div>
+              <details class="cve-details">
+                <summary>Retrieved CVEs (top-5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE</th><th>CWE</th><th>Severity</th><th>Sim</th><th>Description</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-22753</td>
+                  <td>CWE-693</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.789</td>
+                  <td>Vulnerability in Spring Spring Security. If an application is using securityMatc…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-22754</td>
+                  <td>CWE-284</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7742</td>
+                  <td>Vulnerability in Spring Spring Security. If an application uses &lt;sec:intercept-u…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-41044</td>
+                  <td>CWE-20</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7528</td>
+                  <td>Improper Input Validation, Improper Control of Generation of Code ('Code Injecti…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-40466</td>
+                  <td>CWE-20</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7455</td>
+                  <td>Improper Input Validation, Improper Control of Generation of Code ('Code Injecti…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-22748</td>
+                  <td>CWE-20</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#92400e;font-weight:700;">0.722</td>
+                  <td>Vulnerability in Spring Spring Security. When an application configures JWT deco…</td>
+                </tr></tbody>
+                </table>
+              </details>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">Improper Access Control (CWE-284)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">An attacker can access any endpoint under the root path due to the overly permissive wildcard mapping, bypassing intended security restrictions.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">@RequestMapping(value="/specific-endpoint")
+public ResponseEntity&lt;?&gt; handle(HttpServletRequest req) { ... }</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">5.6s</span>
+                </div>
+              </div>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#12</span>
+                <span class="expected">Expected: Timing Attack</span>
+                <span class="tick" style="color:#ef4444;">✗ Missed</span>
+              </div>
+              <div class="code-block"><pre>if (password.equals(inputPassword)) { grantAccess(); }</pre></div>
+              <details class="cve-details">
+                <summary>Retrieved CVEs (top-5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE</th><th>CWE</th><th>Severity</th><th>Sim</th><th>Description</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-22753</td>
+                  <td>CWE-693</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7356</td>
+                  <td>Vulnerability in Spring Spring Security. If an application is using securityMatc…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-22754</td>
+                  <td>CWE-284</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7286</td>
+                  <td>Vulnerability in Spring Spring Security. If an application uses &lt;sec:intercept-u…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-4821</td>
+                  <td>CWE-78</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7006</td>
+                  <td>An improper neutralization of special elements vulnerability was identified in G…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-22748</td>
+                  <td>CWE-20</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#92400e;font-weight:700;">0.6999</td>
+                  <td>Vulnerability in Spring Spring Security. When an application configures JWT deco…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-22746</td>
+                  <td>CWE-208</td>
+                  <td>LOW</td>
+                  <td style="color:#92400e;font-weight:700;">0.6954</td>
+                  <td>Vulnerability in Spring Spring Security. If an application is using the UserDeta…</td>
+                </tr></tbody>
+                </table>
+              </details>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">Plaintext Password Comparison (CWE-256)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">An attacker could exploit improper password storage or comparison to gain unauthorized access by intercepting or guessing plaintext passwords.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">if (passwordEncoder.matches(inputPassword, password)) { grantAccess(); }</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">3.99s</span>
+                </div>
+              </div>
+            </div>
+        </section>
+        <section>
+          <div class="lang-header" style="background:#a855f7;">Python</div>
+          
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#13</span>
+                <span class="expected">Expected: Insecure Deserialization</span>
+                <span class="tick" style="color:#22c55e;">✓ Detected</span>
+              </div>
+              <div class="code-block"><pre>import pickle
+obj = pickle.loads(user_data)</pre></div>
+              <details class="cve-details">
+                <summary>Retrieved CVEs (top-5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE</th><th>CWE</th><th>Severity</th><th>Sim</th><th>Description</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-25874</td>
+                  <td>CWE-502</td>
+                  <td>CRITICAL</td>
+                  <td style="color:#92400e;font-weight:700;">0.7893</td>
+                  <td>LeRobot through 0.5.1 contains an unsafe deserialization vulnerability in the as…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2025-62373</td>
+                  <td>CWE-502</td>
+                  <td>CRITICAL</td>
+                  <td style="color:#92400e;font-weight:700;">0.7464</td>
+                  <td>Pipecat is an open-source Python framework for building real-time voice and mult…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-35368</td>
+                  <td>CWE-426</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7177</td>
+                  <td>A vulnerability exists in the chroot utility of uutils coreutils when using the …</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-5652</td>
+                  <td>CWE-639</td>
+                  <td>CRITICAL</td>
+                  <td style="color:#92400e;font-weight:700;">0.7132</td>
+                  <td>An insecure direct object reference vulnerability in the Users API component of …</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-35341</td>
+                  <td>CWE-732</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7032</td>
+                  <td>A vulnerability in uutils coreutils mkfifo allows for the unauthorized modificat…</td>
+                </tr></tbody>
+                </table>
+              </details>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">Unsafe Deserialization (CWE-502)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">An attacker can provide malicious serialized data via user_data, leading to arbitrary code execution during deserialization with pickle.loads().</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">import json
+obj = json.loads(user_data)</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">3.22s</span>
+                </div>
+              </div>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#14</span>
+                <span class="expected">Expected: Command Injection</span>
+                <span class="tick" style="color:#22c55e;">✓ Detected</span>
+              </div>
+              <div class="code-block"><pre>import subprocess
+subprocess.call(user_input, shell=True)</pre></div>
+              <details class="cve-details">
+                <summary>Retrieved CVEs (top-5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE</th><th>CWE</th><th>Severity</th><th>Sim</th><th>Description</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-40520</td>
+                  <td>CWE-78</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7162</td>
+                  <td>FreePBX api module version 17.0.8 and prior contain a command injection vulnerab…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-31638</td>
+                  <td>CWE-476</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7022</td>
+                  <td>In the Linux kernel, the following vulnerability has been resolved: rxrpc: Only …</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-35368</td>
+                  <td>CWE-426</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7004</td>
+                  <td>A vulnerability exists in the chroot utility of uutils coreutils when using the …</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-40517</td>
+                  <td>CWE-78</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.6984</td>
+                  <td>radare2 prior to 6.1.4 contains a command injection vulnerability in the PDB par…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2025-62373</td>
+                  <td>CWE-502</td>
+                  <td>CRITICAL</td>
+                  <td style="color:#92400e;font-weight:700;">0.6969</td>
+                  <td>Pipecat is an open-source Python framework for building real-time voice and mult…</td>
+                </tr></tbody>
+                </table>
+              </details>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">Command Injection (CWE-78)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">An attacker can execute arbitrary system commands by providing malicious input to user_input, as it is passed directly to the shell.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">import subprocess
+subprocess.call(user_input.split(), shell=False)</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">4.63s</span>
+                </div>
+              </div>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#15</span>
+                <span class="expected">Expected: Arbitrary Code Execution via YAML</span>
+                <span class="tick" style="color:#ef4444;">✗ Missed</span>
+              </div>
+              <div class="code-block"><pre>import yaml
+data = yaml.load(user_input)  # not safe_load</pre></div>
+              <details class="cve-details">
+                <summary>Retrieved CVEs (top-5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE</th><th>CWE</th><th>Severity</th><th>Sim</th><th>Description</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-5652</td>
+                  <td>CWE-639</td>
+                  <td>CRITICAL</td>
+                  <td style="color:#92400e;font-weight:700;">0.7255</td>
+                  <td>An insecure direct object reference vulnerability in the Users API component of …</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-41066</td>
+                  <td>CWE-611</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7226</td>
+                  <td>lxml is a library for processing XML and HTML in the Python language. Prior to 6…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-41873</td>
+                  <td>CWE-444</td>
+                  <td>CRITICAL</td>
+                  <td style="color:#92400e;font-weight:700;">0.7183</td>
+                  <td>** UNSUPPORTED WHEN ASSIGNED ** Inconsistent Interpretation of HTTP Requests ('H…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-41460</td>
+                  <td>CWE-89</td>
+                  <td>CRITICAL</td>
+                  <td style="color:#92400e;font-weight:700;">0.714</td>
+                  <td>SocialEngine versions 7.8.0 and prior contain a SQL injection vulnerability in t…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-41265</td>
+                  <td>CWE-77</td>
+                  <td>CRITICAL</td>
+                  <td style="color:#92400e;font-weight:700;">0.7129</td>
+                  <td>Flowise is a drag &amp; drop user interface to build a customized large language mod…</td>
+                </tr></tbody>
+                </table>
+              </details>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">Unsafe Deserialization (CWE-502)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">An attacker can provide malicious YAML input to execute arbitrary code during deserialization.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">import yaml
+data = yaml.safe_load(user_input)</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#22c55e;font-weight:700;">2.13s</span>
+                </div>
+              </div>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#16</span>
+                <span class="expected">Expected: Command Injection</span>
+                <span class="tick" style="color:#22c55e;">✓ Detected</span>
+              </div>
+              <div class="code-block"><pre>import os
+os.system(f"ping {host}")</pre></div>
+              <details class="cve-details">
+                <summary>Retrieved CVEs (top-5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE</th><th>CWE</th><th>Severity</th><th>Sim</th><th>Description</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-38834</td>
+                  <td>CWE-77</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7519</td>
+                  <td>Tenda W30E V2.0 V16.01.0.21 was found to contain a command injection vulnerabili…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-33078</td>
+                  <td>CWE-89</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7276</td>
+                  <td>Roxy-WI is a web interface for managing Haproxy, Nginx, Apache and Keepalived se…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-40517</td>
+                  <td>CWE-78</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7115</td>
+                  <td>radare2 prior to 6.1.4 contains a command injection vulnerability in the PDB par…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-31515</td>
+                  <td>CWE-476</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#92400e;font-weight:700;">0.7097</td>
+                  <td>In the Linux kernel, the following vulnerability has been resolved: af_key: vali…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-6777</td>
+                  <td>CWE-20</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#92400e;font-weight:700;">0.7012</td>
+                  <td>Other issue in the Networking: DNS component. This vulnerability was fixed in Fi…</td>
+                </tr></tbody>
+                </table>
+              </details>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">Command Injection (CWE-77)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">An attacker can inject malicious commands through the 'host' variable, leading to arbitrary code execution on the system.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">import subprocess
+host = host.replace(";", "").replace("&amp;", "").replace("|", "")
+subprocess.run(["ping", host], shell=False)</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">4.94s</span>
+                </div>
+              </div>
+            </div>
+        </section>
+        <section>
+          <div class="lang-header" style="background:#64748b;">C</div>
+          
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#17</span>
+                <span class="expected">Expected: Format String Attack</span>
+                <span class="tick" style="color:#22c55e;">✓ Detected</span>
+              </div>
+              <div class="code-block"><pre>printf(user_input);  // user-controlled format string</pre></div>
+              <details class="cve-details">
+                <summary>Retrieved CVEs (top-5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE</th><th>CWE</th><th>Severity</th><th>Sim</th><th>Description</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-40517</td>
+                  <td>CWE-78</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7446</td>
+                  <td>radare2 prior to 6.1.4 contains a command injection vulnerability in the PDB par…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-35379</td>
+                  <td>CWE-684</td>
+                  <td>LOW</td>
+                  <td style="color:#92400e;font-weight:700;">0.7361</td>
+                  <td>A logic error in the tr utility of uutils coreutils causes the program to incorr…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-7102</td>
+                  <td>CWE-74</td>
+                  <td>LOW</td>
+                  <td style="color:#92400e;font-weight:700;">0.7297</td>
+                  <td>A vulnerability was found in Tenda F456 1.0.0.5. This impacts the function FromW…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-41229</td>
+                  <td>CWE-94</td>
+                  <td>CRITICAL</td>
+                  <td style="color:#92400e;font-weight:700;">0.7272</td>
+                  <td>Froxlor is open source server administration software. Prior to version 2.3.6, `…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-40933</td>
+                  <td>CWE-78</td>
+                  <td>CRITICAL</td>
+                  <td style="color:#92400e;font-weight:700;">0.7271</td>
+                  <td>Flowise is a drag &amp; drop user interface to build a customized large language mod…</td>
+                </tr></tbody>
+                </table>
+              </details>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">Format String Vulnerability (CWE-134)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">An attacker can provide malicious input to manipulate the format string in printf, potentially leading to information disclosure or arbitrary code execution.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">printf("%s", user_input);</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#ef4444;font-weight:700;">9.28s</span>
+                </div>
+              </div>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#18</span>
+                <span class="expected">Expected: Buffer Overflow</span>
+                <span class="tick" style="color:#22c55e;">✓ Detected</span>
+              </div>
+              <div class="code-block"><pre>char buf[64];
+strcpy(buf, argv[1]);  // no bounds check</pre></div>
+              <details class="cve-details">
+                <summary>Retrieved CVEs (top-5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE</th><th>CWE</th><th>Severity</th><th>Sim</th><th>Description</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-35379</td>
+                  <td>CWE-684</td>
+                  <td>LOW</td>
+                  <td style="color:#92400e;font-weight:700;">0.7541</td>
+                  <td>A logic error in the tr utility of uutils coreutils causes the program to incorr…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-31614</td>
+                  <td>CWE-125</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7514</td>
+                  <td>In the Linux kernel, the following vulnerability has been resolved: smb: client:…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-31641</td>
+                  <td>CWE-125</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7502</td>
+                  <td>In the Linux kernel, the following vulnerability has been resolved: rxrpc: Fix R…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-31631</td>
+                  <td>CWE-787</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7475</td>
+                  <td>In the Linux kernel, the following vulnerability has been resolved: rxrpc: Fix b…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-33317</td>
+                  <td>CWE-125</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7442</td>
+                  <td>OP-TEE is a Trusted Execution Environment (TEE) designed as companion to a non-s…</td>
+                </tr></tbody>
+                </table>
+              </details>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">Buffer Overflow (CWE-787)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">An attacker can provide a long input via argv[1] to overflow the fixed-size buffer, potentially leading to arbitrary code execution.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">char buf[64];
+strncpy(buf, argv[1], sizeof(buf) - 1);
+buf[sizeof(buf) - 1] = '\0';</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">4.17s</span>
+                </div>
+              </div>
+            </div>
+        </section>
+        <section>
+          <div class="lang-header" style="background:#ec4899;">GitHub Actions YAML</div>
+          
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#19</span>
+                <span class="expected">Expected: Script Injection via untrusted input</span>
+                <span class="tick" style="color:#22c55e;">✓ Detected</span>
+              </div>
+              <div class="code-block"><pre>- run: echo ${{ github.event.issue.title }}</pre></div>
+              <details class="cve-details">
+                <summary>Retrieved CVEs (top-5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE</th><th>CWE</th><th>Severity</th><th>Sim</th><th>Description</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-5845</td>
+                  <td>CWE-639</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7444</td>
+                  <td>An improper authorization vulnerability in scoped user-to-server (ghu_) token au…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-4821</td>
+                  <td>CWE-78</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7417</td>
+                  <td>An improper neutralization of special elements vulnerability was identified in G…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-5512</td>
+                  <td>CWE-201</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#92400e;font-weight:700;">0.7373</td>
+                  <td>An improper authorization vulnerability was identified in GitHub Enterprise Serv…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-4296</td>
+                  <td>CWE-185</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7255</td>
+                  <td>An incorrect regular expression vulnerability was identified in GitHub Enterpris…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-41357</td>
+                  <td>CWE-214</td>
+                  <td>LOW</td>
+                  <td style="color:#92400e;font-weight:700;">0.711</td>
+                  <td>OpenClaw before 2026.3.31 contains an environment variable leakage vulnerability…</td>
+                </tr></tbody>
+                </table>
+              </details>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">Command Injection (CWE-78)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">An attacker can inject malicious commands via the issue title input, leading to arbitrary code execution on the runner.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">- run: echo "${{ github.event.issue.title }}" | tr -d '$`\\'</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">4.56s</span>
+                </div>
+              </div>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#20</span>
+                <span class="expected">Expected: Supply Chain Attack (unpinned action)</span>
+                <span class="tick" style="color:#ef4444;">✗ Missed</span>
+              </div>
+              <div class="code-block"><pre>- uses: actions/checkout@main  # unpinned version</pre></div>
+              <details class="cve-details">
+                <summary>Retrieved CVEs (top-5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE</th><th>CWE</th><th>Severity</th><th>Sim</th><th>Description</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-4821</td>
+                  <td>CWE-78</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.728</td>
+                  <td>An improper neutralization of special elements vulnerability was identified in G…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-5512</td>
+                  <td>CWE-201</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#92400e;font-weight:700;">0.7276</td>
+                  <td>An improper authorization vulnerability was identified in GitHub Enterprise Serv…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-4296</td>
+                  <td>CWE-185</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7205</td>
+                  <td>An incorrect regular expression vulnerability was identified in GitHub Enterpris…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-5845</td>
+                  <td>CWE-639</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.7171</td>
+                  <td>An improper authorization vulnerability in scoped user-to-server (ghu_) token au…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-3307</td>
+                  <td>CWE-639</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#92400e;font-weight:700;">0.7059</td>
+                  <td>An authorization bypass vulnerability was identified in GitHub Enterprise Server…</td>
+                </tr></tbody>
+                </table>
+              </details>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">VULNERABILITY</span>
+                  <span class="resp-value">Unpinned Dependency Version (CWE-829)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">SEVERITY</span>
+                  <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">ATTACK</span>
+                  <span class="resp-value">An attacker could compromise the `actions/checkout` repository or publish a malicious version at `main`, leading to arbitrary code execution in the workflow.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">FIX</span>
+                  <pre class="fix-block">- uses: actions/checkout@v3.5.2  # pinned to a specific version or commit SHA</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">Response Time</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">5.02s</span>
+                </div>
+              </div>
+            </div>
+        </section>
+
+<script>
+const labels=["React / Next.js", "Node.js / Express", "Java Spring Boot", "Python", "C", "GitHub Actions YAML"],timeData=[3.8, 4.54, 4.56, 3.73, 6.72, 4.79],detData=[100.0, 75.0, 50.0, 75.0, 100.0, 50.0],colors=["#06b6d4", "#22c55e", "#f97316", "#a855f7", "#64748b", "#ec4899"];
+new Chart(document.getElementById('chartTime'),{type:'bar',data:{labels,datasets:[{label:'Avg Time(s)',data:timeData,backgroundColor:colors,borderRadius:5,borderSkipped:false}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true},x:{grid:{display:false}}}}});
+new Chart(document.getElementById('chartDet'),{type:'bar',data:{labels,datasets:[{label:'Detection %',data:detData,backgroundColor:colors,borderRadius:5,borderSkipped:false}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,max:100},x:{grid:{display:false}}}}});
+</script>
+</body>
+</html>
