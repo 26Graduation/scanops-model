@@ -1,0 +1,1173 @@
+{
+  "model_name": "ScanOps — RAG (ChromaDB + grok-3)",
+  "timestamp": "2026-05-11T22:53:59.280138",
+  "total": 20,
+  "detected": 18,
+  "detect_pct": 90.0,
+  "avg_time": 3.85,
+  "cve_hit": 5,
+  "cve_hit_pct": 25.0,
+  "avg_similarity": 0.744,
+  "results": [
+    {
+      "id": 1,
+      "language": "React / Next.js",
+      "code": "return <div dangerouslySetInnerHTML={{__html: userInput}} />;",
+      "expected_vuln": "XSS",
+      "response": "VULNERABILITY: Cross-Site Scripting (XSS) with CWE-79\nSEVERITY: HIGH\nATTACK: An attacker can inject malicious scripts through userInput, leading to execution of arbitrary code in the user's browser.\nFIX: \nreturn <div>{userInput}</div>;",
+      "parsed": {
+        "VULNERABILITY": "Cross-Site Scripting (XSS) with CWE-79",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker can inject malicious scripts through userInput, leading to execution of arbitrary code in the user's browser.",
+        "FIX": "return <div>{userInput}</div>;"
+      },
+      "elapsed": 3.06,
+      "detected": true,
+      "cves": [
+        {
+          "id": "CVE-2026-6919",
+          "description": "Use after free in DevTools in Google Chrome prior to 147.0.7727.117 allowed a remote attacker who had compromised the renderer process to potentially perform a sandbox escape via a crafted HTML page. (Chromium security severity: High)",
+          "cwe": "CWE-416",
+          "severity": "CRITICAL",
+          "score": 9.6,
+          "similarity": 0.7521
+        },
+        {
+          "id": "CVE-2026-6774",
+          "description": "Mitigation bypass in the DOM: Security component. This vulnerability was fixed in Firefox 150 and Thunderbird 150.",
+          "cwe": "CWE-693",
+          "severity": "MEDIUM",
+          "score": 5.4,
+          "similarity": 0.7479
+        },
+        {
+          "id": "CVE-2026-7055",
+          "description": "A security vulnerability has been detected in Tenda F456 1.0.0.5. This issue affects the function fromVirtualSer of the file /goform/VirtualSer of the component httpd. The manipulation of the argument menufacturer/Go leads to buffer overflow. The attack is possible to be carried out remotely. The exploit has been disclosed publicly and may be used.",
+          "cwe": "CWE-119",
+          "severity": "HIGH",
+          "score": 7.4,
+          "similarity": 0.7405
+        },
+        {
+          "id": "CVE-2026-6771",
+          "description": "Mitigation bypass in the DOM: Security component. This vulnerability was fixed in Firefox 150, Firefox ESR 140.10, Thunderbird 150, and Thunderbird 140.10.",
+          "cwe": "CWE-288",
+          "severity": "CRITICAL",
+          "score": 9.8,
+          "similarity": 0.7367
+        },
+        {
+          "id": "CVE-2026-6779",
+          "description": "Other issue in the JavaScript Engine component. This vulnerability was fixed in Firefox 150 and Thunderbird 150.",
+          "cwe": "CWE-20",
+          "severity": "MEDIUM",
+          "score": 5.3,
+          "similarity": 0.7345
+        }
+      ],
+      "cve_hit": false
+    },
+    {
+      "id": 2,
+      "language": "React / Next.js",
+      "code": "return <a href={`javascript:${userAction}`}>Click</a>;",
+      "expected_vuln": "XSS (javascript: URI)",
+      "response": "VULNERABILITY: Cross-Site Scripting (XSS) with CWE-79\nSEVERITY: HIGH\nATTACK: An attacker can inject malicious JavaScript code through the `userAction` variable, leading to execution in the user's browser when the link is clicked.\nFIX: return <a href=\"#\" onClick={() => { if (typeof userAction === 'function') userAction(); }}>Click</a>;",
+      "parsed": {
+        "VULNERABILITY": "Cross-Site Scripting (XSS) with CWE-79",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker can inject malicious JavaScript code through the `userAction` variable, leading to execution in the user's browser when the link is clicked.",
+        "FIX": "return <a href=\"#\" onClick={() => { if (typeof userAction === 'function') userAction(); }}>Click</a>;"
+      },
+      "elapsed": 4.0,
+      "detected": true,
+      "cves": [
+        {
+          "id": "CVE-2026-7055",
+          "description": "A security vulnerability has been detected in Tenda F456 1.0.0.5. This issue affects the function fromVirtualSer of the file /goform/VirtualSer of the component httpd. The manipulation of the argument menufacturer/Go leads to buffer overflow. The attack is possible to be carried out remotely. The exploit has been disclosed publicly and may be used.",
+          "cwe": "CWE-119",
+          "severity": "HIGH",
+          "score": 7.4,
+          "similarity": 0.7436
+        },
+        {
+          "id": "CVE-2026-6919",
+          "description": "Use after free in DevTools in Google Chrome prior to 147.0.7727.117 allowed a remote attacker who had compromised the renderer process to potentially perform a sandbox escape via a crafted HTML page. (Chromium security severity: High)",
+          "cwe": "CWE-416",
+          "severity": "CRITICAL",
+          "score": 9.6,
+          "similarity": 0.7354
+        },
+        {
+          "id": "CVE-2026-4919",
+          "description": "IBM Guardium Data Protection 12.1 is vulnerable to cross-site scripting. This vulnerability allows an administrative user to embed arbitrary JavaScript code in the Web UI thus altering the intended functionality potentially leading to credentials disclosure within a trusted session.",
+          "cwe": "CWE-79",
+          "severity": "MEDIUM",
+          "score": 4.8,
+          "similarity": 0.7332
+        },
+        {
+          "id": "CVE-2026-4918",
+          "description": "IBM Guardium Data Protection 12.1 is vulnerable to stored cross-site scripting. This vulnerability allows an administrative user to embed arbitrary JavaScript code in the Web UI thus altering the intended functionality potentially leading to credentials disclosure within a trusted session.",
+          "cwe": "CWE-79",
+          "severity": "MEDIUM",
+          "score": 5.5,
+          "similarity": 0.7312
+        },
+        {
+          "id": "CVE-2026-41472",
+          "description": "CyberPanel versions prior to 2.4.4 contain a stored cross-site scripting vulnerability in the AI Scanner dashboard where the POST /api/ai-scanner/callback endpoint lacks authentication and allows unauthenticated attackers to inject malicious JavaScript by overwriting the findings_json field of ScanHistory records. Attackers can inject JavaScript that executes in an administrator's authenticated session when they visit the AI Scanner dashboard, allowing them to issue same-origin requests to plant cron jobs and achieve remote code execution on the server.",
+          "cwe": "CWE-79",
+          "severity": "MEDIUM",
+          "score": 5.3,
+          "similarity": 0.7269
+        }
+      ],
+      "cve_hit": false
+    },
+    {
+      "id": 3,
+      "language": "React / Next.js",
+      "code": "eval(searchParams.get('callback'));",
+      "expected_vuln": "Code Injection via eval",
+      "response": "VULNERABILITY: Direct Code Injection (CWE-94)\nSEVERITY: CRITICAL\nATTACK: An attacker can inject malicious JavaScript code via the 'callback' query parameter, leading to arbitrary code execution in the browser.\nFIX: \n// Remove eval and use a safe alternative or validate input\nconst callback = searchParams.get('callback');\nif (callback && typeof callback === 'string' && /^[a-zA-Z0-9_]+$/.test(callback)) {\n  // Use callback as a function name or identifier, not for execution\n  // Example: Call a predefined function if it matches\n  if (window[callback]) {\n    window[callback]();\n  }\n} else {\n  console.error('Invalid callback parameter');\n}",
+      "parsed": {
+        "VULNERABILITY": "Direct Code Injection (CWE-94)",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "An attacker can inject malicious JavaScript code via the 'callback' query parameter, leading to arbitrary code execution in the browser.",
+        "FIX": "// Remove eval and use a safe alternative or validate input\nconst callback = searchParams.get('callback');\nif (callback && typeof callback === 'string' && /^[a-zA-Z0-9_]+$/.test(callback)) {\n  // Use callback as a function name or identifier, not for execution\n  // Example: Call a predefined function if it matches\n  if (window[callback]) {\n    window[callback]();\n  }\n} else {\n  console.error('Invalid callback parameter');\n}"
+      },
+      "elapsed": 5.47,
+      "detected": true,
+      "cves": [
+        {
+          "id": "CVE-2026-42044",
+          "description": "Axios is a promise based HTTP client for the browser and Node.js. From 1.0.0 to before 1.15.2, he Axios library is vulnerable to a Prototype Pollution \"Gadget\" attack that allows any Object.prototype pollution in the application's dependency tree to be escalated into surgical, invisible modification of all JSON API responses — including privilege escalation, balance manipulation, and authorization bypass. The default transformResponse function at lib/defaults/index.js:124 calls JSON.parse(data, this.parseReviver), where this is the merged config object. Because parseReviver is not present in Axios defaults, not validated by assertOptions, and not subject to any constraints, a polluted Object.prototype.parseReviver function is called for every key-value pair in every JSON response, allowing the attacker to selectively modify individual values while leaving the rest of the response intact. This vulnerability is fixed in 1.15.2.",
+          "cwe": "CWE-915",
+          "severity": "MEDIUM",
+          "score": 6.5,
+          "similarity": 0.7531
+        },
+        {
+          "id": "CVE-2026-42039",
+          "description": "Axios is a promise based HTTP client for the browser and Node.js. Prior to 1.15.1 and 0.31.1, toFormData recursively walks nested objects with no depth limit, so a deeply nested value passed as request data crashes the Node.js process with a RangeError. This vulnerability is fixed in 1.15.1 and 0.31.1.",
+          "cwe": "CWE-674",
+          "severity": "MEDIUM",
+          "score": 6.9,
+          "similarity": 0.7302
+        },
+        {
+          "id": "CVE-2026-41472",
+          "description": "CyberPanel versions prior to 2.4.4 contain a stored cross-site scripting vulnerability in the AI Scanner dashboard where the POST /api/ai-scanner/callback endpoint lacks authentication and allows unauthenticated attackers to inject malicious JavaScript by overwriting the findings_json field of ScanHistory records. Attackers can inject JavaScript that executes in an administrator's authenticated session when they visit the AI Scanner dashboard, allowing them to issue same-origin requests to plant cron jobs and achieve remote code execution on the server.",
+          "cwe": "CWE-79",
+          "severity": "MEDIUM",
+          "score": 5.3,
+          "similarity": 0.7302
+        },
+        {
+          "id": "CVE-2026-42043",
+          "description": "Axios is a promise based HTTP client for the browser and Node.js. Prior to 1.15.1 and 0.31.1, an attacker who can influence the target URL of an Axios request can use any address in the 127.0.0.0/8 range (other than 127.0.0.1) to completely bypass the NO_PROXY protection. This vulnerability is due to an incomplete for CVE-2025-62718, This vulnerability is fixed in 1.15.1 and 0.31.1.",
+          "cwe": "CWE-183",
+          "severity": "HIGH",
+          "score": 7.2,
+          "similarity": 0.7252
+        },
+        {
+          "id": "CVE-2026-42033",
+          "description": "Axios is a promise based HTTP client for the browser and Node.js. Prior to 1.15.1 and 0.31.1, when Object.prototype has been polluted by any co-dependency with keys that axios reads without a hasOwnProperty guard, an attacker can (a) silently intercept and modify every JSON response before the application sees it, or (b) fully hijack the underlying HTTP transport, gaining access to request credentials, headers, and body. The precondition is prototype pollution from a separate source in the same process. This vulnerability is fixed in 1.15.1 and 0.31.1.",
+          "cwe": "CWE-1321",
+          "severity": "HIGH",
+          "score": 7.4,
+          "similarity": 0.7244
+        }
+      ],
+      "cve_hit": false
+    },
+    {
+      "id": 4,
+      "language": "React / Next.js",
+      "code": "<img src={user.avatar} onError={user.fallback} />",
+      "expected_vuln": "XSS via event handler",
+      "response": "VULNERABILITY: Cross-Site Scripting (XSS) - CWE-79\nSEVERITY: MEDIUM\nATTACK: An attacker can inject malicious scripts through the `user.avatar` or `user.fallback` properties, leading to execution of arbitrary code in the user's browser.\nFIX: <img src={user.avatar} onError={() => {}} alt=\"User Avatar\" />",
+      "parsed": {
+        "VULNERABILITY": "Cross-Site Scripting (XSS) - CWE-79",
+        "SEVERITY": "MEDIUM",
+        "ATTACK": "An attacker can inject malicious scripts through the `user.avatar` or `user.fallback` properties, leading to execution of arbitrary code in the user's browser.",
+        "FIX": "<img src={user.avatar} onError={() => {}} alt=\"User Avatar\" />"
+      },
+      "elapsed": 3.3,
+      "detected": true,
+      "cves": [
+        {
+          "id": "CVE-2026-7055",
+          "description": "A security vulnerability has been detected in Tenda F456 1.0.0.5. This issue affects the function fromVirtualSer of the file /goform/VirtualSer of the component httpd. The manipulation of the argument menufacturer/Go leads to buffer overflow. The attack is possible to be carried out remotely. The exploit has been disclosed publicly and may be used.",
+          "cwe": "CWE-119",
+          "severity": "HIGH",
+          "score": 7.4,
+          "similarity": 0.7216
+        },
+        {
+          "id": "CVE-2026-5652",
+          "description": "An insecure direct object reference vulnerability in the Users API component of Crafty Controller allows a remote, authenticated attacker to perform user modification actions via improper API permissions validation.",
+          "cwe": "CWE-639",
+          "severity": "CRITICAL",
+          "score": 9.0,
+          "similarity": 0.7203
+        },
+        {
+          "id": "CVE-2026-41472",
+          "description": "CyberPanel versions prior to 2.4.4 contain a stored cross-site scripting vulnerability in the AI Scanner dashboard where the POST /api/ai-scanner/callback endpoint lacks authentication and allows unauthenticated attackers to inject malicious JavaScript by overwriting the findings_json field of ScanHistory records. Attackers can inject JavaScript that executes in an administrator's authenticated session when they visit the AI Scanner dashboard, allowing them to issue same-origin requests to plant cron jobs and achieve remote code execution on the server.",
+          "cwe": "CWE-79",
+          "severity": "MEDIUM",
+          "score": 5.3,
+          "similarity": 0.7199
+        },
+        {
+          "id": "CVE-2026-41461",
+          "description": "SocialEngine versions 7.8.0 and prior contain a blind server-side request forgery vulnerability in the /core/link/preview endpoint where user-supplied input passed via the uri request parameter is not sanitized before being used to construct outbound HTTP requests. Authenticated remote attackers can supply arbitrary URLs including internal network addresses and loopback addresses to cause the server to issue HTTP requests to attacker-controlled destinations, enabling internal network enumeration and access to services not intended to be externally reachable.",
+          "cwe": "CWE-918",
+          "severity": "MEDIUM",
+          "score": 6.3,
+          "similarity": 0.7166
+        },
+        {
+          "id": "CVE-2026-31953",
+          "description": "Xibo is an open source digital signage platform with a web content management system and Windows display player software. A stored Cross-Site Scripting (XSS) vulnerability in versions prior to 4.4.1 allows an authenticated user with notification creation permissions to inject arbitrary JavaScript into the notification body. When the notification is set as an \"interrupt,\" the payload executes automatically in the browser of any targeted user upon login, requiring zero user interaction. Exploitation of the vulnerability is possible on behalf of an authorized user who has both of the following privileges, which are not granted to non-admins as standard: Access to the Notification Centre to view past notifications, and include \"Add Notification\" button to allow for the creation of new notifications. Users should upgrade to version 4.4.1 which fixes this issue. Upgrading to a fixed version is necessary to remediate. Users unable to upgrade should revoke such privileges from users they do not trust.",
+          "cwe": "CWE-79",
+          "severity": "MEDIUM",
+          "score": 6.4,
+          "similarity": 0.7127
+        }
+      ],
+      "cve_hit": false
+    },
+    {
+      "id": 5,
+      "language": "Node.js / Express",
+      "code": "db.query(\"SELECT * FROM users WHERE id=\" + req.params.id);",
+      "expected_vuln": "SQL Injection",
+      "response": "VULNERABILITY: SQL Injection (CWE-89)\nSEVERITY: CRITICAL\nATTACK: An attacker can manipulate the 'id' parameter in the request to execute arbitrary SQL code, potentially accessing or modifying unauthorized data.\nFIX: db.query(\"SELECT * FROM users WHERE id = ?\", [req.params.id]);",
+      "parsed": {
+        "VULNERABILITY": "SQL Injection (CWE-89)",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "An attacker can manipulate the 'id' parameter in the request to execute arbitrary SQL code, potentially accessing or modifying unauthorized data.",
+        "FIX": "db.query(\"SELECT * FROM users WHERE id = ?\", [req.params.id]);"
+      },
+      "elapsed": 3.29,
+      "detected": true,
+      "cves": [
+        {
+          "id": "CVE-2026-41460",
+          "description": "SocialEngine versions 7.8.0 and prior contain a SQL injection vulnerability in the /activity/index/get-memberall endpoint where user-supplied input passed via the text parameter is not sanitized before being incorporated into a SQL query. An unauthenticated remote attacker can exploit this vulnerability to read arbitrary data from the database, reset administrator account passwords, and gain unauthorized access to the Packages Manager in the Admin Panel, potentially enabling remote code execution.",
+          "cwe": "CWE-89",
+          "severity": "CRITICAL",
+          "score": 9.3,
+          "similarity": 0.7416
+        },
+        {
+          "id": "CVE-2026-41270",
+          "description": "Flowise is a drag & drop user interface to build a customized large language model flow. Prior to 3.1.0, a Server-Side Request Forgery (SSRF) protection bypass vulnerability exists in the Custom Function feature. While the application implements SSRF protection via HTTP_DENY_LIST for axios and node-fetch libraries, the built-in Node.js http, https, and net modules are allowed in the NodeVM sandbox without equivalent protection. This allows authenticated users to bypass SSRF controls and access internal network resources (e.g., cloud provider metadata services) This vulnerability is fixed in 3.1.0.",
+          "cwe": "CWE-284",
+          "severity": "HIGH",
+          "score": 7.1,
+          "similarity": 0.7339
+        },
+        {
+          "id": "CVE-2026-41241",
+          "description": "pretalx is a conference planning tool. Prior to 2026.1.0, The organiser search in the pretalx backend rendered submission titles, speaker display names, and user names/emails into the result dropdown using innerHTML string interpolation. Any user who controls one of those fields (which includes any registered user whose display name is looked up by an administrator) could include HTML or JavaScript that would execute in an organiser's browser when the organiser's search query matched the malicious record. This vulnerability is fixed in 2026.1.0.",
+          "cwe": "CWE-79",
+          "severity": "HIGH",
+          "score": 8.7,
+          "similarity": 0.7233
+        },
+        {
+          "id": "CVE-2026-33602",
+          "description": "A rogue backend can send a crafted UDP response with a query ID off by one related to the maximum configured value, triggering an out-of-bounds write leading to a denial of service.",
+          "cwe": "CWE-122",
+          "severity": "MEDIUM",
+          "score": 6.5,
+          "similarity": 0.7157
+        },
+        {
+          "id": "CVE-2026-5652",
+          "description": "An insecure direct object reference vulnerability in the Users API component of Crafty Controller allows a remote, authenticated attacker to perform user modification actions via improper API permissions validation.",
+          "cwe": "CWE-639",
+          "severity": "CRITICAL",
+          "score": 9.0,
+          "similarity": 0.7145
+        }
+      ],
+      "cve_hit": true
+    },
+    {
+      "id": 6,
+      "language": "Node.js / Express",
+      "code": "exec(req.body.command);",
+      "expected_vuln": "Command Injection",
+      "response": "VULNERABILITY: Command Injection (CWE-78)\nSEVERITY: CRITICAL\nATTACK: An attacker can execute arbitrary system commands by sending malicious input through req.body.command, leading to full system compromise.\nFIX: \nconst { exec } = require('child_process');\nconst allowedCommands = ['ls', 'pwd', 'echo'];\nif (allowedCommands.includes(req.body.command)) {\n    exec(req.body.command, (error, stdout, stderr) => {\n        if (error) {\n            res.status(500).send(`Error: ${error.message}`);\n            return;\n        }\n        res.send(stdout);\n    });\n} else {\n    res.status(403).send('Invalid command');\n}",
+      "parsed": {
+        "VULNERABILITY": "Command Injection (CWE-78)",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "An attacker can execute arbitrary system commands by sending malicious input through req.body.command, leading to full system compromise.",
+        "FIX": "const { exec } = require('child_process');\nconst allowedCommands = ['ls', 'pwd', 'echo'];\nif (allowedCommands.includes(req.body.command)) {\n    exec(req.body.command, (error, stdout, stderr) => {\n        if (error) {\n            res.status(500).send(`Error: ${error.message}`);\n            return;\n        }\n        res.send(stdout);\n    });\n} else {\n    res.status(403).send('Invalid command');\n}"
+      },
+      "elapsed": 10.96,
+      "detected": true,
+      "cves": [
+        {
+          "id": "CVE-2026-6986",
+          "description": "A security vulnerability has been detected in Cesanta Mongoose up to 7.20. This issue affects the function mg_aes_gcm_decrypt of the file /src/tls_aes128.c of the component GCM Authentication Tag Handler. Such manipulation leads to improper verification of cryptographic signature. The attack may be performed from remote. A high complexity level is associated with this attack. The exploitability is assessed as difficult. The exploit has been disclosed publicly and may be used. Upgrading to version 7.21 is capable of addressing this issue. It is advisable to upgrade the affected component. VulDB has contacted the vendor early and they confirmed quickly, that this issue got fixed already.",
+          "cwe": "CWE-345",
+          "severity": "LOW",
+          "score": 2.9,
+          "similarity": 0.7184
+        },
+        {
+          "id": "CVE-2026-40520",
+          "description": "FreePBX api module version 17.0.8 and prior contain a command injection vulnerability in the initiateGqlAPIProcess() function where GraphQL mutation input fields are passed directly to shell_exec() without sanitization or escaping. An authenticated user with a valid bearer token can send a GraphQL moduleOperations mutation with backtick-wrapped commands in the module field to execute arbitrary commands on the underlying host as the web server user.",
+          "cwe": "CWE-78",
+          "severity": "HIGH",
+          "score": 8.6,
+          "similarity": 0.718
+        },
+        {
+          "id": "CVE-2026-4821",
+          "description": "An improper neutralization of special elements vulnerability was identified in GitHub Enterprise Server that allowed an authenticated Management Console administrator to execute arbitrary OS commands via shell metacharacter injection in proxy configuration fields such as http_proxy. Exploitation of this vulnerability required access to the GitHub Enterprise Server instance and administrator privileges to the Management Console. This vulnerability affected all versions of GitHub Enterprise Server prior to 3.21 and was fixed in versions 3.20.1, 3.19.5, 3.18.8, 3.17.14, 3.16.17, 3.15.21, 3.14.26. This vulnerability was reported via the GitHub Bug Bounty program.",
+          "cwe": "CWE-78",
+          "severity": "HIGH",
+          "score": 8.1,
+          "similarity": 0.7116
+        },
+        {
+          "id": "CVE-2026-38834",
+          "description": "Tenda W30E V2.0 V16.01.0.21 was found to contain a command injection vulnerability in the do_ping_action function via the hostName parameter. This vulnerability allows attackers to execute arbitrary commands via a crafted request.",
+          "cwe": "CWE-77",
+          "severity": "HIGH",
+          "score": 7.3,
+          "similarity": 0.7026
+        },
+        {
+          "id": "CVE-2026-41268",
+          "description": "Flowise is a drag & drop user interface to build a customized large language model flow. Prior to 3.1.0, Flowise is vulnerable to a critical unauthenticated remote command execution (RCE) vulnerability. It can be exploited via a parameter override bypass using the FILE-STORAGE:: keyword combined with a NODE_OPTIONS environment variable injection. This allows for the execution of arbitrary system commands with root privileges within the containerized Flowise instance, requiring only a single HTTP request and no authentication or knowledge of the instance. This vulnerability is fixed in 3.1.0.",
+          "cwe": "CWE-20",
+          "severity": "CRITICAL",
+          "score": 9.8,
+          "similarity": 0.7012
+        }
+      ],
+      "cve_hit": false
+    },
+    {
+      "id": 7,
+      "language": "Node.js / Express",
+      "code": "res.setHeader('Access-Control-Allow-Origin', '*');",
+      "expected_vuln": "Insecure CORS",
+      "response": "VULNERABILITY: Improper Access Control (CWE-284)\nSEVERITY: MEDIUM\nATTACK: Setting 'Access-Control-Allow-Origin' to '*' allows any origin to access the server's resources, potentially exposing sensitive data to malicious websites.\nFIX: res.setHeader('Access-Control-Allow-Origin', 'https://trusted-domain.com');",
+      "parsed": {
+        "VULNERABILITY": "Improper Access Control (CWE-284)",
+        "SEVERITY": "MEDIUM",
+        "ATTACK": "Setting 'Access-Control-Allow-Origin' to '' allows any origin to access the server's resources, potentially exposing sensitive data to malicious websites.",
+        "FIX": "res.setHeader('Access-Control-Allow-Origin', 'https://trusted-domain.com');"
+      },
+      "elapsed": 2.55,
+      "detected": false,
+      "cves": [
+        {
+          "id": "CVE-2026-42042",
+          "description": "Axios is a promise based HTTP client for the browser and Node.js. Prior to 1.15.1 and 0.31.1, the Axios library's XSRF token protection logic uses JavaScript truthy/falsy semantics instead of strict boolean comparison for the withXSRFToken config property. When this property is set to any truthy non-boolean value (via prototype pollution or misconfiguration), the same-origin check (isURLSameOrigin) is short-circuited, causing XSRF tokens to be sent to all request targets including cross-origin servers controlled by an attacker. This vulnerability is fixed in 1.15.1 and 0.31.1.",
+          "cwe": "CWE-183",
+          "severity": "MEDIUM",
+          "score": 5.4,
+          "similarity": 0.7599
+        },
+        {
+          "id": "CVE-2026-42033",
+          "description": "Axios is a promise based HTTP client for the browser and Node.js. Prior to 1.15.1 and 0.31.1, when Object.prototype has been polluted by any co-dependency with keys that axios reads without a hasOwnProperty guard, an attacker can (a) silently intercept and modify every JSON response before the application sees it, or (b) fully hijack the underlying HTTP transport, gaining access to request credentials, headers, and body. The precondition is prototype pollution from a separate source in the same process. This vulnerability is fixed in 1.15.1 and 0.31.1.",
+          "cwe": "CWE-1321",
+          "severity": "HIGH",
+          "score": 7.4,
+          "similarity": 0.7531
+        },
+        {
+          "id": "CVE-2026-42043",
+          "description": "Axios is a promise based HTTP client for the browser and Node.js. Prior to 1.15.1 and 0.31.1, an attacker who can influence the target URL of an Axios request can use any address in the 127.0.0.0/8 range (other than 127.0.0.1) to completely bypass the NO_PROXY protection. This vulnerability is due to an incomplete for CVE-2025-62718, This vulnerability is fixed in 1.15.1 and 0.31.1.",
+          "cwe": "CWE-183",
+          "severity": "HIGH",
+          "score": 7.2,
+          "similarity": 0.7487
+        },
+        {
+          "id": "CVE-2026-42039",
+          "description": "Axios is a promise based HTTP client for the browser and Node.js. Prior to 1.15.1 and 0.31.1, toFormData recursively walks nested objects with no depth limit, so a deeply nested value passed as request data crashes the Node.js process with a RangeError. This vulnerability is fixed in 1.15.1 and 0.31.1.",
+          "cwe": "CWE-674",
+          "severity": "MEDIUM",
+          "score": 6.9,
+          "similarity": 0.7423
+        },
+        {
+          "id": "CVE-2026-42035",
+          "description": "Axios is a promise based HTTP client for the browser and Node.js. Prior to 1.15.1 and 0.31.1, a prototype pollution gadget exists in the Axios HTTP adapter (lib/adapters/http.js) that allows an attacker to inject arbitrary HTTP headers into outgoing requests. The vulnerability exploits duck-type checking of the data payload, where if Object.prototype is polluted with getHeaders, append, pipe, on, once, and Symbol.toStringTag, Axios misidentifies any plain object payload as a FormData instance and calls the attacker-controlled getHeaders() function, merging the returned headers into the outgoing request. The vulnerable code resides exclusively in lib/adapters/http.js. The prototype pollution source does not need to originate from Axios itself — any prototype pollution primitive in any dependency in the application's dependency tree is sufficient to trigger this gadget. This vulnerability is fixed in 1.15.1 and 0.31.1.",
+          "cwe": "CWE-113",
+          "severity": "HIGH",
+          "score": 7.4,
+          "similarity": 0.7395
+        }
+      ],
+      "cve_hit": false
+    },
+    {
+      "id": 8,
+      "language": "Node.js / Express",
+      "code": "jwt.verify(token, 'hardcoded_secret_key');",
+      "expected_vuln": "Hardcoded Secret",
+      "response": "VULNERABILITY: Hardcoded Credentials (CWE-798)\nSEVERITY: CRITICAL\nATTACK: An attacker can extract the hardcoded secret key from the source code to forge or decrypt JWT tokens, gaining unauthorized access.\nFIX: \nconst secretKey = process.env.JWT_SECRET_KEY || 'default_secure_key';\njwt.verify(token, secretKey);",
+      "parsed": {
+        "VULNERABILITY": "Hardcoded Credentials (CWE-798)",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "An attacker can extract the hardcoded secret key from the source code to forge or decrypt JWT tokens, gaining unauthorized access.",
+        "FIX": "const secretKey = process.env.JWT_SECRET_KEY || 'default_secure_key';\njwt.verify(token, secretKey);"
+      },
+      "elapsed": 2.79,
+      "detected": true,
+      "cves": [
+        {
+          "id": "CVE-2026-42042",
+          "description": "Axios is a promise based HTTP client for the browser and Node.js. Prior to 1.15.1 and 0.31.1, the Axios library's XSRF token protection logic uses JavaScript truthy/falsy semantics instead of strict boolean comparison for the withXSRFToken config property. When this property is set to any truthy non-boolean value (via prototype pollution or misconfiguration), the same-origin check (isURLSameOrigin) is short-circuited, causing XSRF tokens to be sent to all request targets including cross-origin servers controlled by an attacker. This vulnerability is fixed in 1.15.1 and 0.31.1.",
+          "cwe": "CWE-183",
+          "severity": "MEDIUM",
+          "score": 5.4,
+          "similarity": 0.7498
+        },
+        {
+          "id": "CVE-2026-41270",
+          "description": "Flowise is a drag & drop user interface to build a customized large language model flow. Prior to 3.1.0, a Server-Side Request Forgery (SSRF) protection bypass vulnerability exists in the Custom Function feature. While the application implements SSRF protection via HTTP_DENY_LIST for axios and node-fetch libraries, the built-in Node.js http, https, and net modules are allowed in the NodeVM sandbox without equivalent protection. This allows authenticated users to bypass SSRF controls and access internal network resources (e.g., cloud provider metadata services) This vulnerability is fixed in 3.1.0.",
+          "cwe": "CWE-284",
+          "severity": "HIGH",
+          "score": 7.1,
+          "similarity": 0.7321
+        },
+        {
+          "id": "CVE-2026-35503",
+          "description": "A vulnerability in SenseLive X3050’s web management interface allows authentication logic to be performed entirely on the client side, relying on hardcoded values within browser-executed scripts rather than server-side verification. An attacker with access to the login page could retrieve these exposed parameters and gain unauthorized access to administrative functionality.",
+          "cwe": "CWE-798",
+          "severity": "CRITICAL",
+          "score": 9.3,
+          "similarity": 0.7208
+        },
+        {
+          "id": "CVE-2026-40372",
+          "description": "Improper verification of cryptographic signature in ASP.NET Core allows an unauthorized attacker to elevate privileges over a network.",
+          "cwe": "CWE-347",
+          "severity": "CRITICAL",
+          "score": 9.1,
+          "similarity": 0.7131
+        },
+        {
+          "id": "CVE-2026-41461",
+          "description": "SocialEngine versions 7.8.0 and prior contain a blind server-side request forgery vulnerability in the /core/link/preview endpoint where user-supplied input passed via the uri request parameter is not sanitized before being used to construct outbound HTTP requests. Authenticated remote attackers can supply arbitrary URLs including internal network addresses and loopback addresses to cause the server to issue HTTP requests to attacker-controlled destinations, enabling internal network enumeration and access to services not intended to be externally reachable.",
+          "cwe": "CWE-918",
+          "severity": "MEDIUM",
+          "score": 6.3,
+          "similarity": 0.7109
+        }
+      ],
+      "cve_hit": false
+    },
+    {
+      "id": 9,
+      "language": "Java Spring Boot",
+      "code": "String query = \"SELECT * FROM \" + tableName;\nstmt.execute(query);",
+      "expected_vuln": "SQL Injection",
+      "response": "VULNERABILITY: SQL Injection (CWE-89)\nSEVERITY: CRITICAL\nATTACK: An attacker can manipulate the `tableName` variable to inject malicious SQL code, potentially accessing or modifying unauthorized data.\nFIX: \nString query = \"SELECT * FROM ?\";\nPreparedStatement pstmt = connection.prepareStatement(query);\npstmt.setString(1, tableName);\npstmt.execute();",
+      "parsed": {
+        "VULNERABILITY": "SQL Injection (CWE-89)",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "An attacker can manipulate the `tableName` variable to inject malicious SQL code, potentially accessing or modifying unauthorized data.",
+        "FIX": "String query = \"SELECT * FROM ?\";\nPreparedStatement pstmt = connection.prepareStatement(query);\npstmt.setString(1, tableName);\npstmt.execute();"
+      },
+      "elapsed": 3.64,
+      "detected": true,
+      "cves": [
+        {
+          "id": "CVE-2026-40978",
+          "description": "SQL injection vulnerability in Spring AI's `CosmosDBVectorStore` allows attackers to execute arbitrary SQL queries via crafted document IDs. Affected versions: Spring AI: 1.0.0 - 1.0.5 (fixed in 1.0.6), 1.1.0 - 1.1.4 (fixed in 1.1.5)",
+          "cwe": "CWE-89",
+          "severity": "HIGH",
+          "score": 8.8,
+          "similarity": 0.7438
+        },
+        {
+          "id": "CVE-2026-41044",
+          "description": "Improper Input Validation, Improper Control of Generation of Code ('Code Injection') vulnerability in Apache ActiveMQ, Apache ActiveMQ Broker, Apache ActiveMQ All. An authenticated attacker can use the admin web console page to construct a malicious broker name that bypasses name validation to include an xbean binding that can be later used by a VM transport to load a remote Spring XML application. The attacker can then use the DestinationView mbean to send a message to trigger a VM transport creation that will reference this malicious broker name which can lead to loading the malicious Spring XML context file. Because Spring's ResourceXmlApplicationContext instantiates all singleton beans before the BrokerService validates the configuration, arbitrary code execution occurs on the broker's JVM through bean factory methods such as Runtime.exec(). This issue affects Apache ActiveMQ: before 5.19.6, from 6.0.0 before 6.2.5; Apache ActiveMQ Broker: before 5.19.6, from 6.0.0 before 6.2.5; Apache ActiveMQ All: before 5.19.6, from 6.0.0 before 6.2.5. Users are recommended to upgrade to version 6.2.5 or 5.19.6, which fixes the issue.",
+          "cwe": "CWE-20",
+          "severity": "HIGH",
+          "score": 8.8,
+          "similarity": 0.7377
+        },
+        {
+          "id": "CVE-2026-22753",
+          "description": "Vulnerability in Spring Spring Security. If an application is using securityMatchers(String) and a PathPatternRequestMatcher.Builder bean to prepend a servlet path, matching requests to that filter chain may fail and its related security components will not be exercised as intended by the application. This can lead to the authentication, authorization, and other security controls being rendered inactive on intended requests.This issue affects Spring Security: from 7.0.0 through 7.0.4.",
+          "cwe": "CWE-693",
+          "severity": "HIGH",
+          "score": 7.5,
+          "similarity": 0.7165
+        },
+        {
+          "id": "CVE-2026-40466",
+          "description": "Improper Input Validation, Improper Control of Generation of Code ('Code Injection') vulnerability in Apache ActiveMQ Broker, Apache ActiveMQ All, Apache ActiveMQ. An authenticated attacker may bypass the fix in CVE-2026-34197 by adding a connector using an HTTP Discovery transport via BrokerView.addNetworkConnector or BrokerView.addConnector through Jolokia if the activemq-http module is on the classpath. A malicious HTTP endpoint can return a VM transport through the HTTP URI which will bypass the validation added in CVE-2026-34197. The attacker can then use the VM transport's brokerConfig parameter to load a remote Spring XML application context using ResourceXmlApplicationContext. Because Spring's ResourceXmlApplicationContext instantiates all singleton beans before the BrokerService validates the configuration, arbitrary code execution occurs on the broker's JVM through bean factory methods such as Runtime.exec(). This issue affects Apache ActiveMQ Broker: before 5.19.6, from 6.0.0 before 6.2.5; Apache ActiveMQ All: before 5.19.6, from 6.0.0 before 6.2.5; Apache ActiveMQ: before 5.19.6, from 6.0.0 before 6.2.5. Users are recommended to upgrade to version 5.19.6 or 6.2.5, which fixes the issue.",
+          "cwe": "CWE-20",
+          "severity": "HIGH",
+          "score": 8.8,
+          "similarity": 0.7073
+        },
+        {
+          "id": "CVE-2026-41460",
+          "description": "SocialEngine versions 7.8.0 and prior contain a SQL injection vulnerability in the /activity/index/get-memberall endpoint where user-supplied input passed via the text parameter is not sanitized before being incorporated into a SQL query. An unauthenticated remote attacker can exploit this vulnerability to read arbitrary data from the database, reset administrator account passwords, and gain unauthorized access to the Packages Manager in the Admin Panel, potentially enabling remote code execution.",
+          "cwe": "CWE-89",
+          "severity": "CRITICAL",
+          "score": 9.3,
+          "similarity": 0.6993
+        }
+      ],
+      "cve_hit": true
+    },
+    {
+      "id": 10,
+      "language": "Java Spring Boot",
+      "code": "Runtime.getRuntime().exec(userInput);",
+      "expected_vuln": "Command Injection",
+      "response": "VULNERABILITY: Command Injection (CWE-78)\nSEVERITY: CRITICAL\nATTACK: An attacker can execute arbitrary system commands by providing malicious input to userInput, leading to full system compromise.\nFIX: \n// Avoid direct execution of user input\nthrow new UnsupportedOperationException(\"Direct command execution is not allowed\");",
+      "parsed": {
+        "VULNERABILITY": "Command Injection (CWE-78)",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "An attacker can execute arbitrary system commands by providing malicious input to userInput, leading to full system compromise.",
+        "FIX": "// Avoid direct execution of user input\nthrow new UnsupportedOperationException(\"Direct command execution is not allowed\");"
+      },
+      "elapsed": 3.71,
+      "detected": true,
+      "cves": [
+        {
+          "id": "CVE-2026-22746",
+          "description": "Vulnerability in Spring Spring Security. If an application is using the UserDetails#isEnabled, #isAccountNonExpired, or #isAccountNonLocked user attributes, to enable, expire, or lock users, then DaoAuthenticationProvider's timing attack defense can be bypassed for users who are disabled, expired, or locked.This issue affects Spring Security: from 5.7.0 through 5.7.22, from 5.8.0 through 5.8.24, from 6.3.0 through 6.3.15, from 6.5.0 through 6.5.9, from 7.0.0 through 7.0.4.",
+          "cwe": "CWE-208",
+          "severity": "LOW",
+          "score": 3.7,
+          "similarity": 0.711
+        },
+        {
+          "id": "CVE-2026-35368",
+          "description": "A vulnerability exists in the chroot utility of uutils coreutils when using the --userspec option. The utility resolves the user specification via getpwnam() after entering the chroot but before dropping root privileges. On glibc-based systems, this can trigger the Name Service Switch (NSS) to load shared libraries (e.g., libnss_*.so.2) from the new root directory. If the NEWROOT is writable by an attacker, they can inject a malicious NSS module to execute arbitrary code as root, facilitating a full container escape or privilege escalation.",
+          "cwe": "CWE-426",
+          "severity": "HIGH",
+          "score": 7.8,
+          "similarity": 0.7097
+        },
+        {
+          "id": "CVE-2026-22003",
+          "description": "Vulnerability in the Oracle Java SE, Oracle GraalVM Enterprise Edition product of Oracle Java SE (component: Hotspot). Supported versions that are affected are Oracle Java SE: 8u481 and 8u481-b50; Oracle GraalVM Enterprise Edition: 21.3.17. Difficult to exploit vulnerability allows low privileged attacker with logon to the infrastructure where Oracle Java SE, Oracle GraalVM Enterprise Edition executes to compromise Oracle Java SE, Oracle GraalVM Enterprise Edition. Successful attacks require human interaction from a person other than the attacker. Successful attacks of this vulnerability can result in unauthorized creation, deletion or modification access to critical data or all Oracle Java SE, Oracle GraalVM Enterprise Edition accessible data and unauthorized ability to cause a hang or frequently repeatable crash (complete DOS) of Oracle Java SE, Oracle GraalVM Enterprise Edition. Note: This vulnerability applies to Java deployments, typically in clients running sandboxed Java Web Start applications or sandboxed Java applets, that load and run untrusted code (e.g., code that comes from the internet) and rely on the Java sandbox for security. This vulnerability does not apply to Java deployments, typically in servers, that load and run only trusted code (e.g., code installed by an administrator). CVSS 3.1 Base Score 6.0 (Integrity and Availability impacts). CVSS Vector: (CVSS:3.1/AV:L/AC:H/PR:L/UI:R/S:U/C:N/I:H/A:H).",
+          "cwe": "CWE-400",
+          "severity": "MEDIUM",
+          "score": 6.0,
+          "similarity": 0.6994
+        },
+        {
+          "id": "CVE-2026-41044",
+          "description": "Improper Input Validation, Improper Control of Generation of Code ('Code Injection') vulnerability in Apache ActiveMQ, Apache ActiveMQ Broker, Apache ActiveMQ All. An authenticated attacker can use the admin web console page to construct a malicious broker name that bypasses name validation to include an xbean binding that can be later used by a VM transport to load a remote Spring XML application. The attacker can then use the DestinationView mbean to send a message to trigger a VM transport creation that will reference this malicious broker name which can lead to loading the malicious Spring XML context file. Because Spring's ResourceXmlApplicationContext instantiates all singleton beans before the BrokerService validates the configuration, arbitrary code execution occurs on the broker's JVM through bean factory methods such as Runtime.exec(). This issue affects Apache ActiveMQ: before 5.19.6, from 6.0.0 before 6.2.5; Apache ActiveMQ Broker: before 5.19.6, from 6.0.0 before 6.2.5; Apache ActiveMQ All: before 5.19.6, from 6.0.0 before 6.2.5. Users are recommended to upgrade to version 6.2.5 or 5.19.6, which fixes the issue.",
+          "cwe": "CWE-20",
+          "severity": "HIGH",
+          "score": 8.8,
+          "similarity": 0.6959
+        },
+        {
+          "id": "CVE-2026-22753",
+          "description": "Vulnerability in Spring Spring Security. If an application is using securityMatchers(String) and a PathPatternRequestMatcher.Builder bean to prepend a servlet path, matching requests to that filter chain may fail and its related security components will not be exercised as intended by the application. This can lead to the authentication, authorization, and other security controls being rendered inactive on intended requests.This issue affects Spring Security: from 7.0.0 through 7.0.4.",
+          "cwe": "CWE-693",
+          "severity": "HIGH",
+          "score": 7.5,
+          "similarity": 0.6906
+        }
+      ],
+      "cve_hit": false
+    },
+    {
+      "id": 11,
+      "language": "Java Spring Boot",
+      "code": "@RequestMapping(value=\"/**\")\npublic ResponseEntity<?> handle(HttpServletRequest req) {}",
+      "expected_vuln": "Overly Permissive Endpoint",
+      "response": "VULNERABILITY: Improper Access Control (CWE-284)\nSEVERITY: HIGH\nATTACK: An attacker can access any endpoint under the root path due to the overly permissive wildcard mapping \"/**\" without authentication or authorization checks.\nFIX:\n```java\n@RequestMapping(value=\"/specific-endpoint\")\n@PreAuthorize(\"hasRole('USER')\")\npublic ResponseEntity<?> handle(HttpServletRequest req) {\n    return ResponseEntity.ok().build();\n}\n```",
+      "parsed": {
+        "VULNERABILITY": "Improper Access Control (CWE-284)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker can access any endpoint under the root path due to the overly permissive wildcard mapping \"/\" without authentication or authorization checks.",
+        "FIX": "@RequestMapping(value=\"/specific-endpoint\")\n@PreAuthorize(\"hasRole('USER')\")\npublic ResponseEntity<?> handle(HttpServletRequest req) {\n    return ResponseEntity.ok().build();\n}"
+      },
+      "elapsed": 4.23,
+      "detected": true,
+      "cves": [
+        {
+          "id": "CVE-2026-22753",
+          "description": "Vulnerability in Spring Spring Security. If an application is using securityMatchers(String) and a PathPatternRequestMatcher.Builder bean to prepend a servlet path, matching requests to that filter chain may fail and its related security components will not be exercised as intended by the application. This can lead to the authentication, authorization, and other security controls being rendered inactive on intended requests.This issue affects Spring Security: from 7.0.0 through 7.0.4.",
+          "cwe": "CWE-693",
+          "severity": "HIGH",
+          "score": 7.5,
+          "similarity": 0.7885
+        },
+        {
+          "id": "CVE-2026-22754",
+          "description": "Vulnerability in Spring Spring Security. If an application uses <sec:intercept-url servlet-path=\"/servlet-path\" pattern=\"/endpoint/**\"/> to define the servlet path for computing a path matcher, then the servlet path is not included and the related authorization rules are not exercised. This can lead to an authorization bypass.This issue affects Spring Security: from 7.0.0 through 7.0.4.",
+          "cwe": "CWE-284",
+          "severity": "HIGH",
+          "score": 7.5,
+          "similarity": 0.7727
+        },
+        {
+          "id": "CVE-2026-41044",
+          "description": "Improper Input Validation, Improper Control of Generation of Code ('Code Injection') vulnerability in Apache ActiveMQ, Apache ActiveMQ Broker, Apache ActiveMQ All. An authenticated attacker can use the admin web console page to construct a malicious broker name that bypasses name validation to include an xbean binding that can be later used by a VM transport to load a remote Spring XML application. The attacker can then use the DestinationView mbean to send a message to trigger a VM transport creation that will reference this malicious broker name which can lead to loading the malicious Spring XML context file. Because Spring's ResourceXmlApplicationContext instantiates all singleton beans before the BrokerService validates the configuration, arbitrary code execution occurs on the broker's JVM through bean factory methods such as Runtime.exec(). This issue affects Apache ActiveMQ: before 5.19.6, from 6.0.0 before 6.2.5; Apache ActiveMQ Broker: before 5.19.6, from 6.0.0 before 6.2.5; Apache ActiveMQ All: before 5.19.6, from 6.0.0 before 6.2.5. Users are recommended to upgrade to version 6.2.5 or 5.19.6, which fixes the issue.",
+          "cwe": "CWE-20",
+          "severity": "HIGH",
+          "score": 8.8,
+          "similarity": 0.7548
+        },
+        {
+          "id": "CVE-2026-40466",
+          "description": "Improper Input Validation, Improper Control of Generation of Code ('Code Injection') vulnerability in Apache ActiveMQ Broker, Apache ActiveMQ All, Apache ActiveMQ. An authenticated attacker may bypass the fix in CVE-2026-34197 by adding a connector using an HTTP Discovery transport via BrokerView.addNetworkConnector or BrokerView.addConnector through Jolokia if the activemq-http module is on the classpath. A malicious HTTP endpoint can return a VM transport through the HTTP URI which will bypass the validation added in CVE-2026-34197. The attacker can then use the VM transport's brokerConfig parameter to load a remote Spring XML application context using ResourceXmlApplicationContext. Because Spring's ResourceXmlApplicationContext instantiates all singleton beans before the BrokerService validates the configuration, arbitrary code execution occurs on the broker's JVM through bean factory methods such as Runtime.exec(). This issue affects Apache ActiveMQ Broker: before 5.19.6, from 6.0.0 before 6.2.5; Apache ActiveMQ All: before 5.19.6, from 6.0.0 before 6.2.5; Apache ActiveMQ: before 5.19.6, from 6.0.0 before 6.2.5. Users are recommended to upgrade to version 5.19.6 or 6.2.5, which fixes the issue.",
+          "cwe": "CWE-20",
+          "severity": "HIGH",
+          "score": 8.8,
+          "similarity": 0.7473
+        },
+        {
+          "id": "CVE-2026-22748",
+          "description": "Vulnerability in Spring Spring Security. When an application configures JWT decoding with NimbusJwtDecoder or NimbusReactiveJwtDecoder, it must configure an OAuth2TokenValidator<Jwt> separately, for example by calling setJwtValidator.This issue affects Spring Security: from 6.3.0 through 6.3.14, from 6.4.0 through 6.4.14, from 6.5.0 through 6.5.9, from 7.0.0 through 7.0.4.",
+          "cwe": "CWE-20",
+          "severity": "MEDIUM",
+          "score": 5.3,
+          "similarity": 0.7196
+        }
+      ],
+      "cve_hit": false
+    },
+    {
+      "id": 12,
+      "language": "Java Spring Boot",
+      "code": "if (password.equals(inputPassword)) { grantAccess(); }",
+      "expected_vuln": "Timing Attack",
+      "response": "VULNERABILITY: Plaintext Password Comparison (CWE-256)\nSEVERITY: HIGH\nATTACK: An attacker could exploit improper password storage or comparison to gain unauthorized access by intercepting or guessing plaintext passwords.\nFIX: \nif (passwordEncoder.matches(inputPassword, password)) { grantAccess(); }",
+      "parsed": {
+        "VULNERABILITY": "Plaintext Password Comparison (CWE-256)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker could exploit improper password storage or comparison to gain unauthorized access by intercepting or guessing plaintext passwords.",
+        "FIX": "if (passwordEncoder.matches(inputPassword, password)) { grantAccess(); }"
+      },
+      "elapsed": 2.04,
+      "detected": false,
+      "cves": [
+        {
+          "id": "CVE-2026-22753",
+          "description": "Vulnerability in Spring Spring Security. If an application is using securityMatchers(String) and a PathPatternRequestMatcher.Builder bean to prepend a servlet path, matching requests to that filter chain may fail and its related security components will not be exercised as intended by the application. This can lead to the authentication, authorization, and other security controls being rendered inactive on intended requests.This issue affects Spring Security: from 7.0.0 through 7.0.4.",
+          "cwe": "CWE-693",
+          "severity": "HIGH",
+          "score": 7.5,
+          "similarity": 0.7356
+        },
+        {
+          "id": "CVE-2026-22754",
+          "description": "Vulnerability in Spring Spring Security. If an application uses <sec:intercept-url servlet-path=\"/servlet-path\" pattern=\"/endpoint/**\"/> to define the servlet path for computing a path matcher, then the servlet path is not included and the related authorization rules are not exercised. This can lead to an authorization bypass.This issue affects Spring Security: from 7.0.0 through 7.0.4.",
+          "cwe": "CWE-284",
+          "severity": "HIGH",
+          "score": 7.5,
+          "similarity": 0.7286
+        },
+        {
+          "id": "CVE-2026-4821",
+          "description": "An improper neutralization of special elements vulnerability was identified in GitHub Enterprise Server that allowed an authenticated Management Console administrator to execute arbitrary OS commands via shell metacharacter injection in proxy configuration fields such as http_proxy. Exploitation of this vulnerability required access to the GitHub Enterprise Server instance and administrator privileges to the Management Console. This vulnerability affected all versions of GitHub Enterprise Server prior to 3.21 and was fixed in versions 3.20.1, 3.19.5, 3.18.8, 3.17.14, 3.16.17, 3.15.21, 3.14.26. This vulnerability was reported via the GitHub Bug Bounty program.",
+          "cwe": "CWE-78",
+          "severity": "HIGH",
+          "score": 8.1,
+          "similarity": 0.7006
+        },
+        {
+          "id": "CVE-2026-22748",
+          "description": "Vulnerability in Spring Spring Security. When an application configures JWT decoding with NimbusJwtDecoder or NimbusReactiveJwtDecoder, it must configure an OAuth2TokenValidator<Jwt> separately, for example by calling setJwtValidator.This issue affects Spring Security: from 6.3.0 through 6.3.14, from 6.4.0 through 6.4.14, from 6.5.0 through 6.5.9, from 7.0.0 through 7.0.4.",
+          "cwe": "CWE-20",
+          "severity": "MEDIUM",
+          "score": 5.3,
+          "similarity": 0.6999
+        },
+        {
+          "id": "CVE-2026-22746",
+          "description": "Vulnerability in Spring Spring Security. If an application is using the UserDetails#isEnabled, #isAccountNonExpired, or #isAccountNonLocked user attributes, to enable, expire, or lock users, then DaoAuthenticationProvider's timing attack defense can be bypassed for users who are disabled, expired, or locked.This issue affects Spring Security: from 5.7.0 through 5.7.22, from 5.8.0 through 5.8.24, from 6.3.0 through 6.3.15, from 6.5.0 through 6.5.9, from 7.0.0 through 7.0.4.",
+          "cwe": "CWE-208",
+          "severity": "LOW",
+          "score": 3.7,
+          "similarity": 0.6954
+        }
+      ],
+      "cve_hit": false
+    },
+    {
+      "id": 13,
+      "language": "Python",
+      "code": "import pickle\nobj = pickle.loads(user_data)",
+      "expected_vuln": "Insecure Deserialization",
+      "response": "VULNERABILITY: Unsafe Deserialization (CWE-502)\nSEVERITY: CRITICAL\nATTACK: An attacker can provide malicious serialized data via user_data, leading to arbitrary code execution during deserialization with pickle.loads().\nFIX: \nimport json\nobj = json.loads(user_data)",
+      "parsed": {
+        "VULNERABILITY": "Unsafe Deserialization (CWE-502)",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "An attacker can provide malicious serialized data via user_data, leading to arbitrary code execution during deserialization with pickle.loads().",
+        "FIX": "import json\nobj = json.loads(user_data)"
+      },
+      "elapsed": 3.19,
+      "detected": true,
+      "cves": [
+        {
+          "id": "CVE-2026-25874",
+          "description": "LeRobot through 0.5.1 contains an unsafe deserialization vulnerability in the async inference pipeline where pickle.loads() is used to deserialize data received over unauthenticated gRPC channels without TLS in the policy server and robot client components. An unauthenticated network-reachable attacker can achieve arbitrary code execution on the server or client by sending a crafted pickle payload through the SendPolicyInstructions, SendObservations, or GetActions gRPC calls.",
+          "cwe": "CWE-502",
+          "severity": "CRITICAL",
+          "score": 9.3,
+          "similarity": 0.7893
+        },
+        {
+          "id": "CVE-2025-62373",
+          "description": "Pipecat is an open-source Python framework for building real-time voice and multimodal conversational agents. Versions 0.0.41 through 0.0.93 have a vulnerability in `LivekitFrameSerializer` – an optional, non-default, undocumented frame serializer class (now deprecated) intended for LiveKit integration. The class's `deserialize()` method uses Python's `pickle.loads()` on data received from WebSocket clients without any validation or sanitization. This means that a malicious WebSocket client can send a crafted pickle payload to execute arbitrary code on the Pipecat server. The vulnerable code resides in `src/pipecat/serializers/livekit.py` (around line 73), where untrusted WebSocket message data is passed directly into `pickle.loads()` for deserialization. If a Pipecat server is configured to use LivekitFrameSerializer and is listening on an external interface (e.g. 0.0.0.0), an attacker on the network (or the internet, if the service is exposed) could achieve remote code execution (RCE) on the server by sending a malicious pickle payload. Version 0.0.94 contains a fix. Users of Pipecat should avoid or replace unsafe deserialization and improve network security configuration. The best mitigation is to stop using the vulnerable LivekitFrameSerializer altogether. Those who require LiveKit functionality should upgrade to the latest Pipecat version and switch to the recommended `LiveKitTransport` or another secure method provided by the framework. Additionally, always follow secure coding practices: never trust client-supplied data, and avoid Python pickle (or similar unsafe deserialization) in network-facing components.",
+          "cwe": "CWE-502",
+          "severity": "CRITICAL",
+          "score": 9.8,
+          "similarity": 0.7464
+        },
+        {
+          "id": "CVE-2026-35368",
+          "description": "A vulnerability exists in the chroot utility of uutils coreutils when using the --userspec option. The utility resolves the user specification via getpwnam() after entering the chroot but before dropping root privileges. On glibc-based systems, this can trigger the Name Service Switch (NSS) to load shared libraries (e.g., libnss_*.so.2) from the new root directory. If the NEWROOT is writable by an attacker, they can inject a malicious NSS module to execute arbitrary code as root, facilitating a full container escape or privilege escalation.",
+          "cwe": "CWE-426",
+          "severity": "HIGH",
+          "score": 7.8,
+          "similarity": 0.7177
+        },
+        {
+          "id": "CVE-2026-5652",
+          "description": "An insecure direct object reference vulnerability in the Users API component of Crafty Controller allows a remote, authenticated attacker to perform user modification actions via improper API permissions validation.",
+          "cwe": "CWE-639",
+          "severity": "CRITICAL",
+          "score": 9.0,
+          "similarity": 0.7132
+        },
+        {
+          "id": "CVE-2026-35341",
+          "description": "A vulnerability in uutils coreutils mkfifo allows for the unauthorized modification of permissions on existing files. When mkfifo fails to create a FIFO because a file already exists at the target path, it fails to terminate the operation for that path and continues to execute a follow-up set_permissions call. This results in the existing file's permissions being changed to the default mode (often 644 after umask), potentially exposing sensitive files such as SSH private keys to other users on the system.",
+          "cwe": "CWE-732",
+          "severity": "HIGH",
+          "score": 7.1,
+          "similarity": 0.7032
+        }
+      ],
+      "cve_hit": true
+    },
+    {
+      "id": 14,
+      "language": "Python",
+      "code": "import subprocess\nsubprocess.call(user_input, shell=True)",
+      "expected_vuln": "Command Injection",
+      "response": "VULNERABILITY: OS Command Injection (CWE-78)\nSEVERITY: CRITICAL\nATTACK: An attacker can execute arbitrary system commands by providing malicious input to `user_input`, as it is directly passed to `subprocess.call` with `shell=True`.\nFIX: \nimport subprocess\nuser_input = user_input.split()\nsubprocess.call(user_input, shell=False)",
+      "parsed": {
+        "VULNERABILITY": "OS Command Injection (CWE-78)",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "An attacker can execute arbitrary system commands by providing malicious input to `user_input`, as it is directly passed to `subprocess.call` with `shell=True`.",
+        "FIX": "import subprocess\nuser_input = user_input.split()\nsubprocess.call(user_input, shell=False)"
+      },
+      "elapsed": 2.71,
+      "detected": true,
+      "cves": [
+        {
+          "id": "CVE-2026-40520",
+          "description": "FreePBX api module version 17.0.8 and prior contain a command injection vulnerability in the initiateGqlAPIProcess() function where GraphQL mutation input fields are passed directly to shell_exec() without sanitization or escaping. An authenticated user with a valid bearer token can send a GraphQL moduleOperations mutation with backtick-wrapped commands in the module field to execute arbitrary commands on the underlying host as the web server user.",
+          "cwe": "CWE-78",
+          "severity": "HIGH",
+          "score": 8.6,
+          "similarity": 0.7162
+        },
+        {
+          "id": "CVE-2026-31638",
+          "description": "In the Linux kernel, the following vulnerability has been resolved: rxrpc: Only put the call ref if one was acquired rxrpc_input_packet_on_conn() can process a to-client packet after the current client call on the channel has already been torn down. In that case chan->call is NULL, rxrpc_try_get_call() returns NULL and there is no reference to drop. The client-side implicit-end error path does not account for that and unconditionally calls rxrpc_put_call(). This turns a protocol error path into a kernel crash instead of rejecting the packet. Only drop the call reference if one was actually acquired. Keep the existing protocol error handling unchanged.",
+          "cwe": "CWE-476",
+          "severity": "HIGH",
+          "score": 7.5,
+          "similarity": 0.7022
+        },
+        {
+          "id": "CVE-2026-35368",
+          "description": "A vulnerability exists in the chroot utility of uutils coreutils when using the --userspec option. The utility resolves the user specification via getpwnam() after entering the chroot but before dropping root privileges. On glibc-based systems, this can trigger the Name Service Switch (NSS) to load shared libraries (e.g., libnss_*.so.2) from the new root directory. If the NEWROOT is writable by an attacker, they can inject a malicious NSS module to execute arbitrary code as root, facilitating a full container escape or privilege escalation.",
+          "cwe": "CWE-426",
+          "severity": "HIGH",
+          "score": 7.8,
+          "similarity": 0.7004
+        },
+        {
+          "id": "CVE-2026-40517",
+          "description": "radare2 prior to 6.1.4 contains a command injection vulnerability in the PDB parser's print_gvars() function that allows attackers to execute arbitrary commands by crafting a malicious PDB file with newline characters in symbol names. Attackers can inject arbitrary radare2 commands through unsanitized symbol name interpolation in the flag rename command, which are then executed when a user runs the idp command against the malicious PDB file, enabling arbitrary OS command execution through radare2's shell execution operator.",
+          "cwe": "CWE-78",
+          "severity": "HIGH",
+          "score": 8.4,
+          "similarity": 0.6984
+        },
+        {
+          "id": "CVE-2025-62373",
+          "description": "Pipecat is an open-source Python framework for building real-time voice and multimodal conversational agents. Versions 0.0.41 through 0.0.93 have a vulnerability in `LivekitFrameSerializer` – an optional, non-default, undocumented frame serializer class (now deprecated) intended for LiveKit integration. The class's `deserialize()` method uses Python's `pickle.loads()` on data received from WebSocket clients without any validation or sanitization. This means that a malicious WebSocket client can send a crafted pickle payload to execute arbitrary code on the Pipecat server. The vulnerable code resides in `src/pipecat/serializers/livekit.py` (around line 73), where untrusted WebSocket message data is passed directly into `pickle.loads()` for deserialization. If a Pipecat server is configured to use LivekitFrameSerializer and is listening on an external interface (e.g. 0.0.0.0), an attacker on the network (or the internet, if the service is exposed) could achieve remote code execution (RCE) on the server by sending a malicious pickle payload. Version 0.0.94 contains a fix. Users of Pipecat should avoid or replace unsafe deserialization and improve network security configuration. The best mitigation is to stop using the vulnerable LivekitFrameSerializer altogether. Those who require LiveKit functionality should upgrade to the latest Pipecat version and switch to the recommended `LiveKitTransport` or another secure method provided by the framework. Additionally, always follow secure coding practices: never trust client-supplied data, and avoid Python pickle (or similar unsafe deserialization) in network-facing components.",
+          "cwe": "CWE-502",
+          "severity": "CRITICAL",
+          "score": 9.8,
+          "similarity": 0.6969
+        }
+      ],
+      "cve_hit": true
+    },
+    {
+      "id": 15,
+      "language": "Python",
+      "code": "import yaml\ndata = yaml.load(user_input)  # not safe_load",
+      "expected_vuln": "Arbitrary Code Execution via YAML",
+      "response": "VULNERABILITY: Unsafe Deserialization (CWE-502)\nSEVERITY: CRITICAL\nATTACK: An attacker can provide malicious YAML input to execute arbitrary code during deserialization.\nFIX: \nimport yaml\ndata = yaml.safe_load(user_input)",
+      "parsed": {
+        "VULNERABILITY": "Unsafe Deserialization (CWE-502)",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "An attacker can provide malicious YAML input to execute arbitrary code during deserialization.",
+        "FIX": "import yaml\ndata = yaml.safe_load(user_input)"
+      },
+      "elapsed": 2.77,
+      "detected": true,
+      "cves": [
+        {
+          "id": "CVE-2026-5652",
+          "description": "An insecure direct object reference vulnerability in the Users API component of Crafty Controller allows a remote, authenticated attacker to perform user modification actions via improper API permissions validation.",
+          "cwe": "CWE-639",
+          "severity": "CRITICAL",
+          "score": 9.0,
+          "similarity": 0.7255
+        },
+        {
+          "id": "CVE-2026-41066",
+          "description": "lxml is a library for processing XML and HTML in the Python language. Prior to 6.1.0, using either of the two parsers in the default configuration (with resolve_entities=True) allows untrusted XML input to read local files. Setting the resolve_entities option explicitly to resolve_entities='internal' or resolve_entities=False disables the local file access. This vulnerability is fixed in 6.1.0.",
+          "cwe": "CWE-611",
+          "severity": "HIGH",
+          "score": 7.5,
+          "similarity": 0.7226
+        },
+        {
+          "id": "CVE-2026-41873",
+          "description": "** UNSUPPORTED WHEN ASSIGNED ** Inconsistent Interpretation of HTTP Requests ('HTTP Request/Response Smuggling') vulnerability in Pony Mail leading to admin account takeover. This issue affects all versions of the Lua implementation of Pony Mail. There is a Python implementation under development under the name \"Pony Mail Foal\" that is not affected by this issue, but hasn't been released yet. As the Lua implementation of this project is retired, we do not plan to release a version that fixes this issue. Users are recommended to find an alternative or restrict access to the instance to trusted users. NOTE: This vulnerability only affects products that are no longer supported by the maintainer.",
+          "cwe": "CWE-444",
+          "severity": "CRITICAL",
+          "score": 9.8,
+          "similarity": 0.7183
+        },
+        {
+          "id": "CVE-2026-41460",
+          "description": "SocialEngine versions 7.8.0 and prior contain a SQL injection vulnerability in the /activity/index/get-memberall endpoint where user-supplied input passed via the text parameter is not sanitized before being incorporated into a SQL query. An unauthenticated remote attacker can exploit this vulnerability to read arbitrary data from the database, reset administrator account passwords, and gain unauthorized access to the Packages Manager in the Admin Panel, potentially enabling remote code execution.",
+          "cwe": "CWE-89",
+          "severity": "CRITICAL",
+          "score": 9.3,
+          "similarity": 0.714
+        },
+        {
+          "id": "CVE-2026-41265",
+          "description": "Flowise is a drag & drop user interface to build a customized large language model flow. Prior to 3.1.0, the specific flaw exists within the run method of the Airtable_Agents class. The issue results from the lack of proper sandboxing when evaluating an LLM generated python script. Using prompt injection techniques, an unauthenticated attacker with the ability to send prompts to a chatflow using the Airtable Agent node may convince an LLM to respond with a malicious python script that executes attacker controlled commands on the flowise server. This vulnerability is fixed in 3.1.0.",
+          "cwe": "CWE-77",
+          "severity": "CRITICAL",
+          "score": 9.2,
+          "similarity": 0.7129
+        }
+      ],
+      "cve_hit": false
+    },
+    {
+      "id": 16,
+      "language": "Python",
+      "code": "import os\nos.system(f\"ping {host}\")",
+      "expected_vuln": "Command Injection",
+      "response": "VULNERABILITY: Command Injection (CWE-77)\nSEVERITY: HIGH\nATTACK: An attacker can inject malicious commands through the 'host' variable, leading to arbitrary code execution on the system.\nFIX: \nimport subprocess\nhost = host.replace(\";\", \"\").replace(\"&\", \"\").replace(\"|\", \"\")\nsubprocess.run([\"ping\", host], shell=False)",
+      "parsed": {
+        "VULNERABILITY": "Command Injection (CWE-77)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker can inject malicious commands through the 'host' variable, leading to arbitrary code execution on the system.",
+        "FIX": "import subprocess\nhost = host.replace(\";\", \"\").replace(\"&\", \"\").replace(\"|\", \"\")\nsubprocess.run([\"ping\", host], shell=False)"
+      },
+      "elapsed": 5.87,
+      "detected": true,
+      "cves": [
+        {
+          "id": "CVE-2026-38834",
+          "description": "Tenda W30E V2.0 V16.01.0.21 was found to contain a command injection vulnerability in the do_ping_action function via the hostName parameter. This vulnerability allows attackers to execute arbitrary commands via a crafted request.",
+          "cwe": "CWE-77",
+          "severity": "HIGH",
+          "score": 7.3,
+          "similarity": 0.7519
+        },
+        {
+          "id": "CVE-2026-33078",
+          "description": "Roxy-WI is a web interface for managing Haproxy, Nginx, Apache and Keepalived servers. Versions prior to 8.2.6.4 have a SQL injection vulnerability in the haproxy_section_save function in app/routes/config/routes.py. The server_ip parameter, sourced from the URL path, is passed unsanitized through multiple function calls and ultimately interpolated into a SQL query string using Python string formatting, allowing attackers to execute arbitrary SQL commands. Version 8.2.6.4 fixes the issue.",
+          "cwe": "CWE-89",
+          "severity": "HIGH",
+          "score": 8.9,
+          "similarity": 0.7276
+        },
+        {
+          "id": "CVE-2026-40517",
+          "description": "radare2 prior to 6.1.4 contains a command injection vulnerability in the PDB parser's print_gvars() function that allows attackers to execute arbitrary commands by crafting a malicious PDB file with newline characters in symbol names. Attackers can inject arbitrary radare2 commands through unsanitized symbol name interpolation in the flag rename command, which are then executed when a user runs the idp command against the malicious PDB file, enabling arbitrary OS command execution through radare2's shell execution operator.",
+          "cwe": "CWE-78",
+          "severity": "HIGH",
+          "score": 8.4,
+          "similarity": 0.7115
+        },
+        {
+          "id": "CVE-2026-31515",
+          "description": "In the Linux kernel, the following vulnerability has been resolved: af_key: validate families in pfkey_send_migrate() syzbot was able to trigger a crash in skb_put() [1] Issue is that pfkey_send_migrate() does not check old/new families, and that set_ipsecrequest() @family argument was truncated, thus possibly overfilling the skb. Validate families early, do not wait set_ipsecrequest(). [1] skbuff: skb_over_panic: text:ffffffff8a752120 len:392 put:16 head:ffff88802a4ad040 data:ffff88802a4ad040 tail:0x188 end:0x180 dev:<NULL> kernel BUG at net/core/skbuff.c:214 ! Call Trace: <TASK> skb_over_panic net/core/skbuff.c:219 [inline] skb_put+0x159/0x210 net/core/skbuff.c:2655 skb_put_zero include/linux/skbuff.h:2788 [inline] set_ipsecrequest net/key/af_key.c:3532 [inline] pfkey_send_migrate+0x1270/0x2e50 net/key/af_key.c:3636 km_migrate+0x155/0x260 net/xfrm/xfrm_state.c:2848 xfrm_migrate+0x2140/0x2450 net/xfrm/xfrm_policy.c:4705 xfrm_do_migrate+0x8ff/0xaa0 net/xfrm/xfrm_user.c:3150",
+          "cwe": "CWE-476",
+          "severity": "MEDIUM",
+          "score": 5.5,
+          "similarity": 0.7097
+        },
+        {
+          "id": "CVE-2026-6777",
+          "description": "Other issue in the Networking: DNS component. This vulnerability was fixed in Firefox 150 and Thunderbird 150.",
+          "cwe": "CWE-20",
+          "severity": "MEDIUM",
+          "score": 5.3,
+          "similarity": 0.7012
+        }
+      ],
+      "cve_hit": true
+    },
+    {
+      "id": 17,
+      "language": "C",
+      "code": "printf(user_input);  // user-controlled format string",
+      "expected_vuln": "Format String Attack",
+      "response": "VULNERABILITY: Format String Vulnerability (CWE-134)\nSEVERITY: HIGH\nATTACK: An attacker can provide malicious input to manipulate the format string in printf, potentially leading to memory leaks or arbitrary code execution.\nFIX: printf(\"%s\", user_input);",
+      "parsed": {
+        "VULNERABILITY": "Format String Vulnerability (CWE-134)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker can provide malicious input to manipulate the format string in printf, potentially leading to memory leaks or arbitrary code execution.",
+        "FIX": "printf(\"%s\", user_input);"
+      },
+      "elapsed": 2.27,
+      "detected": true,
+      "cves": [
+        {
+          "id": "CVE-2026-40517",
+          "description": "radare2 prior to 6.1.4 contains a command injection vulnerability in the PDB parser's print_gvars() function that allows attackers to execute arbitrary commands by crafting a malicious PDB file with newline characters in symbol names. Attackers can inject arbitrary radare2 commands through unsanitized symbol name interpolation in the flag rename command, which are then executed when a user runs the idp command against the malicious PDB file, enabling arbitrary OS command execution through radare2's shell execution operator.",
+          "cwe": "CWE-78",
+          "severity": "HIGH",
+          "score": 8.4,
+          "similarity": 0.7446
+        },
+        {
+          "id": "CVE-2026-35379",
+          "description": "A logic error in the tr utility of uutils coreutils causes the program to incorrectly define the [:graph:] and [:print:] character classes. The implementation mistakenly includes the ASCII space character (0x20) in the [:graph:] class and excludes it from the [:print:] class, effectively reversing the standard behavior established by POSIX and GNU coreutils. This vulnerability leads to unintended data modification or loss when the utility is used in automated scripts or data-cleaning pipelines that rely on standard character class semantics. For example, a command executed to delete all graphical characters while intending to preserve whitespace will incorrectly delete all ASCII spaces, potentially resulting in data corruption or logic failures in downstream processing.",
+          "cwe": "CWE-684",
+          "severity": "LOW",
+          "score": 3.3,
+          "similarity": 0.7361
+        },
+        {
+          "id": "CVE-2026-7102",
+          "description": "A vulnerability was found in Tenda F456 1.0.0.5. This impacts the function FromWriteFacMac of the file /goform/WriteFacMac of the component httpd. The manipulation of the argument mac results in command injection. The attack can be executed remotely. The exploit has been made public and could be used.",
+          "cwe": "CWE-74",
+          "severity": "LOW",
+          "score": 2.1,
+          "similarity": 0.7297
+        },
+        {
+          "id": "CVE-2026-41229",
+          "description": "Froxlor is open source server administration software. Prior to version 2.3.6, `PhpHelper::parseArrayToString()` writes string values into single-quoted PHP string literals without escaping single quotes. When an admin with `change_serversettings` permission adds or updates a MySQL server via the API, the `privileged_user` parameter (which has no input validation) is written unescaped into `lib/userdata.inc.php`. Since this file is `require`d on every request via `Database::getDB()`, an attacker can inject arbitrary PHP code that executes as the web server user on every subsequent page load. Version 2.3.6 contains a patch.",
+          "cwe": "CWE-94",
+          "severity": "CRITICAL",
+          "score": 9.1,
+          "similarity": 0.7272
+        },
+        {
+          "id": "CVE-2026-40933",
+          "description": "Flowise is a drag & drop user interface to build a customized large language model flow. Prior to 3.1.0, due to unsafe serialization of stdio commands in the MCP adapter, an authenticated attacker can add an MCP stdio server with an arbitrary command, achieving command execution. The vulnerability lies in a bug in the input sanitization from the “Custom MCP” configuration in http://localhost:3000/canvas - where any user can add a new MCP, when doing so - adding a new MCP using stdio, the user can add any command, even though your code have input sanitization checks such as validateCommandInjection and validateArgsForLocalFileAccess, and a list of predefined specific safe commands - these commands, for example \"npx\" can be combined with code execution arguments (\"-c touch /tmp/pwn\") that enable direct code execution on the underlying OS. This vulnerability is fixed in 3.1.0.",
+          "cwe": "CWE-78",
+          "severity": "CRITICAL",
+          "score": 9.9,
+          "similarity": 0.7271
+        }
+      ],
+      "cve_hit": false
+    },
+    {
+      "id": 18,
+      "language": "C",
+      "code": "char buf[64];\nstrcpy(buf, argv[1]);  // no bounds check",
+      "expected_vuln": "Buffer Overflow",
+      "response": "VULNERABILITY: Buffer Overflow (CWE-787)\nSEVERITY: CRITICAL\nATTACK: An attacker can provide a long input via argv[1] to overflow the fixed-size buffer, potentially leading to arbitrary code execution.\nFIX: \nchar buf[64];\nstrncpy(buf, argv[1], sizeof(buf) - 1);\nbuf[sizeof(buf) - 1] = '\\0';",
+      "parsed": {
+        "VULNERABILITY": "Buffer Overflow (CWE-787)",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "An attacker can provide a long input via argv[1] to overflow the fixed-size buffer, potentially leading to arbitrary code execution.",
+        "FIX": "char buf[64];\nstrncpy(buf, argv[1], sizeof(buf) - 1);\nbuf[sizeof(buf) - 1] = '\\0';"
+      },
+      "elapsed": 2.95,
+      "detected": true,
+      "cves": [
+        {
+          "id": "CVE-2026-35379",
+          "description": "A logic error in the tr utility of uutils coreutils causes the program to incorrectly define the [:graph:] and [:print:] character classes. The implementation mistakenly includes the ASCII space character (0x20) in the [:graph:] class and excludes it from the [:print:] class, effectively reversing the standard behavior established by POSIX and GNU coreutils. This vulnerability leads to unintended data modification or loss when the utility is used in automated scripts or data-cleaning pipelines that rely on standard character class semantics. For example, a command executed to delete all graphical characters while intending to preserve whitespace will incorrectly delete all ASCII spaces, potentially resulting in data corruption or logic failures in downstream processing.",
+          "cwe": "CWE-684",
+          "severity": "LOW",
+          "score": 3.3,
+          "similarity": 0.7541
+        },
+        {
+          "id": "CVE-2026-31614",
+          "description": "In the Linux kernel, the following vulnerability has been resolved: smb: client: fix off-by-8 bounds check in check_wsl_eas() The bounds check uses (u8 *)ea + nlen + 1 + vlen as the end of the EA name and value, but ea_data sits at offset sizeof(struct smb2_file_full_ea_info) = 8 from ea, not at offset 0. The strncmp() later reads ea->ea_data[0..nlen-1] and the value bytes follow at ea_data[nlen+1..nlen+vlen], so the actual end is ea->ea_data + nlen + 1 + vlen. Isn't pointer math fun? The earlier check (u8 *)ea > end - sizeof(*ea) only guarantees the 8-byte header is in bounds, but since the last EA is placed within 8 bytes of the end of the response, the name and value bytes are read past the end of iov. Fix this mess all up by using ea->ea_data as the base for the bounds check. An \"untrusted\" server can use this to leak up to 8 bytes of kernel heap into the EA name comparison and influence which WSL xattr the data is interpreted as.",
+          "cwe": "CWE-125",
+          "severity": "HIGH",
+          "score": 7.1,
+          "similarity": 0.7514
+        },
+        {
+          "id": "CVE-2026-31641",
+          "description": "In the Linux kernel, the following vulnerability has been resolved: rxrpc: Fix RxGK token loading to check bounds rxrpc_preparse_xdr_yfs_rxgk() reads the raw key length and ticket length from the XDR token as u32 values and passes each through round_up(x, 4) before using the rounded value for validation and allocation. When the raw length is >= 0xfffffffd, round_up() wraps to 0, so the bounds check and kzalloc both use 0 while the subsequent memcpy still copies the original ~4 GiB value, producing a heap buffer overflow reachable from an unprivileged add_key() call. Fix this by: (1) Rejecting raw key lengths above AFSTOKEN_GK_KEY_MAX and raw ticket lengths above AFSTOKEN_GK_TOKEN_MAX before rounding, consistent with the caps that the RxKAD path already enforces via AFSTOKEN_RK_TIX_MAX. (2) Sizing the flexible-array allocation from the validated raw key length via struct_size_t() instead of the rounded value. (3) Caching the raw lengths so that the later field assignments and memcpy calls do not re-read from the token, eliminating a class of TOCTOU re-parse. The control path (valid token with lengths within bounds) is unaffected.",
+          "cwe": "CWE-125",
+          "severity": "HIGH",
+          "score": 7.8,
+          "similarity": 0.7502
+        },
+        {
+          "id": "CVE-2026-31631",
+          "description": "In the Linux kernel, the following vulnerability has been resolved: rxrpc: Fix buffer overread in rxgk_do_verify_authenticator() Fix rxgk_do_verify_authenticator() to check the buffer size before checking the nonce.",
+          "cwe": "CWE-787",
+          "severity": "HIGH",
+          "score": 8.2,
+          "similarity": 0.7475
+        },
+        {
+          "id": "CVE-2026-33317",
+          "description": "OP-TEE is a Trusted Execution Environment (TEE) designed as companion to a non-secure Linux kernel running on Arm; Cortex-A cores using the TrustZone technology. In versions 3.13.0 through 4.10.0, missing checks in `entry_get_attribute_value()` in `ta/pkcs11/src/object.c` can lead to out-of-bounds read from the PKCS#11 TA heap or a crash. When chained with the OOB read, the PKCS#11 TA function `PKCS11_CMD_GET_ATTRIBUTE_VALUE` or `entry_get_attribute_value()` can, with a bad template parameter, be tricked into reading at most 7 bytes beyond the end of the template buffer and writing beyond the end of the template buffer with the content of an attribute value of a PKCS#11 object. Commits e031c4e562023fd9f199e39fd2e85797e4cbdca9, 16926d5a46934c46e6656246b4fc18385a246900, and 149e8d7ecc4ef8bb00ab4a37fd2ccede6d79e1ca contain patches and are anticipated to be part of version 4.11.0.",
+          "cwe": "CWE-125",
+          "severity": "HIGH",
+          "score": 8.7,
+          "similarity": 0.7442
+        }
+      ],
+      "cve_hit": false
+    },
+    {
+      "id": 19,
+      "language": "GitHub Actions YAML",
+      "code": "- run: echo ${{ github.event.issue.title }}",
+      "expected_vuln": "Script Injection via untrusted input",
+      "response": "VULNERABILITY: Command Injection (CWE-78)\nSEVERITY: HIGH\nATTACK: An attacker can inject malicious commands via the issue title input, leading to arbitrary command execution on the runner.\nFIX: \n- run: echo \"${{ github.event.issue.title }}\" | tr -d '$`\\\\'",
+      "parsed": {
+        "VULNERABILITY": "Command Injection (CWE-78)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker can inject malicious commands via the issue title input, leading to arbitrary command execution on the runner.",
+        "FIX": "- run: echo \"${{ github.event.issue.title }}\" | tr -d '$`\\\\'"
+      },
+      "elapsed": 2.94,
+      "detected": true,
+      "cves": [
+        {
+          "id": "CVE-2026-5845",
+          "description": "An improper authorization vulnerability in scoped user-to-server (ghu_) token authorization in GitHub Enterprise Server allows an authenticated attacker to access private repositories outside the intended installation scope, which can include write operations, via an authorization fallback that treated a revoked/deleted installation as a global installation context, which could be chained with token revocation timing and SSH push attribution to obtain and reuse a victim-scoped token. This vulnerability affected all versions of GitHub Enterprise Server prior to 3.21 and was fixed in versions 3.20.1, 3.19.5, 3.18.8, 3.17.14, 3.16.17, 3.15.21, and 3.14.26. This vulnerability was reported via the GitHub Bug Bounty program.",
+          "cwe": "CWE-639",
+          "severity": "HIGH",
+          "score": 7.2,
+          "similarity": 0.7444
+        },
+        {
+          "id": "CVE-2026-4821",
+          "description": "An improper neutralization of special elements vulnerability was identified in GitHub Enterprise Server that allowed an authenticated Management Console administrator to execute arbitrary OS commands via shell metacharacter injection in proxy configuration fields such as http_proxy. Exploitation of this vulnerability required access to the GitHub Enterprise Server instance and administrator privileges to the Management Console. This vulnerability affected all versions of GitHub Enterprise Server prior to 3.21 and was fixed in versions 3.20.1, 3.19.5, 3.18.8, 3.17.14, 3.16.17, 3.15.21, 3.14.26. This vulnerability was reported via the GitHub Bug Bounty program.",
+          "cwe": "CWE-78",
+          "severity": "HIGH",
+          "score": 8.1,
+          "similarity": 0.7417
+        },
+        {
+          "id": "CVE-2026-5512",
+          "description": "An improper authorization vulnerability was identified in GitHub Enterprise Server that allowed an authenticated attacker to determine the names of private repositories by their numeric ID. The mobile upload policy API endpoint did not perform an early authorization check, and validation error messages included the full repository name for repositories the caller did not have access to. This vulnerability affected all versions of GitHub Enterprise Server prior to 3.21 and was fixed in versions 3.20.1, 3.19.5, 3.18.8, 3.17.14, 3.16.17, 3.15.21, and 3.14.26. This vulnerability was reported via the GitHub Bug Bounty program.",
+          "cwe": "CWE-201",
+          "severity": "MEDIUM",
+          "score": 5.3,
+          "similarity": 0.7373
+        },
+        {
+          "id": "CVE-2026-4296",
+          "description": "An incorrect regular expression vulnerability was identified in GitHub Enterprise Server that allowed an attacker to bypass OAuth redirect URI validation. An attacker with knowledge of a first-party OAuth application's registered callback URL could craft a malicious authorization link that, when clicked by a victim, would redirect the OAuth authorization code to an attacker-controlled domain. This could allow the attacker to gain unauthorized access to the victim's account with the scopes granted to the OAuth application. This vulnerability affected all versions of GitHub Enterprise Server prior to 3.21 and was fixed in versions 3.20.1, 3.19.5, 3.18.8, 3.17.14, 3.16.17, 3.15.21, 3.14.26. This vulnerability was reported via the GitHub Bug Bounty program.",
+          "cwe": "CWE-185",
+          "severity": "HIGH",
+          "score": 7.5,
+          "similarity": 0.7255
+        },
+        {
+          "id": "CVE-2026-41357",
+          "description": "OpenClaw before 2026.3.31 contains an environment variable leakage vulnerability in SSH-based sandbox backends that pass unsanitized process.env to child processes. Attackers can exploit this by leveraging non-default SSH environment forwarding configurations to leak sensitive environment variables from parent processes to SSH child processes.",
+          "cwe": "CWE-214",
+          "severity": "LOW",
+          "score": 2.0,
+          "similarity": 0.711
+        }
+      ],
+      "cve_hit": false
+    },
+    {
+      "id": 20,
+      "language": "GitHub Actions YAML",
+      "code": "- uses: actions/checkout@main  # unpinned version",
+      "expected_vuln": "Supply Chain Attack (unpinned action)",
+      "response": "VULNERABILITY: Unpinned Dependency Version (CWE-829)\nSEVERITY: HIGH\nATTACK: An attacker could compromise the GitHub Actions repository or release a malicious version of the checkout action, leading to arbitrary code execution in the workflow.\nFIX: \n- uses: actions/checkout@v3.5.2  # pinned to a specific version or commit hash",
+      "parsed": {
+        "VULNERABILITY": "Unpinned Dependency Version (CWE-829)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker could compromise the GitHub Actions repository or release a malicious version of the checkout action, leading to arbitrary code execution in the workflow.",
+        "FIX": "- uses: actions/checkout@v3.5.2  # pinned to a specific version or commit hash"
+      },
+      "elapsed": 5.23,
+      "detected": true,
+      "cves": [
+        {
+          "id": "CVE-2026-4821",
+          "description": "An improper neutralization of special elements vulnerability was identified in GitHub Enterprise Server that allowed an authenticated Management Console administrator to execute arbitrary OS commands via shell metacharacter injection in proxy configuration fields such as http_proxy. Exploitation of this vulnerability required access to the GitHub Enterprise Server instance and administrator privileges to the Management Console. This vulnerability affected all versions of GitHub Enterprise Server prior to 3.21 and was fixed in versions 3.20.1, 3.19.5, 3.18.8, 3.17.14, 3.16.17, 3.15.21, 3.14.26. This vulnerability was reported via the GitHub Bug Bounty program.",
+          "cwe": "CWE-78",
+          "severity": "HIGH",
+          "score": 8.1,
+          "similarity": 0.728
+        },
+        {
+          "id": "CVE-2026-5512",
+          "description": "An improper authorization vulnerability was identified in GitHub Enterprise Server that allowed an authenticated attacker to determine the names of private repositories by their numeric ID. The mobile upload policy API endpoint did not perform an early authorization check, and validation error messages included the full repository name for repositories the caller did not have access to. This vulnerability affected all versions of GitHub Enterprise Server prior to 3.21 and was fixed in versions 3.20.1, 3.19.5, 3.18.8, 3.17.14, 3.16.17, 3.15.21, and 3.14.26. This vulnerability was reported via the GitHub Bug Bounty program.",
+          "cwe": "CWE-201",
+          "severity": "MEDIUM",
+          "score": 5.3,
+          "similarity": 0.7276
+        },
+        {
+          "id": "CVE-2026-4296",
+          "description": "An incorrect regular expression vulnerability was identified in GitHub Enterprise Server that allowed an attacker to bypass OAuth redirect URI validation. An attacker with knowledge of a first-party OAuth application's registered callback URL could craft a malicious authorization link that, when clicked by a victim, would redirect the OAuth authorization code to an attacker-controlled domain. This could allow the attacker to gain unauthorized access to the victim's account with the scopes granted to the OAuth application. This vulnerability affected all versions of GitHub Enterprise Server prior to 3.21 and was fixed in versions 3.20.1, 3.19.5, 3.18.8, 3.17.14, 3.16.17, 3.15.21, 3.14.26. This vulnerability was reported via the GitHub Bug Bounty program.",
+          "cwe": "CWE-185",
+          "severity": "HIGH",
+          "score": 7.5,
+          "similarity": 0.7205
+        },
+        {
+          "id": "CVE-2026-5845",
+          "description": "An improper authorization vulnerability in scoped user-to-server (ghu_) token authorization in GitHub Enterprise Server allows an authenticated attacker to access private repositories outside the intended installation scope, which can include write operations, via an authorization fallback that treated a revoked/deleted installation as a global installation context, which could be chained with token revocation timing and SSH push attribution to obtain and reuse a victim-scoped token. This vulnerability affected all versions of GitHub Enterprise Server prior to 3.21 and was fixed in versions 3.20.1, 3.19.5, 3.18.8, 3.17.14, 3.16.17, 3.15.21, and 3.14.26. This vulnerability was reported via the GitHub Bug Bounty program.",
+          "cwe": "CWE-639",
+          "severity": "HIGH",
+          "score": 7.2,
+          "similarity": 0.7171
+        },
+        {
+          "id": "CVE-2026-3307",
+          "description": "An authorization bypass vulnerability was identified in GitHub Enterprise Server that allowed an attacker with admin access on one repository to modify the secret scanning push protection delegated bypass reviewer list on another repository by manipulating the owner_id parameter in the request body. Authorization was verified against the repository in the URL, but the action was applied to a different repository specified in the request body. The impact is limited to assigning existing trusted users as bypass reviewers; it does not allow adding arbitrary external users. This vulnerability affected all versions of GitHub Enterprise Server prior to 3.21 and was fixed in versions 3.14.25, 3.15.20, 3.16.16, 3.17.13, 3.18.7, 3.19.4 and 3.20.1. This vulnerability was reported via the GitHub Bug Bounty program.",
+          "cwe": "CWE-639",
+          "severity": "MEDIUM",
+          "score": 5.3,
+          "similarity": 0.7059
+        }
+      ],
+      "cve_hit": false
+    }
+  ]
+}

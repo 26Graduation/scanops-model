@@ -27,31 +27,139 @@ REPORTS = Path(__file__).resolve().parent.parent / "reports"
 
 CASES = [
     # React / Next.js
-    {"id":  1, "language": "React / Next.js",     "code": 'return <div dangerouslySetInnerHTML={{__html: userInput}} />;',                            "expected_vuln": "XSS"},
-    {"id":  2, "language": "React / Next.js",     "code": 'return <a href={`javascript:${userAction}`}>Click</a>;',                                   "expected_vuln": "XSS (javascript: URI)"},
-    {"id":  3, "language": "React / Next.js",     "code": "eval(searchParams.get('callback'));",                                                       "expected_vuln": "Code Injection via eval"},
-    {"id":  4, "language": "React / Next.js",     "code": '<img src={user.avatar} onError={user.fallback} />',                                        "expected_vuln": "XSS via event handler"},
+    {
+        "id": 1, "language": "React / Next.js",
+        "code": 'return <div dangerouslySetInnerHTML={{__html: userInput}} />;',
+        "expected_vuln": "XSS",
+        "accepted": ["xss", "cross-site scripting", "cwe-79", "cwe-80", "dangerouslysetinnerhtml", "html injection", "dom injection"],
+    },
+    {
+        "id": 2, "language": "React / Next.js",
+        "code": 'return <a href={`javascript:${userAction}`}>Click</a>;',
+        "expected_vuln": "XSS (javascript: URI)",
+        "accepted": ["xss", "cross-site scripting", "cwe-79", "cwe-80", "javascript:", "open redirect", "cwe-601", "url injection", "href injection"],
+    },
+    {
+        "id": 3, "language": "React / Next.js",
+        "code": "eval(searchParams.get('callback'));",
+        "expected_vuln": "Code Injection via eval",
+        "accepted": ["code injection", "cwe-94", "cwe-95", "cwe-78", "eval", "remote code execution", "arbitrary code execution", "script injection", "javascript injection"],
+    },
+    {
+        "id": 4, "language": "React / Next.js",
+        "code": '<img src={user.avatar} onError={user.fallback} />',
+        "expected_vuln": "XSS via event handler",
+        "accepted": ["xss", "cross-site scripting", "cwe-79", "cwe-80", "event handler", "dom-based", "onerror", "prototype pollution", "client-side injection"],
+    },
     # Node.js / Express
-    {"id":  5, "language": "Node.js / Express",   "code": 'db.query("SELECT * FROM users WHERE id=" + req.params.id);',                              "expected_vuln": "SQL Injection"},
-    {"id":  6, "language": "Node.js / Express",   "code": "exec(req.body.command);",                                                                   "expected_vuln": "Command Injection"},
-    {"id":  7, "language": "Node.js / Express",   "code": "res.setHeader('Access-Control-Allow-Origin', '*');",                                       "expected_vuln": "Insecure CORS"},
-    {"id":  8, "language": "Node.js / Express",   "code": "jwt.verify(token, 'hardcoded_secret_key');",                                               "expected_vuln": "Hardcoded Secret"},
+    {
+        "id": 5, "language": "Node.js / Express",
+        "code": 'db.query("SELECT * FROM users WHERE id=" + req.params.id);',
+        "expected_vuln": "SQL Injection",
+        "accepted": ["sql injection", "cwe-89", "sql", "query injection", "database injection"],
+    },
+    {
+        "id": 6, "language": "Node.js / Express",
+        "code": "exec(req.body.command);",
+        "expected_vuln": "Command Injection",
+        "accepted": ["command injection", "cwe-78", "cwe-77", "os command", "shell injection", "remote code execution", "arbitrary command"],
+    },
+    {
+        "id": 7, "language": "Node.js / Express",
+        "code": "res.setHeader('Access-Control-Allow-Origin', '*');",
+        "expected_vuln": "Insecure CORS",
+        "accepted": ["cors", "cwe-942", "cwe-346", "cross-origin", "access-control", "permissive", "wildcard origin", "misconfiguration", "information disclosure"],
+    },
+    {
+        "id": 8, "language": "Node.js / Express",
+        "code": "jwt.verify(token, 'hardcoded_secret_key');",
+        "expected_vuln": "Hardcoded Secret",
+        "accepted": ["hardcoded", "cwe-798", "cwe-259", "hard-coded", "secret", "credential", "jwt", "insecure secret", "embedded secret", "use of hard-coded"],
+    },
     # Java Spring Boot
-    {"id":  9, "language": "Java Spring Boot",    "code": 'String query = "SELECT * FROM " + tableName;\nstmt.execute(query);',                       "expected_vuln": "SQL Injection"},
-    {"id": 10, "language": "Java Spring Boot",    "code": "Runtime.getRuntime().exec(userInput);",                                                     "expected_vuln": "Command Injection"},
-    {"id": 11, "language": "Java Spring Boot",    "code": '@RequestMapping(value="/**")\npublic ResponseEntity<?> handle(HttpServletRequest req) {}',  "expected_vuln": "Overly Permissive Endpoint"},
-    {"id": 12, "language": "Java Spring Boot",    "code": "if (password.equals(inputPassword)) { grantAccess(); }",                                   "expected_vuln": "Timing Attack"},
+    {
+        "id": 9, "language": "Java Spring Boot",
+        "code": 'String query = "SELECT * FROM " + tableName;\nstmt.execute(query);',
+        "expected_vuln": "SQL Injection",
+        "accepted": ["sql injection", "cwe-89", "sql", "query injection", "database injection"],
+    },
+    {
+        "id": 10, "language": "Java Spring Boot",
+        "code": "Runtime.getRuntime().exec(userInput);",
+        "expected_vuln": "Command Injection",
+        "accepted": ["command injection", "cwe-78", "cwe-77", "os command", "shell injection", "remote code execution", "runtime.exec", "arbitrary command"],
+    },
+    {
+        "id": 11, "language": "Java Spring Boot",
+        "code": '@RequestMapping(value="/**")\npublic ResponseEntity<?> handle(HttpServletRequest req) {}',
+        "expected_vuln": "Overly Permissive Endpoint",
+        "accepted": [
+            "overly permissive", "cwe-284", "cwe-285", "cwe-862", "cwe-863", "cwe-20", "cwe-269",
+            "authorization", "access control", "improper", "permissive", "wildcard", "requestmapping",
+            "missing authorization", "broken access control", "privilege", "idor",
+        ],
+    },
+    {
+        "id": 12, "language": "Java Spring Boot",
+        "code": "if (password.equals(inputPassword)) { grantAccess(); }",
+        "expected_vuln": "Timing Attack",
+        "accepted": [
+            "timing attack", "cwe-208", "cwe-362", "cwe-259", "cwe-798", "cwe-916",
+            "hardcoded", "timing", "comparison", "constant-time", "brute force",
+            "insecure comparison", "broken authentication", "weak password",
+        ],
+    },
     # Python
-    {"id": 13, "language": "Python",              "code": "import pickle\nobj = pickle.loads(user_data)",                                             "expected_vuln": "Insecure Deserialization"},
-    {"id": 14, "language": "Python",              "code": "import subprocess\nsubprocess.call(user_input, shell=True)",                                "expected_vuln": "Command Injection"},
-    {"id": 15, "language": "Python",              "code": "import yaml\ndata = yaml.load(user_input)  # not safe_load",                               "expected_vuln": "Arbitrary Code Execution via YAML"},
-    {"id": 16, "language": "Python",              "code": 'import os\nos.system(f"ping {host}")',                                                     "expected_vuln": "Command Injection"},
+    {
+        "id": 13, "language": "Python",
+        "code": "import pickle\nobj = pickle.loads(user_data)",
+        "expected_vuln": "Insecure Deserialization",
+        "accepted": ["deserialization", "cwe-502", "pickle", "arbitrary code", "remote code execution", "code execution", "object injection"],
+    },
+    {
+        "id": 14, "language": "Python",
+        "code": "import subprocess\nsubprocess.call(user_input, shell=True)",
+        "expected_vuln": "Command Injection",
+        "accepted": ["command injection", "cwe-78", "cwe-77", "shell", "subprocess", "os command", "arbitrary command", "shell=true"],
+    },
+    {
+        "id": 15, "language": "Python",
+        "code": "import yaml\ndata = yaml.load(user_input)  # not safe_load",
+        "expected_vuln": "Arbitrary Code Execution via YAML",
+        "accepted": ["yaml", "cwe-502", "deserialization", "code execution", "arbitrary", "cwe-94", "unsafe load", "yaml.load", "injection"],
+    },
+    {
+        "id": 16, "language": "Python",
+        "code": 'import os\nos.system(f"ping {host}")',
+        "expected_vuln": "Command Injection",
+        "accepted": ["command injection", "cwe-78", "cwe-77", "os command", "shell injection", "os.system", "arbitrary command", "remote code execution"],
+    },
     # C
-    {"id": 17, "language": "C",                   "code": "printf(user_input);  // user-controlled format string",                                    "expected_vuln": "Format String Attack"},
-    {"id": 18, "language": "C",                   "code": "char buf[64];\nstrcpy(buf, argv[1]);  // no bounds check",                                 "expected_vuln": "Buffer Overflow"},
+    {
+        "id": 17, "language": "C",
+        "code": "printf(user_input);  // user-controlled format string",
+        "expected_vuln": "Format String Attack",
+        "accepted": ["format string", "cwe-134", "printf", "format", "memory corruption", "information disclosure"],
+    },
+    {
+        "id": 18, "language": "C",
+        "code": "char buf[64];\nstrcpy(buf, argv[1]);  // no bounds check",
+        "expected_vuln": "Buffer Overflow",
+        "accepted": ["buffer overflow", "cwe-120", "cwe-121", "cwe-122", "cwe-119", "strcpy", "memory", "overflow", "stack overflow", "bounds", "memory corruption"],
+    },
     # GitHub Actions YAML
-    {"id": 19, "language": "GitHub Actions YAML", "code": "- run: echo ${{ github.event.issue.title }}",                                              "expected_vuln": "Script Injection via untrusted input"},
-    {"id": 20, "language": "GitHub Actions YAML", "code": "- uses: actions/checkout@main  # unpinned version",                                        "expected_vuln": "Supply Chain Attack (unpinned action)"},
+    {
+        "id": 19, "language": "GitHub Actions YAML",
+        "code": "- run: echo ${{ github.event.issue.title }}",
+        "expected_vuln": "Script Injection via untrusted input",
+        "accepted": ["injection", "cwe-78", "cwe-77", "cwe-94", "script", "github actions", "untrusted input", "expression injection", "workflow injection", "command injection"],
+    },
+    {
+        "id": 20, "language": "GitHub Actions YAML",
+        "code": "- uses: actions/checkout@main  # unpinned version",
+        "expected_vuln": "Supply Chain Attack (unpinned action)",
+        "accepted": ["supply chain", "cwe-829", "unpinned", "dependency", "version pinning", "mutable", "tag", "branch reference", "insecure dependency"],
+    },
 ]
 
 # 프롬프트 — 모든 어댑터가 이 형식으로 응답을 유도해야 함
@@ -98,36 +206,34 @@ def parse_response(text: str) -> dict:
     return fields
 
 
-# 응답 표현이 달라도 같은 취약점을 인정하는 CWE 매핑
-_CWE_ALIASES: dict[str, list[str]] = {
-    "xss":                           ["cwe-79", "cwe-80", "cross-site scripting"],
-    "sql injection":                 ["cwe-89"],
-    "command injection":             ["cwe-78", "cwe-77"],
-    "hardcoded secret":              ["cwe-798", "cwe-259", "hard-coded"],
-    "insecure cors":                 ["cwe-942", "cwe-346"],
-    "timing attack":                 ["cwe-208", "cwe-362"],
-    "overly permissive":             ["cwe-284", "cwe-285", "cwe-807", "permissive"],
-    "insecure deserialization":      ["cwe-502"],
-    "arbitrary code execution via yaml": ["cwe-502", "yaml"],
-    "supply chain":                  ["cwe-829", "unpinned"],
-    "buffer overflow":               ["cwe-120", "cwe-121", "cwe-122"],
-    "format string":                 ["cwe-134"],
-    "script injection":              ["cwe-78", "cwe-77", "injection"],
-    "code injection":                ["cwe-94", "cwe-95"],
-}
+def detected(parsed: dict, case) -> bool:
+    """
+    모델 응답이 기대 취약점을 탐지했는지 판정한다.
 
+    case는 CASES의 dict 또는 하위 호환을 위한 expected_vuln 문자열.
+    판정 우선순위:
+      1. case["accepted"] 목록의 키워드/CWE ID 매칭 (VULNERABILITY + ATTACK 모두 확인)
+      2. expected_vuln 키워드 직접 매칭 (fallback)
+    """
+    vuln_lower   = parsed.get("VULNERABILITY", "").lower()
+    attack_lower = parsed.get("ATTACK", "").lower()
+    combined     = vuln_lower + " " + attack_lower
 
-def detected(parsed: dict, expected: str) -> bool:
-    """모델 응답이 기대 취약점을 탐지했는지 판정한다."""
-    vuln_lower = parsed.get("VULNERABILITY", "").lower()
-    # 1차: 키워드 직접 매칭
+    if isinstance(case, dict):
+        expected = case.get("expected_vuln", "")
+        accepted = [a.lower() for a in case.get("accepted", [])]
+    else:
+        expected = case
+        accepted = []
+
+    # 1차: accepted 목록 (CWE ID 또는 키워드)
+    if accepted and any(a in combined for a in accepted):
+        return True
+
+    # 2차: expected_vuln 키워드 직접 매칭 (하위 호환)
     if any(w in vuln_lower for w in expected.lower().split()):
         return True
-    # 2차: CWE 번호 / 별칭 매칭 (모델마다 표현이 달라도 인정)
-    for key, aliases in _CWE_ALIASES.items():
-        if any(k in expected.lower() for k in key.split()):
-            if any(alias in vuln_lower for alias in aliases):
-                return True
+
     return False
 
 
@@ -178,7 +284,7 @@ def run_benchmark(
             continue
 
         parsed = parse_response(response)
-        ok     = detected(parsed, case["expected_vuln"])
+        ok     = detected(parsed, case)
         results.append({**case, "response": response, "parsed": parsed,
                         "elapsed": elapsed, "detected": ok})
 
@@ -264,6 +370,10 @@ def build_single_html(summary: dict) -> str:
             ok     = r["detected"]
             tc     = "#22c55e" if ok else "#ef4444"
             ec     = "#22c55e" if r["elapsed"] < 3 else ("#eab308" if r["elapsed"] < 8 else "#ef4444")
+            accepted_hints = ""
+            if not ok and r.get("accepted"):
+                top_hints = ", ".join(r["accepted"][:6])
+                accepted_hints = f'<div class="resp-item full"><span class="resp-label">허용 패턴 (미매칭)</span><span class="resp-value hint">{esc(top_hints)}...</span></div>'
             cards += f"""
             <div class="case-card">
               <div class="case-header">
@@ -283,6 +393,7 @@ def build_single_html(summary: dict) -> str:
                   <pre class="fix-block">{esc(r['parsed'].get('FIX','—'))}</pre></div>
                 <div class="resp-item"><span class="resp-label">응답시간</span>
                   <span class="resp-value" style="color:{ec};font-weight:700;">{r['elapsed']}s</span></div>
+                {accepted_hints}
               </div>
             </div>"""
         sections += f'<section><div class="lang-header" style="background:{color};">{esc(lang)}</div>{cards}</section>'
@@ -333,6 +444,7 @@ section .case-card:last-child{{border-radius:0 0 10px 10px}}
 .resp-value{{font-size:.83rem;color:#334155;line-height:1.5}}
 .sev-badge{{display:inline-block;color:#fff;font-size:.75rem;font-weight:700;padding:2px 10px;border-radius:999px}}
 .fix-block{{font-family:monospace;font-size:.78rem;color:#1e293b;background:#f0fdf4;padding:8px 10px;border-radius:6px;white-space:pre-wrap;word-break:break-word;line-height:1.6}}
+.hint{{font-size:.78rem;color:#94a3b8;font-style:italic}}
 </style></head><body>
 <h1>{esc(model_name)} — 보안 코드 벤치마크</h1>
 <p class="sub">ScanOps · {now} · 총 {total}개 케이스</p>

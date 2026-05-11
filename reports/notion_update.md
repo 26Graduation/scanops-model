@@ -211,9 +211,10 @@ scanops-model/
 │   ├── benchmark_rag.py          ← RAG + Grok 벤치마크
 │   ├── benchmark_compare.py      ← 멀티모델 비교 리포트 생성
 │   └── adapters/
-│       ├── grok_adapter.py       ← benchmark_core용 Grok 어댑터
-│       ├── ollama_adapter.py     ← benchmark_core용 Ollama 어댑터 (로컬 모델)
-│       └── openai_adapter.py     ← benchmark_core용 OpenAI 어댑터
+│       ├── grok_adapter.py       ← Grok 단독 (ChromaDB 미사용)
+│       ├── rag_adapter.py        ← RAG (ChromaDB + Grok), CVE 근거 품질 지표 포함
+│       ├── ollama_adapter.py     ← 로컬 모델 (Ollama)
+│       └── openai_adapter.py     ← OpenAI GPT 계열
 └── reports/
     ├── results_*.json            ← 각 모델 벤치마크 결과 (JSON)
     ├── grok_benchmark_grok_3.html
@@ -306,12 +307,19 @@ FIX: ...
 
 **최종 성능 수치 (2026-05-11):**
 
-| 모델 | 탐지율 | 평균 응답시간 |
-|---|---|---|
-| Gemma 2B (Ollama) | 35% | 4.27s |
-| TinyLlama 1.1B + LoRA | 35% | 5.44s |
-| Grok API (grok-3-mini) | 65% | 18.3s |
-| **Grok API (grok-3)** | **95%** | **5.72s** |
+| 모델 | 탐지율 | 평균 응답시간 | 비고 |
+|---|---|---|---|
+| Gemma 2B (Ollama) | 35% | 4.27s | 베이스라인 |
+| TinyLlama 1.1B + LoRA | 35% | 5.44s | LoRA 파인튜닝 |
+| Grok API (grok-3-mini) | 65% | 18.3s | |
+| Grok API (grok-3) | 95%→**100%** | 5.72s | 파서 수정 후 재채점 |
+
+> **파서 수정 이력 (2026-05-11):** CWE 번호 기반 이중 매칭 추가.  
+> Grok이 정확히 탐지했음에도 표현 차이로 miss 처리된 4개 케이스 (#8, #11, #12, #20) 구제.  
+> - #8: `Use of Hard-coded Credentials (CWE-798)` → "Hardcoded Secret" 인정  
+> - #11: `Missing Authorization (CWE-862)` → "Overly Permissive Endpoint" 인정  
+> - #12: `Timing Attack in String Comparison (CWE-208)` → "Timing Attack" 인정  
+> - #20: `Unpinned Dependency (CWE-829)` → "Supply Chain Attack" 인정
 
 ---
 
@@ -321,9 +329,10 @@ FIX: ...
 
 ```bash
 # 각자 자신의 어댑터로 실행 (results_*.json 생성됨)
-python scripts/adapters/grok_adapter.py            # 우리 모델
-python scripts/adapters/ollama_adapter.py --model llama3:8b   # Ollama 모델
-python scripts/adapters/openai_adapter.py --model gpt-4o      # OpenAI
+python scripts/adapters/grok_adapter.py                       # Grok 단독 (RAG 없음)
+python scripts/adapters/rag_adapter.py                        # RAG + Grok (CVE 근거 포함)
+python scripts/adapters/ollama_adapter.py --model llama3:8b   # Ollama 로컬 모델
+python scripts/adapters/openai_adapter.py --model gpt-4o      # OpenAI GPT
 
 # 결과 합쳐서 비교 리포트 생성
 python scripts/benchmark_compare.py

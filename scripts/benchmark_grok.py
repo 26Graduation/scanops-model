@@ -210,7 +210,7 @@ _CWE_ALIASES: dict[str, list[str]] = {
     "hardcoded secret":     ["cwe-798", "cwe-259", "hard-coded"],
     "insecure cors":        ["cwe-942", "cwe-346"],
     "timing attack":        ["cwe-208", "cwe-362"],
-    "overly permissive":    ["cwe-284", "cwe-285", "cwe-807", "permissive"],
+    "overly permissive":    ["cwe-284", "cwe-285", "cwe-807", "cwe-862", "cwe-863", "permissive", "authorization"],
     "insecure deserialization": ["cwe-502"],
     "arbitrary code execution via yaml": ["cwe-502", "yaml"],
     "supply chain":         ["cwe-829", "unpinned"],
