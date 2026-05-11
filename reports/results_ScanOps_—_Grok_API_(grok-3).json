@@ -1,0 +1,310 @@
+{
+  "model_name": "ScanOps — Grok API (grok-3)",
+  "timestamp": "2026-05-11T22:27:28.605452",
+  "total": 20,
+  "detected": 19,
+  "detect_pct": 95.0,
+  "avg_time": 17.66,
+  "results": [
+    {
+      "id": 1,
+      "language": "React / Next.js",
+      "code": "return <div dangerouslySetInnerHTML={{__html: userInput}} />;",
+      "expected_vuln": "XSS",
+      "response": "VULNERABILITY: Cross-Site Scripting (CWE-79)  \nSEVERITY: HIGH  \nATTACK: An attacker can inject malicious scripts via userInput, which will execute in the user's browser when rendered, potentially leading to session hijacking or data theft.  \nFIX: return <div dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(userInput)}} />;",
+      "parsed": {
+        "VULNERABILITY": "Cross-Site Scripting (CWE-79)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker can inject malicious scripts via userInput, which will execute in the user's browser when rendered, potentially leading to session hijacking or data theft.",
+        "FIX": "return <div dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(userInput)}} />;"
+      },
+      "elapsed": 13.41,
+      "detected": true
+    },
+    {
+      "id": 2,
+      "language": "React / Next.js",
+      "code": "return <a href={`javascript:${userAction}`}>Click</a>;",
+      "expected_vuln": "XSS (javascript: URI)",
+      "response": "VULNERABILITY: Cross-Site Scripting (CWE-79)\nSEVERITY: HIGH\nATTACK: An attacker can inject malicious JavaScript into the userAction variable, causing arbitrary code execution in the user's browser when the link is clicked.\nFIX: return <a onClick={handleAction}>Click</a>;",
+      "parsed": {
+        "VULNERABILITY": "Cross-Site Scripting (CWE-79)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker can inject malicious JavaScript into the userAction variable, causing arbitrary code execution in the user's browser when the link is clicked.",
+        "FIX": "return <a onClick={handleAction}>Click</a>;"
+      },
+      "elapsed": 28.66,
+      "detected": true
+    },
+    {
+      "id": 3,
+      "language": "React / Next.js",
+      "code": "eval(searchParams.get('callback'));",
+      "expected_vuln": "Code Injection via eval",
+      "response": "VULNERABILITY: Code Injection (CWE-94)\nSEVERITY: CRITICAL\nATTACK: An attacker can manipulate the 'callback' query parameter in the URL to inject and execute arbitrary JavaScript code, leading to remote code execution and potential data compromise.\nFIX: const callback = searchParams.get('callback'); const actions = { 'safeAction': () => console.log('Executing safe action') }; if (actions[callback]) { actions[callback](); }",
+      "parsed": {
+        "VULNERABILITY": "Code Injection (CWE-94)",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "An attacker can manipulate the 'callback' query parameter in the URL to inject and execute arbitrary JavaScript code, leading to remote code execution and potential data compromise.",
+        "FIX": "const callback = searchParams.get('callback'); const actions = { 'safeAction': () => console.log('Executing safe action') }; if (actions[callback]) { actions[callback](); }"
+      },
+      "elapsed": 25.63,
+      "detected": true
+    },
+    {
+      "id": 4,
+      "language": "React / Next.js",
+      "code": "<img src={user.avatar} onError={user.fallback} />",
+      "expected_vuln": "XSS via event handler",
+      "response": "VULNERABILITY: Cross-Site Scripting (CWE-79)  \nSEVERITY: HIGH  \nATTACK: An attacker could manipulate user.avatar to a malicious URL (e.g., a data URI with executable script), triggering onError and potentially executing arbitrary code in the user's browser.  \nFIX: <img src={encodeURI(user.avatar)} onError={(e) => e.target.src = '/default.png'} />",
+      "parsed": {
+        "VULNERABILITY": "Cross-Site Scripting (CWE-79)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker could manipulate user.avatar to a malicious URL (e.g., a data URI with executable script), triggering onError and potentially executing arbitrary code in the user's browser.",
+        "FIX": "<img src={encodeURI(user.avatar)} onError={(e) => e.target.src = '/default.png'} />"
+      },
+      "elapsed": 27.98,
+      "detected": true
+    },
+    {
+      "id": 5,
+      "language": "Node.js / Express",
+      "code": "db.query(\"SELECT * FROM users WHERE id=\" + req.params.id);",
+      "expected_vuln": "SQL Injection",
+      "response": "VULNERABILITY: SQL Injection (CWE-89)  \nSEVERITY: HIGH  \nATTACK: An attacker can manipulate the 'id' parameter in the URL to inject malicious SQL code, allowing unauthorized data access or modification.  \nFIX: db.query(\"SELECT * FROM users WHERE id=?\", [req.params.id]);",
+      "parsed": {
+        "VULNERABILITY": "SQL Injection (CWE-89)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker can manipulate the 'id' parameter in the URL to inject malicious SQL code, allowing unauthorized data access or modification.",
+        "FIX": "db.query(\"SELECT * FROM users WHERE id=?\", [req.params.id]);"
+      },
+      "elapsed": 6.61,
+      "detected": true
+    },
+    {
+      "id": 6,
+      "language": "Node.js / Express",
+      "code": "exec(req.body.command);",
+      "expected_vuln": "Command Injection",
+      "response": "VULNERABILITY: Command Injection (CWE-78)\nSEVERITY: CRITICAL\nATTACK: An attacker sends a malicious command in the request body, allowing arbitrary code execution on the server.\nFIX: const allowedCommands = ['ls']; if (allowedCommands.includes(req.body.command)) { exec(req.body.command); } else { res.status(400).send('Command not allowed'); }",
+      "parsed": {
+        "VULNERABILITY": "Command Injection (CWE-78)",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "An attacker sends a malicious command in the request body, allowing arbitrary code execution on the server.",
+        "FIX": "const allowedCommands = ['ls']; if (allowedCommands.includes(req.body.command)) { exec(req.body.command); } else { res.status(400).send('Command not allowed'); }"
+      },
+      "elapsed": 19.41,
+      "detected": true
+    },
+    {
+      "id": 7,
+      "language": "Node.js / Express",
+      "code": "res.setHeader('Access-Control-Allow-Origin', '*');",
+      "expected_vuln": "Insecure CORS",
+      "response": "VULNERABILITY: Overly Permissive Cross-origin Resource Sharing (CWE-942)  \nSEVERITY: HIGH  \nATTACK: An attacker can exploit this by making cross-origin requests from a malicious website to access sensitive data or perform unauthorized actions on behalf of a user.  \nFIX: res.setHeader('Access-Control-Allow-Origin', req.headers.origin && allowedOrigins.includes(req.headers.origin) ? req.headers.origin : 'null');  // Assuming allowedOrigins is an array defined elsewhere, e.g., const allowedOrigins = ['https://example.com'];",
+      "parsed": {
+        "VULNERABILITY": "Overly Permissive Cross-origin Resource Sharing (CWE-942)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker can exploit this by making cross-origin requests from a malicious website to access sensitive data or perform unauthorized actions on behalf of a user.",
+        "FIX": "res.setHeader('Access-Control-Allow-Origin', req.headers.origin && allowedOrigins.includes(req.headers.origin) ? req.headers.origin : 'null');  // Assuming allowedOrigins is an array defined elsewhere, e.g., const allowedOrigins = ['https://example.com'];"
+      },
+      "elapsed": 19.33,
+      "detected": true
+    },
+    {
+      "id": 8,
+      "language": "Node.js / Express",
+      "code": "jwt.verify(token, 'hardcoded_secret_key');",
+      "expected_vuln": "Hardcoded Secret",
+      "response": "VULNERABILITY: Use of Hard-coded Credentials (CWE-798)  \nSEVERITY: HIGH  \nATTACK: An attacker with access to the source code can extract the secret key and forge JWT tokens to impersonate users and access protected resources.  \nFIX: jwt.verify(token, process.env.JWT_SECRET);",
+      "parsed": {
+        "VULNERABILITY": "Use of Hard-coded Credentials (CWE-798)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker with access to the source code can extract the secret key and forge JWT tokens to impersonate users and access protected resources.",
+        "FIX": "jwt.verify(token, process.env.JWT_SECRET);"
+      },
+      "elapsed": 9.44,
+      "detected": true
+    },
+    {
+      "id": 9,
+      "language": "Java Spring Boot",
+      "code": "String query = \"SELECT * FROM \" + tableName;\nstmt.execute(query);",
+      "expected_vuln": "SQL Injection",
+      "response": "VULNERABILITY: SQL Injection (CWE-89)\nSEVERITY: HIGH\nATTACK: An attacker can manipulate the tableName variable to inject malicious SQL code, allowing unauthorized data access or execution of arbitrary queries.\nFIX: \nif (Arrays.asList(\"allowedTable1\", \"allowedTable2\").contains(tableName)) { // Replace with actual allowed tables\n    String query = \"SELECT * FROM \" + tableName;\n    stmt.execute(query);\n} else {\n    throw new IllegalArgumentException(\"Invalid table name\");\n}",
+      "parsed": {
+        "VULNERABILITY": "SQL Injection (CWE-89)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker can manipulate the tableName variable to inject malicious SQL code, allowing unauthorized data access or execution of arbitrary queries.",
+        "FIX": "if (Arrays.asList(\"allowedTable1\", \"allowedTable2\").contains(tableName)) { // Replace with actual allowed tables\n    String query = \"SELECT * FROM \" + tableName;\n    stmt.execute(query);\n} else {\n    throw new IllegalArgumentException(\"Invalid table name\");\n}"
+      },
+      "elapsed": 28.4,
+      "detected": true
+    },
+    {
+      "id": 10,
+      "language": "Java Spring Boot",
+      "code": "Runtime.getRuntime().exec(userInput);",
+      "expected_vuln": "Command Injection",
+      "response": "VULNERABILITY: Command Injection (CWE-78)  \nSEVERITY: CRITICAL  \nATTACK: An attacker provides malicious user input containing operating system commands, allowing arbitrary code execution on the server.  \nFIX: new ProcessBuilder(\"/usr/bin/validcommand\", userInput).start(); // Ensure validcommand is whitelisted and userInput is validated externally",
+      "parsed": {
+        "VULNERABILITY": "Command Injection (CWE-78)",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "An attacker provides malicious user input containing operating system commands, allowing arbitrary code execution on the server.",
+        "FIX": "new ProcessBuilder(\"/usr/bin/validcommand\", userInput).start(); // Ensure validcommand is whitelisted and userInput is validated externally"
+      },
+      "elapsed": 18.9,
+      "detected": true
+    },
+    {
+      "id": 11,
+      "language": "Java Spring Boot",
+      "code": "@RequestMapping(value=\"/**\")\npublic ResponseEntity<?> handle(HttpServletRequest req) {}",
+      "expected_vuln": "Overly Permissive Endpoint",
+      "response": "VULNERABILITY: Missing Authorization (CWE-862)\nSEVERITY: HIGH\nATTACK: An unauthenticated attacker can access any endpoint via the wildcard mapping, potentially leading to unauthorized data exposure or manipulation.\nFIX: \n@RequestMapping(value=\"/specific-path\")\npublic ResponseEntity<?> handle(HttpServletRequest req) {\n    if (!isAuthenticated(req)) {\n        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();\n    }\n    // Add your logic here\n}",
+      "parsed": {
+        "VULNERABILITY": "Missing Authorization (CWE-862)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An unauthenticated attacker can access any endpoint via the wildcard mapping, potentially leading to unauthorized data exposure or manipulation.",
+        "FIX": "@RequestMapping(value=\"/specific-path\")\npublic ResponseEntity<?> handle(HttpServletRequest req) {\n    if (!isAuthenticated(req)) {\n        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();\n    }\n    // Add your logic here\n}"
+      },
+      "elapsed": 18.49,
+      "detected": false
+    },
+    {
+      "id": 12,
+      "language": "Java Spring Boot",
+      "code": "if (password.equals(inputPassword)) { grantAccess(); }",
+      "expected_vuln": "Timing Attack",
+      "response": "VULNERABILITY: Timing Attack in String Comparison (CWE-208)\nSEVERITY: HIGH\nATTACK: An attacker can measure response times during password comparisons to infer the correct password through repeated guesses via side-channel attacks.\nFIX: import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder; BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(); if (encoder.matches(inputPassword, storedHashedPassword)) { grantAccess(); }",
+      "parsed": {
+        "VULNERABILITY": "Timing Attack in String Comparison (CWE-208)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker can measure response times during password comparisons to infer the correct password through repeated guesses via side-channel attacks.",
+        "FIX": "import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder; BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(); if (encoder.matches(inputPassword, storedHashedPassword)) { grantAccess(); }"
+      },
+      "elapsed": 22.28,
+      "detected": true
+    },
+    {
+      "id": 13,
+      "language": "Python",
+      "code": "import pickle\nobj = pickle.loads(user_data)",
+      "expected_vuln": "Insecure Deserialization",
+      "response": "VULNERABILITY: Deserialization of Untrusted Data (CWE-502)\nSEVERITY: HIGH\nATTACK: An attacker provides malicious serialized data that executes arbitrary code on the server when deserialized using pickle.\nFIX: import json; try: obj = json.loads(user_data) except json.JSONDecodeError: obj = None  # Handle error appropriately",
+      "parsed": {
+        "VULNERABILITY": "Deserialization of Untrusted Data (CWE-502)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker provides malicious serialized data that executes arbitrary code on the server when deserialized using pickle.",
+        "FIX": "import json; try: obj = json.loads(user_data) except json.JSONDecodeError: obj = None  # Handle error appropriately"
+      },
+      "elapsed": 14.84,
+      "detected": true
+    },
+    {
+      "id": 14,
+      "language": "Python",
+      "code": "import subprocess\nsubprocess.call(user_input, shell=True)",
+      "expected_vuln": "Command Injection",
+      "response": "VULNERABILITY: OS Command Injection (CWE-78)\nSEVERITY: HIGH\nATTACK: An attacker can inject malicious commands into user_input, allowing arbitrary code execution on the system.\nFIX: import subprocess; subprocess.call([user_input], shell=False)",
+      "parsed": {
+        "VULNERABILITY": "OS Command Injection (CWE-78)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker can inject malicious commands into user_input, allowing arbitrary code execution on the system.",
+        "FIX": "import subprocess; subprocess.call([user_input], shell=False)"
+      },
+      "elapsed": 12.77,
+      "detected": true
+    },
+    {
+      "id": 15,
+      "language": "Python",
+      "code": "import yaml\ndata = yaml.load(user_input)  # not safe_load",
+      "expected_vuln": "Arbitrary Code Execution via YAML",
+      "response": "VULNERABILITY: Unsafe Deserialization (CWE-502)\nSEVERITY: HIGH\nATTACK: An attacker provides malicious YAML input containing executable code, which is deserialized and executed on the system when processed by yaml.load().\nFIX: \nimport yaml\ndata = yaml.safe_load(user_input)",
+      "parsed": {
+        "VULNERABILITY": "Unsafe Deserialization (CWE-502)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker provides malicious YAML input containing executable code, which is deserialized and executed on the system when processed by yaml.load().",
+        "FIX": "import yaml\ndata = yaml.safe_load(user_input)"
+      },
+      "elapsed": 9.09,
+      "detected": true
+    },
+    {
+      "id": 16,
+      "language": "Python",
+      "code": "import os\nos.system(f\"ping {host}\")",
+      "expected_vuln": "Command Injection",
+      "response": "VULNERABILITY: Command Injection (CWE-78)  \nSEVERITY: HIGH  \nATTACK: An attacker can manipulate the 'host' variable to inject and execute arbitrary shell commands, potentially gaining full system control.  \nFIX: import subprocess; subprocess.run(['ping', host])",
+      "parsed": {
+        "VULNERABILITY": "Command Injection (CWE-78)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker can manipulate the 'host' variable to inject and execute arbitrary shell commands, potentially gaining full system control.",
+        "FIX": "import subprocess; subprocess.run(['ping', host])"
+      },
+      "elapsed": 9.82,
+      "detected": true
+    },
+    {
+      "id": 17,
+      "language": "C",
+      "code": "printf(user_input);  // user-controlled format string",
+      "expected_vuln": "Format String Attack",
+      "response": "VULNERABILITY: Format String Vulnerability (CWE-134)  \nSEVERITY: HIGH  \nATTACK: An attacker provides a malicious string with format specifiers in user_input, allowing stack memory disclosure or arbitrary code execution.  \nFIX: printf(\"%s\", user_input);",
+      "parsed": {
+        "VULNERABILITY": "Format String Vulnerability (CWE-134)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker provides a malicious string with format specifiers in user_input, allowing stack memory disclosure or arbitrary code execution.",
+        "FIX": "printf(\"%s\", user_input);"
+      },
+      "elapsed": 12.09,
+      "detected": true
+    },
+    {
+      "id": 18,
+      "language": "C",
+      "code": "char buf[64];\nstrcpy(buf, argv[1]);  // no bounds check",
+      "expected_vuln": "Buffer Overflow",
+      "response": "VULNERABILITY: Buffer Overflow (CWE-120)\nSEVERITY: HIGH\nATTACK: An attacker provides a excessively long command-line argument, causing a buffer overflow that overwrites adjacent memory and potentially leads to arbitrary code execution.\nFIX: char buf[64]; strncpy(buf, argv[1], sizeof(buf) - 1); buf[sizeof(buf) - 1] = '\\0';",
+      "parsed": {
+        "VULNERABILITY": "Buffer Overflow (CWE-120)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker provides a excessively long command-line argument, causing a buffer overflow that overwrites adjacent memory and potentially leads to arbitrary code execution.",
+        "FIX": "char buf[64]; strncpy(buf, argv[1], sizeof(buf) - 1); buf[sizeof(buf) - 1] = '\\0';"
+      },
+      "elapsed": 11.96,
+      "detected": true
+    },
+    {
+      "id": 19,
+      "language": "GitHub Actions YAML",
+      "code": "- run: echo ${{ github.event.issue.title }}",
+      "expected_vuln": "Script Injection via untrusted input",
+      "response": "VULNERABILITY: Improper Neutralization of Special Elements used in an OS Command (CWE-78)\nSEVERITY: MEDIUM\nATTACK: An attacker creates a GitHub issue with a malicious title containing shell metacharacters, which could be interpreted by the shell when echoed, potentially leading to command injection in the workflow environment.\nFIX: - run: echo \"$(echo ${{ github.event.issue.title }} | sed 's/[;&|]//g')\"",
+      "parsed": {
+        "VULNERABILITY": "Improper Neutralization of Special Elements used in an OS Command (CWE-78)",
+        "SEVERITY": "MEDIUM",
+        "ATTACK": "An attacker creates a GitHub issue with a malicious title containing shell metacharacters, which could be interpreted by the shell when echoed, potentially leading to command injection in the workflow environment.",
+        "FIX": "- run: echo \"$(echo ${{ github.event.issue.title }} | sed 's/[;&|]//g')\""
+      },
+      "elapsed": 28.55,
+      "detected": true
+    },
+    {
+      "id": 20,
+      "language": "GitHub Actions YAML",
+      "code": "- uses: actions/checkout@main  # unpinned version",
+      "expected_vuln": "Supply Chain Attack (unpinned action)",
+      "response": "VULNERABILITY: Unpinned Dependency (CWE-829)\nSEVERITY: HIGH\nATTACK: An attacker could compromise the actions/checkout repository on the main branch and execute arbitrary code in the workflow by injecting malicious updates.\nFIX: - uses: actions/checkout@v3",
+      "parsed": {
+        "VULNERABILITY": "Unpinned Dependency (CWE-829)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker could compromise the actions/checkout repository on the main branch and execute arbitrary code in the workflow by injecting malicious updates.",
+        "FIX": "- uses: actions/checkout@v3"
+      },
+      "elapsed": 15.47,
+      "detected": true
+    }
+  ]
+}
