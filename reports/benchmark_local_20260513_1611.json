@@ -1,0 +1,284 @@
+{
+  "Gemma:2b Ollama (베이스라인)": [
+    {
+      "id": 1,
+      "language": "React / Next.js",
+      "expected_vuln": "XSS",
+      "code": "return <div dangerouslySetInnerHTML={{__html: userInput}} />;",
+      "parsed": {
+        "VULNERABILITY": "Cross-Site Scripting (XSS)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "User input from `userInput` is used to dynamically render an HTML string, which could be malicious.",
+        "FIX": "Use `dangerouslySetInnerHTML` with a trusted HTML string instead of user input."
+      },
+      "elapsed": 1.77,
+      "detected": true
+    },
+    {
+      "id": 2,
+      "language": "React / Next.js",
+      "expected_vuln": "XSS",
+      "code": "return <a href={`javascript:${userAction}`}>Click</a>;",
+      "parsed": {
+        "VULNERABILITY": "—",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker could inject malicious JavaScript code into the `userAction` variable.",
+        "FIX": "** Use a `unescape()` or `decodeURIComponent()` function to safely parse user input before using it in the href attribute.\n\n**Code Analysis:**\n\n```javascript\nreturn <a href={`javascript:${userAction}`}>Click</a>;\n```\n\n**Vulnerability Explanation:**\n\nIf the `userAction` variable contains malicious JavaScript code, it will be executed when the user clicks on the link. This could be used by an attacker to inject their own malicious code into the browser, or to steal sensitive information.\n\n**Example Attack:**\n\n```\nuserAction = '<script>alert(1)</script>';\n```\n\n**Mitigation:**\n\nTo prevent XSS, use the following safe method to parse user input:\n\n```javascript\nconst decodedUserAction = decodeURIComponent(userAction);\n```\n\n**Additional Notes:**\n\n* The `a` tag is vulnerable to clickjacking, where an attacker can trick the user into clicking on a malicious link.\n* This vulnerability could also be exploited through cross-site request forgery (CSRF)."
+      },
+      "elapsed": 5.97,
+      "detected": false
+    },
+    {
+      "id": 3,
+      "language": "React / Next.js",
+      "expected_vuln": "Code Injection via eval",
+      "code": "eval(searchParams.get('callback'));",
+      "parsed": {
+        "VULNERABILITY": "Eval JavaScript code from request parameters",
+        "SEVERITY": "High",
+        "ATTACK": "Injection",
+        "FIX": "** Use `dangerouslySetInnerHTML` or a DOMPurify library to escape the callback value\n\n**Explanation:**\nThe code retrieves a `callback` parameter from the URL query string and attempts to evaluate it as JavaScript. This poses a security risk because the source of the callback is not known and could potentially contain malicious code.\n\n**Example:**\n```\n?callback=eval(%22%3Cscript%3A%22%3D%3A%22)\n```\n\n**Mitigation:**\n- Use `dangerouslySetInnerHTML` to render the `callback` value only.\n- Use a DOMPurify library to escape the `callback` value before using it.\n\n**Example mitigation using `dangerouslySetInnerHTML`:**\n\n```javascript\nconst callback = searchParams.get('callback');\nconst escapedCallback = dangerouslySetInnerHTML(callback, 'script');\n```\n\n**Example mitigation using a DOMPurify library:**\n\n```javascript\nimport DOMPurify from 'dompurify';\n\nconst callback = searchParams.get('callback');\nconst purifiedCallback = DOMPurify.encode(callback);\n```\n\n**Additional notes:**\n\n- The code also contains a potential vulnerability with the `eval` function. This should be addressed immediately as it could potentially execute arbitrary JavaScript code.\n- It is important to thoroughly understand the code and its dependencies before implementing any security fixes."
+      },
+      "elapsed": 7.67,
+      "detected": true
+    },
+    {
+      "id": 4,
+      "language": "React / Next.js",
+      "expected_vuln": "XSS via event handler",
+      "code": "<img src={user.avatar} onError={user.fallback} />",
+      "parsed": {
+        "VULNERABILITY": "Cross-Site Request Forgery (CSRF)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker could use this code to hijack the user's session by injecting a specially crafted `avatar` URL into a profile picture input field.",
+        "FIX": "Add a validation check to prevent the user from submitting an empty or invalid `avatar` URL."
+      },
+      "elapsed": 1.98,
+      "detected": true
+    },
+    {
+      "id": 5,
+      "language": "Node.js / Express",
+      "expected_vuln": "SQL Injection",
+      "code": "db.query(\"SELECT * FROM users WHERE id=\" + req.params.id);",
+      "parsed": {
+        "VULNERABILITY": "SQL Injection",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker could potentially inject malicious SQL code into the `id` parameter of the query, granting them access to the database.",
+        "FIX": "Use prepared statements to execute queries and bind the `id` parameter with a properly sanitized value."
+      },
+      "elapsed": 1.72,
+      "detected": true
+    },
+    {
+      "id": 6,
+      "language": "Node.js / Express",
+      "expected_vuln": "Command Injection",
+      "code": "exec(req.body.command);",
+      "parsed": {
+        "VULNERABILITY": "Exec bypass",
+        "SEVERITY": "HIGH",
+        "ATTACK": "Trying to bypass the security code by sending a command through the body.",
+        "FIX": "**\n\n```javascript\n// Sanitize the command before executing it\nconst command = req.body.command.replace(/\\\\/g, \"\");\n\n// Execute the sanitized command\nexec(command);"
+      },
+      "elapsed": 2.0,
+      "detected": false
+    },
+    {
+      "id": 7,
+      "language": "Node.js / Express",
+      "expected_vuln": "Insecure CORS",
+      "code": "res.setHeader('Access-Control-Allow-Origin', '*');",
+      "parsed": {
+        "VULNERABILITY": "Cross-Origin Resource Sharing (CORS)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker could use this code to make requests from any origin to any server on the internet.",
+        "FIX": "** Add the following middleware before the route that sets the CORS header:\n```javascript\napp.use((req, res, next) => {\n  res.setHeader('Access-Control-Allow-Origin', req.headers.origin);\n  next();\n});"
+      },
+      "elapsed": 2.51,
+      "detected": true
+    },
+    {
+      "id": 8,
+      "language": "Node.js / Express",
+      "expected_vuln": "Hardcoded Secret",
+      "code": "jwt.verify(token, 'hardcoded_secret_key');",
+      "parsed": {
+        "VULNERABILITY": "—",
+        "SEVERITY": "Critical",
+        "ATTACK": "An attacker could forge a token that contains a different secret key, resulting in unauthorized access.",
+        "FIX": "**\n\n```javascript\nconst secretKey = 'your_secret_key';\n\njwt.verify(token, secretKey);\n```\n\n**Explanation:**\n\n* `jwt.verify()` function validates a JSON Web Token (JWT) using a specified secret key.\n* `token` is the JWT that needs to be verified.\n* `secretKey` is the secret key used to verify the JWT.\n\n**Mitigation:**\n\n* Use a secure secret key that is never exposed to the client-side.\n* Use a library or package that provides secure JWT handling.\n* Validate the secret key before using it to verify JWTs."
+      },
+      "elapsed": 4.25,
+      "detected": false
+    },
+    {
+      "id": 9,
+      "language": "Java Spring Boot",
+      "expected_vuln": "SQL Injection",
+      "code": "String query = \"SELECT * FROM \" + tableName;\nstmt.execute(query);",
+      "parsed": {
+        "VULNERABILITY": "SQL Injection",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker could inject malicious SQL commands into the `tableName` variable, potentially gaining full access to the database.",
+        "FIX": "**\n\n```java\nString query = \"SELECT * FROM `\" + tableName + \"`;\";\nstmt.execute(query);\n```\n\n**Explanation:**\n\n1. The code uses string concatenation to build an SQL query. This makes it vulnerable to SQL injection attacks, where an attacker can inject malicious SQL commands into the `tableName` variable.\n2. The attacker could use this vulnerability to execute arbitrary SQL commands on the database, potentially gaining full access to the system.\n\n**Additional Notes:**\n\n* This vulnerability could also be exploited to delete data, insert data, or change database settings.\n* The severity of this vulnerability is considered HIGH because it could potentially be used to gain full access to a database.\n* The code could be secured by using prepared statements, which allow the database to compile the SQL query and prevent it from being executed as a string."
+      },
+      "elapsed": 5.23,
+      "detected": true
+    },
+    {
+      "id": 10,
+      "language": "Java Spring Boot",
+      "expected_vuln": "Command Injection",
+      "code": "Runtime.getRuntime().exec(userInput);",
+      "parsed": {
+        "VULNERABILITY": "Unsafe execution of user input",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker could input malicious code through the `userInput` variable, which will be executed via the `Runtime.getRuntime().exec()` method.",
+        "FIX": "Use parameterized queries to execute user input instead of directly concatenating it into the command."
+      },
+      "elapsed": 1.69,
+      "detected": false
+    },
+    {
+      "id": 11,
+      "language": "Java Spring Boot",
+      "expected_vuln": "Overly Permissive Endpoint",
+      "code": "@RequestMapping(value=\"/**\")\npublic ResponseEntity<?> handle(HttpServletRequest req) { ... }",
+      "parsed": {
+        "VULNERABILITY": "Cross-site Scripting (XSS)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker could inject malicious JavaScript into the request parameters, which would then be executed on the server.",
+        "FIX": "**\n\n```java\n@RequestMapping(value = \"/**\")\npublic ResponseEntity<?> handle(HttpServletRequest req) {\n    try {\n        // sanitize the request parameters\n        String queryString = req.getParameter(\"queryString\");\n        // escape any special characters in the query string\n        String sanitizedQueryString = java.net.URLEncoder.encode(queryString, \"UTF-8\");\n\n        // process the request with the sanitized query string\n        // ...\n\n        return ResponseEntity.ok().body(result);\n    } catch (Exception e) {\n        return ResponseEntity.internalServerError().build();\n    }\n}"
+      },
+      "elapsed": 4.12,
+      "detected": false
+    },
+    {
+      "id": 12,
+      "language": "Java Spring Boot",
+      "expected_vuln": "Timing Attack",
+      "code": "if (password.equals(inputPassword)) { grantAccess(); }",
+      "parsed": {
+        "VULNERABILITY": "SQL Injection",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "An attacker could potentially inject malicious SQL code into the `password` variable, granting unauthorized access to the system.",
+        "FIX": "**\n\n```java\nif (password.equals(inputPassword)) {\n    grantAccess();\n} else {\n    // Handle password mismatch\n}"
+      },
+      "elapsed": 1.95,
+      "detected": false
+    },
+    {
+      "id": 13,
+      "language": "Python",
+      "expected_vuln": "Insecure Deserialization",
+      "code": "import pickle\nobj = pickle.loads(user_data)",
+      "parsed": {
+        "VULNERABILITY": "Unauthorized Object Loading",
+        "SEVERITY": "HIGH",
+        "ATTACK": "Injection of malicious object",
+        "FIX": "** \n```python\nimport pickle\nobj = pickle.loads(user_data)\n```\n\n**Explanation:**\n\n1. The code attempts to load an object named `obj` from a string `user_data` using the `pickle.loads()` function.\n2. The `user_data` variable is not defined within the scope of the function, which could potentially contain malicious code.\n3. If the `user_data` variable contains a valid pickle-encoded object, `pickle.loads()` will successfully load it and assign it to the `obj` variable.\n4. By loading an object without proper validation, an attacker could potentially inject malicious code into the memory space allocated for the object. This could lead to various attacks, such as arbitrary code execution, data theft, or complete system takeovers.\n\n**Additional Notes:**\n\n* The `pickle` module is used for object serialization and deserialization.\n* `user_data` is not defined in the code snippet, but it could be passed as a potentially malicious parameter.\n* This vulnerability could be exploited in a variety of ways, including via phishing attacks, malicious websites, or zero-day exploits."
+      },
+      "elapsed": 6.44,
+      "detected": false
+    },
+    {
+      "id": 14,
+      "language": "Python",
+      "expected_vuln": "Command Injection",
+      "code": "import subprocess\nsubprocess.call(user_input, shell=True)",
+      "parsed": {
+        "VULNERABILITY": "Cross-site Request Forgery (XSRF)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker can potentially redirect the user to a malicious website by using a crafted URL in the `user_input` variable.",
+        "FIX": "** Use `subprocess.check_output()` instead of `subprocess.call()` to execute the command and obtain the output as a byte string. This allows us to control the output and prevent malicious code from being executed.\n\n**Full Code:**\n\n```python\nimport subprocess\nresult = subprocess.check_output(user_input, shell=True)\nprint(result)"
+      },
+      "elapsed": 3.33,
+      "detected": false
+    },
+    {
+      "id": 15,
+      "language": "Python",
+      "expected_vuln": "Arbitrary Code Execution via YAML",
+      "code": "import yaml\ndata = yaml.load(user_input)  # not safe_load",
+      "parsed": {
+        "VULNERABILITY": "unsafe_load",
+        "SEVERITY": "HIGH",
+        "ATTACK": "User input can be loaded into the yaml.load() function without proper validation, allowing an attacker to inject malicious code.",
+        "FIX": "** Use `safe_load` to load the yaml data."
+      },
+      "elapsed": 1.55,
+      "detected": false
+    },
+    {
+      "id": 16,
+      "language": "Python",
+      "expected_vuln": "Command Injection",
+      "code": "import os\nos.system(f\"ping {host}\")",
+      "parsed": {
+        "VULNERABILITY": "ping vulnerability",
+        "SEVERITY": "HIGH",
+        "ATTACK": "Sending a ping request to a specified host",
+        "FIX": "Use the `ping3` module to perform a valid ping request.**"
+      },
+      "elapsed": 1.28,
+      "detected": false
+    },
+    {
+      "id": 17,
+      "language": "C",
+      "expected_vuln": "Format String Attack",
+      "code": "printf(user_input);  // user-controlled format string",
+      "parsed": {
+        "VULNERABILITY": "SQL Injection",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker could potentially execute arbitrary SQL commands through the user_input variable, gaining complete control of the system.",
+        "FIX": "Use parameterized queries with placeholders instead of directly embedding user input.**"
+      },
+      "elapsed": 1.54,
+      "detected": false
+    },
+    {
+      "id": 18,
+      "language": "C",
+      "expected_vuln": "Buffer Overflow",
+      "code": "char buf[64];\nstrcpy(buf, argv[1]);  // no bounds check",
+      "parsed": {
+        "VULNERABILITY": "Buffer overflow",
+        "SEVERITY": "HIGH",
+        "ATTACK": "Malicious user input can cause a buffer overflow, allowing an attacker to write arbitrary data beyond the intended size of the buffer, overwriting the security code and taking control of the system.",
+        "FIX": "** Use the `strncpy` function with a proper length check to ensure the buffer size is respected.\n```c\nchar buf[64];\nstrncpy(buf, argv[1], 64);\nif (strlen(buf) != 64) {\n  // Handle error\n}"
+      },
+      "elapsed": 2.95,
+      "detected": true
+    },
+    {
+      "id": 19,
+      "language": "GitHub Actions YAML",
+      "expected_vuln": "Script Injection via untrusted input",
+      "code": "- run: echo ${{ github.event.issue.title }}",
+      "parsed": {
+        "VULNERABILITY": "—",
+        "SEVERITY": "HIGH",
+        "ATTACK": "Exposure of issue title",
+        "FIX": "** The code directly prints the issue title, which could potentially be exposed in the logs or captured by attackers.\n\n**Vulnerability Description:**\n\nThe code extracts the issue title from the `github.event.issue` object and prints it out. This information could be sensitive, especially if the issue title contains personal or organizational information. Attackers could potentially use this information to identify the issue owner, their organization, or other sensitive details.\n\n**Suggested Fix:**\n\nThe code should be modified to avoid printing the issue title. This can be achieved by using a different approach to obtain the issue title, such as using the `issue.title` property or extracting it from a different object.\n\n**Revised Code with Fix:**\n\n```yaml\n- run: echo ${{ github.event.issue.title }} | sed 's/.*\\(.*\\)/\\1/g'"
+      },
+      "elapsed": 4.86,
+      "detected": false
+    },
+    {
+      "id": 20,
+      "language": "GitHub Actions YAML",
+      "expected_vuln": "Supply Chain Attack (unpinned action)",
+      "code": "- uses: actions/checkout@main  # unpinned version",
+      "parsed": {
+        "VULNERABILITY": "unpinned version",
+        "SEVERITY": "HIGH",
+        "ATTACK": "Using an unpinned version of the checkout action may expose the repository to vulnerabilities.",
+        "FIX": "Upgrading to a pinned version of the checkout action will resolve this vulnerability."
+      },
+      "elapsed": 1.35,
+      "detected": true
+    }
+  ]
+}

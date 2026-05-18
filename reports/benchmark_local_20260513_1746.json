@@ -1,0 +1,1191 @@
+{
+  "Gemma:2b Ollama (베이스라인)": [
+    {
+      "id": 1,
+      "language": "React / Next.js",
+      "expected_vuln": "XSS",
+      "code": "return <div dangerouslySetInnerHTML={{__html: userInput}} />;",
+      "parsed": {
+        "VULNERABILITY": "Cross-Site Scripting (XSS)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker could inject malicious JavaScript code into the `userInput` variable, which would be executed on the user's browser.",
+        "FIX": "Use `dangerouslySetInnerHTML` with the `dangerouslySetInnerHTML` prop set to `false` and only render trusted HTML content."
+      },
+      "elapsed": 2.63,
+      "detected": true
+    },
+    {
+      "id": 2,
+      "language": "React / Next.js",
+      "expected_vuln": "XSS",
+      "code": "return <a href={`javascript:${userAction}`}>Click</a>;",
+      "parsed": {
+        "VULNERABILITY": "Cross-site Scripting (XSS)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker could inject malicious JavaScript into the href attribute of the anchor tag, which could then be executed on the user's browser.",
+        "FIX": "The user should be prevented from clicking on the link by sanitizing the href attribute or using a library like `sanitize-href` to escape any malicious characters."
+      },
+      "elapsed": 2.13,
+      "detected": true
+    },
+    {
+      "id": 3,
+      "language": "React / Next.js",
+      "expected_vuln": "Code Injection via eval",
+      "code": "eval(searchParams.get('callback'));",
+      "parsed": {
+        "VULNERABILITY": "Cross-Site Request Forgery (CSRF)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker could use a specially crafted URL to cause the victim to execute arbitrary code on their server.",
+        "FIX": "** Wrap the callback function in a Next.js middleware to verify the origin of the request."
+      },
+      "elapsed": 1.75,
+      "detected": false
+    },
+    {
+      "id": 4,
+      "language": "React / Next.js",
+      "expected_vuln": "XSS via event handler",
+      "code": "<img src={user.avatar} onError={user.fallback} />",
+      "parsed": {
+        "VULNERABILITY": "Cross-Site Request Forgery (XSRF)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker could inject malicious JavaScript into the user's avatar tag, allowing them to steal sensitive information such as login credentials.",
+        "FIX": "Use the `src` attribute only to display the user's avatar, and use a Content Security Policy (CSP) to restrict the allowed sources for the `src` attribute."
+      },
+      "elapsed": 2.2,
+      "detected": true
+    },
+    {
+      "id": 5,
+      "language": "Node.js / Express",
+      "expected_vuln": "SQL Injection",
+      "code": "db.query(\"SELECT * FROM users WHERE id=\" + req.params.id);",
+      "parsed": {
+        "VULNERABILITY": "SQL Injection",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker could potentially inject malicious SQL into the `req.params.id` variable, granting them full access to the database.",
+        "FIX": "** Use parameterized queries with prepared statements to prevent SQL injection attacks."
+      },
+      "elapsed": 1.57,
+      "detected": true
+    },
+    {
+      "id": 6,
+      "language": "Node.js / Express",
+      "expected_vuln": "Command Injection",
+      "code": "exec(req.body.command);",
+      "parsed": {
+        "VULNERABILITY": "Buffer Overflow",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker could craft a command that overflows the buffer used to store the command, leading to arbitrary code execution.",
+        "FIX": "**\n\n```javascript\nconst command = req.body.command;\nconst buffer = Buffer.alloc(1024);\nbuffer.fill(0);\nbuffer[0] = 0x00; // this is the vulnerability\nexec(command);\n```\n\nThis code first receives the command in `req.body.command`. It then allocates 1024 bytes of memory and fills the first byte with 0x00. This is a common buffer overflow vulnerability. If the command length is longer than 1024 bytes, the extra bytes will be written to the next memory location, potentially overwriting the next instructions in memory. This allows the attacker to execute arbitrary code."
+      },
+      "elapsed": 4.61,
+      "detected": false
+    },
+    {
+      "id": 7,
+      "language": "Node.js / Express",
+      "expected_vuln": "Insecure CORS",
+      "code": "res.setHeader('Access-Control-Allow-Origin', '*');",
+      "parsed": {
+        "VULNERABILITY": "Cross-Origin Request Forgery (CSRF)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "User can be tricked into executing malicious code from a different origin.",
+        "FIX": "** \n\n```javascript\nres.setHeader('Access-Control-Allow-Origin', '*');\n```\n\n**Explanation:** \nThe code sets the `Access-Control-Allow-Origin` header to `*`. This allows any origin to access the resources. This is a significant security risk as it allows an attacker to inject malicious code from any website.\n\n**Attack scenario:**\nAn attacker could use a phishing attack to trick a user into visiting a malicious website and executing the attacker's code. This could result in the attacker gaining access to sensitive information or executing other malicious actions on the user's behalf.\n\n**Additional notes:**\nIt is crucial to only allow access from trusted origins. In this example, the code allows access from any origin. This could be secured by using a whitelist of approved origins. Additionally, the code does not validate the origin of the request, which could allow an attacker to bypass these security measures."
+      },
+      "elapsed": 5.69,
+      "detected": false
+    },
+    {
+      "id": 8,
+      "language": "Node.js / Express",
+      "expected_vuln": "Hardcoded Secret",
+      "code": "jwt.verify(token, 'hardcoded_secret_key');",
+      "parsed": {
+        "VULNERABILITY": "JWT verification vulnerability",
+        "SEVERITY": "HIGH",
+        "ATTACK": "Man-in-the-middle attack",
+        "FIX": "** Use a secure, randomly generated secret key for verification\n\n**Detailed Analysis:**\n\nThe code attempts to verify a JWT token using a hardcoded secret key. This makes it vulnerable to a man-in-the-middle attack. An attacker could intercept the token and use the hardcoded secret key to verify it, granting them access to the protected resources.\n\n**Example Vulnerability:**\n\n```\nconst jwt = require('jsonwebtoken');\n\nconst token = 'eyJhbG0yaW5hbGU6...';\nconst secretKey = 'hardcoded_secret_key';\n\njwt.verify(token, secretKey);\n```\n\n**Mitigation:**\n\n* Use a secure, randomly generated secret key for each JWT token.\n* Use a library like `jwt-verify` that allows customization and secure key handling.\n* Implement additional security measures, such as HTTPS and strong authentication mechanisms."
+      },
+      "elapsed": 5.12,
+      "detected": false
+    },
+    {
+      "id": 9,
+      "language": "Java Spring Boot",
+      "expected_vuln": "SQL Injection",
+      "code": "String query = \"SELECT * FROM \" + tableName;\nstmt.execute(query);",
+      "parsed": {
+        "VULNERABILITY": "SQL Injection",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker could potentially inject malicious SQL statements into the `tableName` variable, leading to full code execution and unauthorized access to the database.",
+        "FIX": "**\n```java\nString query = \"SELECT * FROM \" + tableName + \" WHERE id = ?\";\nstmt.execute(query, params);\n```\n\n**Explanation:**\n\n* The code first defines a variable `query` with a string containing an SQL SELECT statement.\n* The `stmt.execute()` method is used to execute the query on the `tableName` with a parameter `id`.\n* This allows an attacker to pass malicious SQL statements through the `id` parameter, potentially executing arbitrary code on the server.\n\n**Additional Notes:**\n\n* The code is using a prepared statement, which is a good practice to prevent SQL injection attacks.\n* However, the `id` parameter is being used directly in the SQL query, which could potentially be vulnerable if the attacker can control the value of `id`.\n\n**Recommendation:**\n\n* Never use user-supplied values directly in SQL queries.\n* Use prepared statements or other secure techniques to prevent SQL injection attacks.\n* Validate and sanitize user inputs before using them in SQL queries."
+      },
+      "elapsed": 6.35,
+      "detected": true
+    },
+    {
+      "id": 10,
+      "language": "Java Spring Boot",
+      "expected_vuln": "Command Injection",
+      "code": "Runtime.getRuntime().exec(userInput);",
+      "parsed": {
+        "VULNERABILITY": "Reflection",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker could potentially inject malicious code into the userInput variable through a vulnerability in the application. This could be achieved by manipulating the input to execute arbitrary code on the server.",
+        "FIX": "** The code should be modified to escape any user input before executing it. For example, using the Apache Commons Lang StringUtils.strip(userInput) can be used to remove any malicious characters."
+      },
+      "elapsed": 2.26,
+      "detected": false
+    },
+    {
+      "id": 11,
+      "language": "Java Spring Boot",
+      "expected_vuln": "Overly Permissive Endpoint",
+      "code": "@RequestMapping(value=\"/**\")\npublic ResponseEntity<?> handle(HttpServletRequest req) { ... }",
+      "parsed": {
+        "VULNERABILITY": "Cross-Site Request Forgery (XSRF)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker could submit specially crafted URLs with malicious content to the `//**` endpoint. This content could be used to execute arbitrary JavaScript code on the victim's browser, potentially gaining access to sensitive information or taking control of the victim's account.",
+        "FIX": "**\n\nThe vulnerability can be addressed by validating the origin of the request. The `@RequestMapping` annotation can be used with a valid regular expression to specify only requests from the expected domain. Additionally, the server should reject requests from unknown sources.\n\n```java\n@RequestMapping(value = \"/{domain}\")\npublic ResponseEntity<?> handle(HttpServletRequest req, @PathVariable String domain) { ... }\n```\n\nThis code will only allow requests from the specified domain to access the protected resource."
+      },
+      "elapsed": 4.35,
+      "detected": false
+    },
+    {
+      "id": 12,
+      "language": "Java Spring Boot",
+      "expected_vuln": "Timing Attack",
+      "code": "if (password.equals(inputPassword)) { grantAccess(); }",
+      "parsed": {
+        "VULNERABILITY": "Unauthorized Access",
+        "SEVERITY": "HIGH",
+        "ATTACK": "Password MitM Attack",
+        "FIX": "** Use parameterized queries or consider using a secure authentication mechanism such as JWTs."
+      },
+      "elapsed": 1.14,
+      "detected": false
+    },
+    {
+      "id": 13,
+      "language": "Python",
+      "expected_vuln": "Insecure Deserialization",
+      "code": "import pickle\nobj = pickle.loads(user_data)",
+      "parsed": {
+        "VULNERABILITY": "CROSS-OS Attack",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker could potentially load malicious code into the object being loaded using pickle. This could allow an attacker to execute arbitrary code on the system, potentially gaining complete control of the machine.",
+        "FIX": "Use a library that provides more robust security features, such as JSON or YAML serialization instead of pickle."
+      },
+      "elapsed": 1.93,
+      "detected": false
+    },
+    {
+      "id": 14,
+      "language": "Python",
+      "expected_vuln": "Command Injection",
+      "code": "import subprocess\nsubprocess.call(user_input, shell=True)",
+      "parsed": {
+        "VULNERABILITY": "Command Injection",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker could potentially inject malicious commands into the user input before the subprocess.call() function executes the command.",
+        "FIX": "** Use parameterized commands or escape the user input to prevent command injection."
+      },
+      "elapsed": 1.54,
+      "detected": true
+    },
+    {
+      "id": 15,
+      "language": "Python",
+      "expected_vuln": "Arbitrary Code Execution via YAML",
+      "code": "import yaml\ndata = yaml.load(user_input)  # not safe_load",
+      "parsed": {
+        "VULNERABILITY": "—",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "Loading untrusted data from user_input",
+        "FIX": "**\n\n```python\nimport yaml\ndata = yaml.safe_load(user_input)  # use this function to load data\n```\n\n**Explanation:**\n\nThe `yaml.load()` function is used to load data from a string. However, the `user_input` variable is not properly sanitized, meaning it could contain malicious code. When `yaml.load()` attempts to parse the string, it could be vulnerable to an attack if the malicious code is present.\n\n**Additional notes:**\n\n* The `safe_load` function is available in the `yaml` module, which is imported at the beginning of the code.\n* It is important to use `yaml.safe_load()` whenever loading data from an unknown source, or if the data is provided by an untrusted source."
+      },
+      "elapsed": 4.81,
+      "detected": false
+    },
+    {
+      "id": 16,
+      "language": "Python",
+      "expected_vuln": "Command Injection",
+      "code": "import os\nos.system(f\"ping {host}\")",
+      "parsed": {
+        "VULNERABILITY": "ping vulnerability",
+        "SEVERITY": "HIGH",
+        "ATTACK": "The code uses the `os.system()` function to execute the `ping` command, which can be used to launch a denial-of-service (DoS) attack.",
+        "FIX": "The code should use the `os.system()` function with a different command that is not as susceptible to DoS attacks."
+      },
+      "elapsed": 2.0,
+      "detected": false
+    },
+    {
+      "id": 17,
+      "language": "C",
+      "expected_vuln": "Format String Attack",
+      "code": "printf(user_input);  // user-controlled format string",
+      "parsed": {
+        "VULNERABILITY": "—",
+        "SEVERITY": "HIGH",
+        "ATTACK": "User-controlled format string can lead to code injection and execution of malicious code.",
+        "FIX": "**\n\nTo prevent this vulnerability, the format string should be properly sanitized to prevent user-controlled code from being injected. This can be achieved using different techniques, such as using `sprintf` with a format specifier, using `strcspn` to find the length of the user input and then building the format string with the user input, or using a library function like `snprintf` that provides more control over the format string.\n\n**Example fix using `sprintf`:**\n\n```c\nprintf(\"Hello, %s!\", \"%s\", \"World\");"
+      },
+      "elapsed": 6.4,
+      "detected": false
+    },
+    {
+      "id": 18,
+      "language": "C",
+      "expected_vuln": "Buffer Overflow",
+      "code": "char buf[64];\nstrcpy(buf, argv[1]);  // no bounds check",
+      "parsed": {
+        "VULNERABILITY": "Buffer Overflow",
+        "SEVERITY": "HIGH",
+        "ATTACK": "Use of `argv[1]` as the source for `strcpy`",
+        "FIX": "Use a proper buffer size and validate user-supplied data before using `strcpy`**\n\n**Explanation:**\n\n* The code takes the first 64 characters of the `argv[1]` argument and stores them in the `buf` array.\n* The code does not perform any bounds checking, meaning it could potentially access memory outside the allocated buffer, leading to a buffer overflow vulnerability.\n* If `argv[1]` contains a null character or other sensitive data, it could cause the `strcpy` function to continue writing beyond the allocated space, potentially overwriting critical memory regions.\n* This vulnerability could allow an attacker to control the memory address of the `buf` array, potentially executing malicious code or taking control of the entire program."
+      },
+      "elapsed": 4.5,
+      "detected": true
+    },
+    {
+      "id": 19,
+      "language": "GitHub Actions YAML",
+      "expected_vuln": "Script Injection via untrusted input",
+      "code": "- run: echo ${{ github.event.issue.title }}",
+      "parsed": {
+        "VULNERABILITY": "Missing output sanitation",
+        "SEVERITY": "HIGH",
+        "ATTACK": "Printing sensitive information",
+        "FIX": "**\n\n```yaml\n- run: echo ${{ github.event.issue.title }}\n```\n\n**Explanation:**\n\n* This code prints the title of the current issue in the Github Actions workflow.\n* However, it does not escape the output, making it potentially vulnerable to an attacker.\n* An attacker could potentially inject malicious code into the title, which could then be executed during the workflow.\n\n**Additional notes:**\n\n* This vulnerability could be exploited in a variety of ways, such as by injecting a title that contains a malicious payload.\n* It is important to always sanitize output before printing it to the console or other output channels.\n* In this case, the vulnerability could be easily fixed by using string interpolation with a properly sanitized variable."
+      },
+      "elapsed": 4.45,
+      "detected": false
+    },
+    {
+      "id": 20,
+      "language": "GitHub Actions YAML",
+      "expected_vuln": "Supply Chain Attack (unpinned action)",
+      "code": "- uses: actions/checkout@main  # unpinned version",
+      "parsed": {
+        "VULNERABILITY": "Unknown",
+        "SEVERITY": "LOW",
+        "ATTACK": "Use of unmaintained package",
+        "FIX": "** Update the package version to a known stable version\n\n**Explanation:**\n\nThe code uses an unmaintained version of the `actions/checkout` action. This means the package is no longer supported and may contain security vulnerabilities. \n\nThe vulnerability could be exploited if the package is used in a critical application or if the user is compromised to execute arbitrary code. \n\n**Mitigation:**\n\n* Update the package version to a known stable version.\n* Use a curated package manager like `actions/setup-checkout-org` or `npm/install` with the `security` flag.\n* Review the package version used in your workflows and update it if necessary."
+      },
+      "elapsed": 3.95,
+      "detected": false
+    }
+  ],
+  "RAG + gemma:2b": [
+    {
+      "id": 1,
+      "language": "React / Next.js",
+      "expected_vuln": "XSS",
+      "code": "return <div dangerouslySetInnerHTML={{__html: userInput}} />;",
+      "parsed": {
+        "VULNERABILITY": "Cross-Site Scripting (XSS)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker could inject malicious JavaScript code into the `userInput` variable, which will be used to execute arbitrary code on the server.",
+        "FIX": "**\n\n```javascript\nreturn <div dangerouslySetInnerHTML={{__html: userInput}} />;\n```\n\n**Related Real-World CVEs:**\n\n- ? (?): Xibo is an open source digital signage platform with a web content management system and Windows display player software. This platform has been known to be vulnerable to XSS attacks.\n- ? (?): IBM Guardium Data Protection 12.1 is vulnerable to cross-site scripting. This vulnerability allows an administrative user to gain control of the system by exploiting a vulnerability in the web interface.\n\n**Additional Notes:**\n\n- The `dangerouslySetInnerHTML` prop is used to allow for the interpolation of HTML content. This can be used to inject malicious code into the `userInput` variable.\n- The code does not perform any validation on the `userInput` variable, which could allow for an attacker to inject any malicious code they want."
+      },
+      "elapsed": 5.73,
+      "detected": true,
+      "cve_references": [
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "MEDIUM",
+          "score": 6.4,
+          "similarity": 0.787,
+          "description": "Xibo is an open source digital signage platform with a web content management system and Windows display player software. A stored Cross-Site Scripting (XSS) vulnerability in versions prior to 4.4.1 allows an authenticated user with notification creation permissions to inject arbitrary JavaScript in"
+        },
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "MEDIUM",
+          "score": 4.8,
+          "similarity": 0.783,
+          "description": "IBM Guardium Data Protection 12.1 is vulnerable to cross-site scripting. This vulnerability allows an administrative user to embed arbitrary JavaScript code in the Web UI thus altering the intended functionality potentially leading to credentials disclosure within a trusted session."
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "language": "React / Next.js",
+      "expected_vuln": "XSS",
+      "code": "return <a href={`javascript:${userAction}`}>Click</a>;",
+      "parsed": {
+        "VULNERABILITY": "Cross-site scripting (XSS)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "User input manipulation through HTML anchor tag",
+        "FIX": "Escape user input before rendering the HTML**\n\n**Explanation:**\n\nThe code renders an anchor tag `<a>` with an `href` attribute containing user-supplied JavaScript code. If an attacker can control the value of the `userAction` variable, they can inject malicious JavaScript code into the URL. This code will then be executed on the user's browser, potentially giving the attacker access to sensitive information or executing malicious actions on their behalf.\n\n**Example:**\n\n```html\n<a href={`javascript:${userAction}`}>Click</a>\n```\n\n**Additional Context:**\n\n- The code is written in React, which is a popular JavaScript library for building web applications.\n- Next.js is a server-side rendering framework that can be used with React to create serverless applications.\n- XSS vulnerabilities can be a significant security risk, as they allow an attacker to inject malicious code into a web application, potentially compromising its functionality and security."
+      },
+      "elapsed": 5.39,
+      "detected": true,
+      "cve_references": [
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "MEDIUM",
+          "score": 6.4,
+          "similarity": 0.787,
+          "description": "Xibo is an open source digital signage platform with a web content management system and Windows display player software. A stored Cross-Site Scripting (XSS) vulnerability in versions prior to 4.4.1 allows an authenticated user with notification creation permissions to inject arbitrary JavaScript in"
+        },
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "MEDIUM",
+          "score": 4.8,
+          "similarity": 0.783,
+          "description": "IBM Guardium Data Protection 12.1 is vulnerable to cross-site scripting. This vulnerability allows an administrative user to embed arbitrary JavaScript code in the Web UI thus altering the intended functionality potentially leading to credentials disclosure within a trusted session."
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "language": "React / Next.js",
+      "expected_vuln": "Code Injection via eval",
+      "code": "eval(searchParams.get('callback'));",
+      "parsed": {
+        "VULNERABILITY": "HIGH",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "Eval injection",
+        "FIX": "Use `eval` only with trusted strings from the same origin."
+      },
+      "elapsed": 0.98,
+      "detected": false,
+      "cve_references": [
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "MEDIUM",
+          "score": 6.5,
+          "similarity": 0.738,
+          "description": "Axios is a promise based HTTP client for the browser and Node.js. From 1.0.0 to before 1.15.2, he Axios library is vulnerable to a Prototype Pollution \"Gadget\" attack that allows any Object.prototype pollution in the application's dependency tree to be escalated into surgical, invisible modification"
+        },
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "MEDIUM",
+          "score": 5.3,
+          "similarity": 0.726,
+          "description": "Other issue in the JavaScript Engine component. This vulnerability was fixed in Firefox 150 and Thunderbird 150."
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "language": "React / Next.js",
+      "expected_vuln": "XSS via event handler",
+      "code": "<img src={user.avatar} onError={user.fallback} />",
+      "parsed": {
+        "VULNERABILITY": "Cross-Site Request Forgery (CSRF)",
+        "SEVERITY": "HIGH",
+        "ATTACK": "The code allows an attacker to manipulate the `user.avatar` attribute to trigger a malicious request on the server.",
+        "FIX": "** Replace the `<img>` tag with a `<picture>` tag and add the `src` attribute with the correct image URL."
+      },
+      "elapsed": 2.01,
+      "detected": true,
+      "cve_references": [
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "MEDIUM",
+          "score": 6.3,
+          "similarity": 0.806,
+          "description": "Dovestones Softwares AD Self Update <4.0.0.5 is vulnerable to Cross Site Request Forgery (CSRF). The affected endpoint processes state-changing requests without requiring a CSRF token or equivalent protection. The endpoint accepts application/x-www-form-urlencoded requests, and an originally POST-ba"
+        },
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "HIGH",
+          "score": 8.4,
+          "similarity": 0.793,
+          "description": "A vulnerability in SenseLive X3050's web management interface allows state-changing operations to be triggered without proper Cross-Site Request Forgery (CSRF) protections. Because the application does not enforce server-side validation of request origin or implement CSRF tokens, a malicious externa"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "language": "Node.js / Express",
+      "expected_vuln": "SQL Injection",
+      "code": "db.query(\"SELECT * FROM users WHERE id=\" + req.params.id);",
+      "parsed": {
+        "VULNERABILITY": "SQL Injection",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker could potentially gain access to sensitive user data or execute arbitrary commands on the server.",
+        "FIX": "**\n\n```javascript\ndb.query(\"SELECT * FROM users WHERE id=\" + req.params.id)\n```\n\nThis code is vulnerable to SQL injection due to the presence of user input in the query. If an attacker can control the `id` parameter, they can execute arbitrary SQL queries that could lead to the disclosure of sensitive information or malicious actions.\n\n**RELATED CVEs:**\n\n- ? (?): SocialEngine versions 7.8.0 and prior contain a SQL injection vulnerability in the /activity/index/get-memberall endpoint.\n- ? (?): Saltcorn is an extensible, open source, no-code database application builder. Prior to 1.4.6, 1.5.6, and 1.6.0-beta.5, a vulnerability exists in the \"Users\" table which could be exploited for SQL injection."
+      },
+      "elapsed": 5.31,
+      "detected": true,
+      "cve_references": [
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "CRITICAL",
+          "score": 9.3,
+          "similarity": 0.781,
+          "description": "SocialEngine versions 7.8.0 and prior contain a SQL injection vulnerability in the /activity/index/get-memberall endpoint where user-supplied input passed via the text parameter is not sanitized before being incorporated into a SQL query. An unauthenticated remote attacker can exploit this vulnerabi"
+        },
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "CRITICAL",
+          "score": 9.9,
+          "similarity": 0.762,
+          "description": "Saltcorn is an extensible, open source, no-code database application builder. Prior to 1.4.6, 1.5.6, and 1.6.0-beta.5, a SQL injection vulnerability in Saltcorn’s mobile-sync routes allows any authenticated low-privilege user with read access to at least one table to inject arbitrary SQL through syn"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "language": "Node.js / Express",
+      "expected_vuln": "Command Injection",
+      "code": "exec(req.body.command);",
+      "parsed": {
+        "VULNERABILITY": "HIGH",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "Injection",
+        "FIX": "** `req.body.command = sanitize(req.body.command)"
+      },
+      "elapsed": 1.16,
+      "detected": false,
+      "cve_references": [
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "HIGH",
+          "score": 7.1,
+          "similarity": 0.744,
+          "description": "Flowise is a drag & drop user interface to build a customized large language model flow. Prior to 3.1.0, a Server-Side Request Forgery (SSRF) protection bypass vulnerability exists in the Custom Function feature. While the application implements SSRF protection via HTTP_DENY_LIST for axios and node-"
+        },
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "HIGH",
+          "score": 8.7,
+          "similarity": 0.742,
+          "description": "Uncontrolled Recursion vulnerability in Apache Thrift Node.js bindings This issue affects Apache Thrift: before 0.23.0. Users are recommended to upgrade to version 0.23.0, which fixes the issue."
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "language": "Node.js / Express",
+      "expected_vuln": "Insecure CORS",
+      "code": "res.setHeader('Access-Control-Allow-Origin', '*');",
+      "parsed": {
+        "VULNERABILITY": "Cross-Origin Resource Sharing (CORS) vulnerability",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker could use this vulnerability to execute arbitrary code on the server, potentially gaining full control of the application.",
+        "FIX": "** Set the `Access-Control-Allow-Origin` header to the origin of the client application (e.g., 'localhost').\n**Related Real-World CVEs:**\n- ?(?): Axios is a promise based HTTP client for the browser and Node.js. Prior to 1.15.1 and 0.31.1, the Axios library's XSRF t\n- ?(?): Flowise is a drag & drop user interface to build a customized large language model flow. Prior to 3.1.0, a Server-Side R"
+      },
+      "elapsed": 4.13,
+      "detected": true,
+      "cve_references": [
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "MEDIUM",
+          "score": 5.4,
+          "similarity": 0.75,
+          "description": "Axios is a promise based HTTP client for the browser and Node.js. Prior to 1.15.1 and 0.31.1, the Axios library's XSRF token protection logic uses JavaScript truthy/falsy semantics instead of strict boolean comparison for the withXSRFToken config property. When this property is set to any truthy non"
+        },
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "HIGH",
+          "score": 7.1,
+          "similarity": 0.746,
+          "description": "Flowise is a drag & drop user interface to build a customized large language model flow. Prior to 3.1.0, a Server-Side Request Forgery (SSRF) protection bypass vulnerability exists in the Custom Function feature. While the application implements SSRF protection via HTTP_DENY_LIST for axios and node-"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "language": "Node.js / Express",
+      "expected_vuln": "Hardcoded Secret",
+      "code": "jwt.verify(token, 'hardcoded_secret_key');",
+      "parsed": {
+        "VULNERABILITY": "Improper verification of cryptographic signature in ASP.NET Core allows an unauthorized attacker to elevate privileges",
+        "SEVERITY": "HIGH",
+        "ATTACK": "Using an attacker-controlled token to forge a valid signature",
+        "FIX": "** Use a cryptographic library that supports verifying signatures with the correct key. Use a constant secret key instead of hardcoding it in the code."
+      },
+      "elapsed": 1.99,
+      "detected": false,
+      "cve_references": [
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "CRITICAL",
+          "score": 9.1,
+          "similarity": 0.728,
+          "description": "Improper verification of cryptographic signature in ASP.NET Core allows an unauthorized attacker to elevate privileges over a network."
+        },
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "MEDIUM",
+          "score": 5.4,
+          "similarity": 0.727,
+          "description": "Axios is a promise based HTTP client for the browser and Node.js. Prior to 1.15.1 and 0.31.1, the Axios library's XSRF token protection logic uses JavaScript truthy/falsy semantics instead of strict boolean comparison for the withXSRFToken config property. When this property is set to any truthy non"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "language": "Java Spring Boot",
+      "expected_vuln": "SQL Injection",
+      "code": "String query = \"SELECT * FROM \" + tableName;\nstmt.execute(query);",
+      "parsed": {
+        "VULNERABILITY": "SQL Injection vulnerability in Spring AI's `CosmosDBVectorStore`",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "An attacker could execute arbitrary SQL queries via c by exploiting the `CosmosDBVectorStore` vulnerability.",
+        "FIX": "** The affected code should be modified to use prepared statements or properly escape user-provided input to prevent SQL injection."
+      },
+      "elapsed": 1.94,
+      "detected": true,
+      "cve_references": [
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "HIGH",
+          "score": 8.8,
+          "similarity": 0.816,
+          "description": "SQL injection vulnerability in Spring AI's `CosmosDBVectorStore` allows attackers to execute arbitrary SQL queries via crafted document IDs. Affected versions: Spring AI: 1.0.0 - 1.0.5 (fixed in 1.0.6), 1.1.0 - 1.1.4 (fixed in 1.1.5)"
+        },
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "HIGH",
+          "score": 8.8,
+          "similarity": 0.756,
+          "description": "Improper Input Validation, Improper Control of Generation of Code ('Code Injection') vulnerability in Apache ActiveMQ, Apache ActiveMQ Broker, Apache ActiveMQ All. An authenticated attacker can use the admin web console page to construct a malicious broker name that bypasses name validation to inclu"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "language": "Java Spring Boot",
+      "expected_vuln": "Command Injection",
+      "code": "Runtime.getRuntime().exec(userInput);",
+      "parsed": {
+        "VULNERABILITY": "SSRF vulnerability",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "An attacker could potentially use this code to execute arbitrary code on the server, potentially gaining full control of the system.",
+        "FIX": "** The code only accepts a single input parameter, `userInput`. This makes it susceptible to SSRF attacks, as an attacker could potentially submit malicious code through this parameter.\n\n**Additional Information:**\n\n- This vulnerability has been reported in several server-side applications, including GitHub Enterprise Server and Xibo.\n- SSRF attacks can be used to gain access to sensitive data, execute malicious code, or even take control of the entire server.\n- The vulnerability is not present in the provided context, but it is important to be aware of this type of vulnerability."
+      },
+      "elapsed": 3.82,
+      "detected": false,
+      "cve_references": [
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "HIGH",
+          "score": 8.9,
+          "similarity": 0.797,
+          "description": "A server-side request forgery (SSRF) vulnerability was identified in GitHub Enterprise Server that allowed an attacker to extract sensitive environment variables from the instance through a timing side-channel attack against the notebook rendering service. When private mode was disabled, the noteboo"
+        },
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "MEDIUM",
+          "score": 4.9,
+          "similarity": 0.782,
+          "description": "Xibo is an open source digital signage platform with a web content management system and Windows display player software. An authenticated Server-Side Request Forgery (SSRF) vulnerability in versions prior to 4.4.1 allows users with DataSet permissions to make arbitrary HTTP requests from the CMS se"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "language": "Java Spring Boot",
+      "expected_vuln": "Overly Permissive Endpoint",
+      "code": "@RequestMapping(value=\"/**\")\npublic ResponseEntity<?> handle(HttpServletRequest req) { ... }",
+      "parsed": {
+        "VULNERABILITY": "SSRF vulnerability",
+        "SEVERITY": "HIGH",
+        "ATTACK": "An attacker could potentially use the exposed server-side request forgery (SSRF) vulnerability in the application to execute arbitrary code on the server.",
+        "FIX": "@RequestMapping(value = \"/**\")\npublic ResponseEntity<?> handle(HttpServletRequest req) {\n    // Additional security checks and validation should be performed before handling the request\n    return ResponseEntity.ok().build();\n}"
+      },
+      "elapsed": 2.42,
+      "detected": false,
+      "cve_references": [
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "HIGH",
+          "score": 8.9,
+          "similarity": 0.797,
+          "description": "A server-side request forgery (SSRF) vulnerability was identified in GitHub Enterprise Server that allowed an attacker to extract sensitive environment variables from the instance through a timing side-channel attack against the notebook rendering service. When private mode was disabled, the noteboo"
+        },
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "MEDIUM",
+          "score": 4.9,
+          "similarity": 0.782,
+          "description": "Xibo is an open source digital signage platform with a web content management system and Windows display player software. An authenticated Server-Side Request Forgery (SSRF) vulnerability in versions prior to 4.4.1 allows users with DataSet permissions to make arbitrary HTTP requests from the CMS se"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "language": "Java Spring Boot",
+      "expected_vuln": "Timing Attack",
+      "code": "if (password.equals(inputPassword)) { grantAccess(); }",
+      "parsed": {
+        "VULNERABILITY": "SQL Injection vulnerability in Spring AI's `CosmosDBVectorStore`",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "Attackers can execute arbitrary SQL queries via c",
+        "FIX": "No fixed code, but updating the library to the latest version will mitigate this vulnerability**\n\n**Explanation:**\n\n* The code checks the input password with `password.equals(inputPassword)`.\n* This is vulnerable to SQL injection attacks, where an attacker can submit malicious SQL queries through the input field.\n* If the password matches the input, the access is granted, potentially allowing an attacker to take unauthorized actions.\n\n**Additional context:**\n\n* The vulnerability was discovered by researchers at Spring Security.\n* The `CosmosDBVectorStore` is used in Spring Cloud Stream applications for processing text data.\n* This vulnerability could be exploited to gain access to sensitive data stored in CosmosDB databases.\n\n**Note:**\n\n* The provided code only shows a portion of the application and does not provide the full context.\n* More information about the vulnerability and the Spring Cloud Stream application can be found in the security bulletin released by Spring Security."
+      },
+      "elapsed": 6.25,
+      "detected": false,
+      "cve_references": [
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "HIGH",
+          "score": 8.8,
+          "similarity": 0.816,
+          "description": "SQL injection vulnerability in Spring AI's `CosmosDBVectorStore` allows attackers to execute arbitrary SQL queries via crafted document IDs. Affected versions: Spring AI: 1.0.0 - 1.0.5 (fixed in 1.0.6), 1.1.0 - 1.1.4 (fixed in 1.1.5)"
+        },
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "HIGH",
+          "score": 8.8,
+          "similarity": 0.756,
+          "description": "Improper Input Validation, Improper Control of Generation of Code ('Code Injection') vulnerability in Apache ActiveMQ, Apache ActiveMQ Broker, Apache ActiveMQ All. An authenticated attacker can use the admin web console page to construct a malicious broker name that bypasses name validation to inclu"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "language": "Python",
+      "expected_vuln": "Insecure Deserialization",
+      "code": "import pickle\nobj = pickle.loads(user_data)",
+      "parsed": {
+        "VULNERABILITY": "HIGH",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "Unsafe Deserialization Vulnerability in Pickle",
+        "FIX": "**\n\n```python\nimport pickle\nobj = pickle.loads(user_data)"
+      },
+      "elapsed": 1.91,
+      "detected": false,
+      "cve_references": [
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "CRITICAL",
+          "score": 9.3,
+          "similarity": 0.765,
+          "description": "LeRobot through 0.5.1 contains an unsafe deserialization vulnerability in the async inference pipeline where pickle.loads() is used to deserialize data received over unauthenticated gRPC channels without TLS in the policy server and robot client components. An unauthenticated network-reachable attac"
+        },
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "CRITICAL",
+          "score": 9.8,
+          "similarity": 0.753,
+          "description": "Pipecat is an open-source Python framework for building real-time voice and multimodal conversational agents. Versions 0.0.41 through 0.0.93 have a vulnerability in `LivekitFrameSerializer` – an optional, non-default, undocumented frame serializer class (now deprecated) intended for LiveKit integrat"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "language": "Python",
+      "expected_vuln": "Command Injection",
+      "code": "import subprocess\nsubprocess.call(user_input, shell=True)",
+      "parsed": {
+        "VULNERABILITY": "Attack",
+        "SEVERITY": "HIGH",
+        "ATTACK": "User input could be used to execute arbitrary commands through the `user_input` variable.",
+        "FIX": "** Sanitize the `user_input` variable before using it in the `subprocess.call()` function."
+      },
+      "elapsed": 2.1,
+      "detected": false,
+      "cve_references": [
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "HIGH",
+          "score": 8.6,
+          "similarity": 0.714,
+          "description": "FreePBX api module version 17.0.8 and prior contain a command injection vulnerability in the initiateGqlAPIProcess() function where GraphQL mutation input fields are passed directly to shell_exec() without sanitization or escaping. An authenticated user with a valid bearer token can send a GraphQL m"
+        },
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "HIGH",
+          "score": 8.6,
+          "similarity": 0.714,
+          "description": "LanSpy 2.0.1.159 contains a local buffer overflow vulnerability in the scan section that allows local attackers to execute arbitrary code by exploiting structured exception handling mechanisms. Attackers can craft malicious payloads using egghunter techniques to locate and execute shellcode, trigger"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "language": "Python",
+      "expected_vuln": "Arbitrary Code Execution via YAML",
+      "code": "import yaml\ndata = yaml.load(user_input)  # not safe_load",
+      "parsed": {
+        "VULNERABILITY": "—",
+        "SEVERITY": "HIGH",
+        "ATTACK": "User input from `user_input` is loaded as YAML data and used in `yaml.load` without proper validation.",
+        "FIX": "**\n\n```python\nimport yaml\nimport re\n\ndata = yaml.safe_load(user_input)\n\n# Extract the data from the YAML string\ndata_dict = yaml.safe_load(data)\n\n# Use the extracted data in the application\n# instead of loading it directly from user input\n```\n\n**Explanation:**\n\n1. `user_input` is the user's input.\n2. `yaml.load` loads the YAML string into a Python dictionary `data_dict`.\n3. `yaml.safe_load` allows specifying the `allow_unicode` parameter to `True`. This ensures that the data is loaded as a string, instead of being parsed as a YAML object.\n4. `re.sub` is used to escape any HTML characters in the user input before loading the YAML string into the `data_dict`. This prevents the code from being vulnerable to XSS attacks.\n\n**Additional Notes:**\n\n* This vulnerability could be exploited by an attacker who submits malicious YAML data.\n* The code assumes that the YAML data is valid JSON. This could be a potential issue if the data is not properly formatted."
+      },
+      "elapsed": 0.0,
+      "detected": false,
+      "cve_references": []
+    },
+    {
+      "id": 16,
+      "language": "Python",
+      "expected_vuln": "Command Injection",
+      "code": "import os\nos.system(f\"ping {host}\")",
+      "parsed": {
+        "VULNERABILITY": "Flowise is a drag & drop user interface to build a customized large language model flow. Prior to 3.1.0, the specific flow can be manipulated to include malicious code, potentially allowing an attacker to take control of the system.",
+        "SEVERITY": "HIGH",
+        "ATTACK": "Flowise can be manipulated to include malicious code, potentially allowing an attacker to take control of the system.",
+        "FIX": "—"
+      },
+      "elapsed": 2.56,
+      "detected": false,
+      "cve_references": [
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "CRITICAL",
+          "score": 9.8,
+          "similarity": 0.735,
+          "description": "** UNSUPPORTED WHEN ASSIGNED ** Inconsistent Interpretation of HTTP Requests ('HTTP Request/Response Smuggling') vulnerability in Pony Mail leading to admin account takeover. This issue affects all versions of the Lua implementation of Pony Mail. There is a Python implementation under development un"
+        },
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "CRITICAL",
+          "score": 9.2,
+          "similarity": 0.731,
+          "description": "Flowise is a drag & drop user interface to build a customized large language model flow. Prior to 3.1.0, the specific flaw exists within the run method of the CSV_Agents class. The issue results from the lack of proper sandboxing when evaluating an LLM generated python script. An attacker can levera"
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "language": "C",
+      "expected_vuln": "Format String Attack",
+      "code": "printf(user_input);  // user-controlled format string",
+      "parsed": {
+        "VULNERABILITY": "Parsing logic flaws cause non-signature data to be misidentified as valid signatures when processing malformed form fiel",
+        "SEVERITY": "HIGH",
+        "ATTACK": "A user can potentially inject malicious code through the user_input variable by manipulating the format string. This could lead to the execution of arbitrary code on the server.",
+        "FIX": "**\n\n```c\nprintf(\"%s\", user_input);"
+      },
+      "elapsed": 2.47,
+      "detected": false,
+      "cve_references": [
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "HIGH",
+          "score": 7.8,
+          "similarity": 0.754,
+          "description": "Parsing logic flaws cause non-signature data to be misidentified as valid signatures when processing malformed form field hierarchies, leading to invalid memory writes and program crashes during internal data structure construction."
+        },
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "LOW",
+          "score": 3.3,
+          "similarity": 0.752,
+          "description": "A logic error in the tr utility of uutils coreutils causes the program to incorrectly define the [:graph:] and [:print:] character classes. The implementation mistakenly includes the ASCII space character (0x20) in the [:graph:] class and excludes it from the [:print:] class, effectively reversing t"
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "language": "C",
+      "expected_vuln": "Buffer Overflow",
+      "code": "char buf[64];\nstrcpy(buf, argv[1]);  // no bounds check",
+      "parsed": {
+        "VULNERABILITY": "BUFFER_OVERFLOW",
+        "SEVERITY": "HIGH",
+        "ATTACK": "Overwriting the instruction pointer with the address of the next buffer chunk",
+        "FIX": "Use `strlen(buf)` to determine the length of the buffer and then use that value to write to the buffer"
+      },
+      "elapsed": 1.72,
+      "detected": true,
+      "cve_references": [
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "HIGH",
+          "score": 8.6,
+          "similarity": 0.817,
+          "description": "LanSpy 2.0.1.159 contains a local buffer overflow vulnerability that allows attackers to overwrite the instruction pointer by supplying oversized input to the scan field. Attackers can craft a payload with 688 bytes of padding followed by 4 bytes of controlled data to crash the application or potent"
+        },
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "HIGH",
+          "score": 8.6,
+          "similarity": 0.816,
+          "description": "Terminal Services Manager 3.1 contains a stack-based buffer overflow vulnerability in the computer names field that allows local attackers to execute arbitrary code by triggering structured exception handling. Attackers can craft a malicious input file with shellcode and jump instructions that overw"
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "language": "GitHub Actions YAML",
+      "expected_vuln": "Script Injection via untrusted input",
+      "code": "- run: echo ${{ github.event.issue.title }}",
+      "parsed": {
+        "VULNERABILITY": "Improper authorization vulnerability",
+        "SEVERITY": "HIGH",
+        "ATTACK": "Unauthorized access",
+        "FIX": "** Use `restricted_user_scope` to specify the minimum permissions for each scope\n\n**Context:**\nThe code attempts to retrieve the issue title from the GitHub event object. An improper authorization vulnerability was identified in GitHub Enterprise Server that allowed an authenticated attacke to gain access to the `issue.title` property.\n\n**Vulnerability:**\n\nThe code attempts to access the `issue.title` property of the `github.event.issue` object. However, this property may contain sensitive information such as the issue title. An attacker could potentially use this information to gain unauthorized access to the issue or other related resources.\n\n**Example Fix:**\n\n```yaml\n- run: echo ${{ github.event.issue.title }}\n\n# Use restricted scopes to limit access to only the issue title\n- restricted_user_scope:\n  - read: issue.title"
+      },
+      "elapsed": 6.04,
+      "detected": false,
+      "cve_references": [
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "MEDIUM",
+          "score": 5.3,
+          "similarity": 0.747,
+          "description": "An improper authorization vulnerability was identified in GitHub Enterprise Server that allowed an authenticated attacker to determine the names of private repositories by their numeric ID. The mobile upload policy API endpoint did not perform an early authorization check, and validation error messa"
+        },
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "HIGH",
+          "score": 7.2,
+          "similarity": 0.73,
+          "description": "An improper authorization vulnerability in scoped user-to-server (ghu_) token authorization in GitHub Enterprise Server allows an authenticated attacker to access private repositories outside the intended installation scope, which can include write operations, via an authorization fallback that trea"
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "language": "GitHub Actions YAML",
+      "expected_vuln": "Supply Chain Attack (unpinned action)",
+      "code": "- uses: actions/checkout@main  # unpinned version",
+      "parsed": {
+        "VULNERABILITY": "GitLab CI issue",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "Injection",
+        "FIX": "** Use of `eval` function to execute user-provided code\n\n**Explanation:**\n\n* The code uses an `actions/checkout@main` action to checkout a GitLab repository.\n* The `eval` function is used to execute a user-provided code, but the code is not properly sanitized.\n* This allows an attacker to execute arbitrary code on the machine, potentially taking control of the system.\n\n**Real-world CVEs:**\n\n* **GitLab CE/EE vulnerability (2019)**: The vulnerability affected GitLab versions 18.10 and 18.11 before 18.10.4 and 18.11.1. This vulnerability could have been exploited by an attacker to gain root access to the system.\n\n**Additional notes:**\n\n* The `? (?)` notation in the vulnerability references is unclear and does not provide any context or details about the vulnerability.\n* The code only provides a partial fix by using an `eval` function, which is not a robust security mechanism.\n* It is important to understand and mitigate this vulnerability before it can be exploited."
+      },
+      "elapsed": 7.99,
+      "detected": false,
+      "cve_references": [
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "HIGH",
+          "score": 8.0,
+          "similarity": 0.727,
+          "description": "GitLab has remediated an issue in GitLab CE/EE affecting all versions from 18.10 before 18.10.4 and 18.11 before 18.11.1 that could have allowed an unauthenticated user to execute arbitrary JavaScript in a user's browser session due to improper path validation under certain conditions."
+        },
+        {
+          "cve_id": "?",
+          "cwe": "?",
+          "severity": "HIGH",
+          "score": 8.0,
+          "similarity": 0.723,
+          "description": "GitLab has remediated an issue in GitLab CE/EE affecting all versions from 16.1.0 before 18.9.6, 18.10 before 18.10.4, and 18.11 before 18.11.1 that under certain conditions could have allowed an unauthenticated user to access tokens in the Storybook development environment due to improper input val"
+        }
+      ]
+    }
+  ],
+  "Gemma-2 2B LoRA (파인튜닝)": [
+    {
+      "id": 1,
+      "language": "React / Next.js",
+      "expected_vuln": "XSS",
+      "code": "return <div dangerouslySetInnerHTML={{__html: userInput}} />;",
+      "parsed": {
+        "VULNERABILITY": "Cross-site scripting via dangerouslySetInnerHTML",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "Attacker injects script tags to steal cookies or redirect to a malicious site.",
+        "FIX": "return <div>{JSON.stringify(userInput)}</div>;"
+      },
+      "elapsed": 7.27,
+      "detected": true
+    },
+    {
+      "id": 2,
+      "language": "React / Next.js",
+      "expected_vuln": "XSS",
+      "code": "return <a href={`javascript:${userAction}`}>Click</a>;",
+      "parsed": {
+        "VULNERABILITY": "Cross-site scripting via userAction attribute",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "Attacker injects script tag to steal cookies.",
+        "FIX": "return <button onClick={userAction}>Click</button>;"
+      },
+      "elapsed": 3.65,
+      "detected": true
+    },
+    {
+      "id": 3,
+      "language": "React / Next.js",
+      "expected_vuln": "Code Injection via eval",
+      "code": "eval(searchParams.get('callback'));",
+      "parsed": {
+        "VULNERABILITY": "Code injection via callback parameter",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "Attacker injects JavaScript to steal session cookies or execute arbitrary code on the server.",
+        "FIX": "const callback = process.env.NODE_ENV === 'production' ? 'callback' : '';"
+      },
+      "elapsed": 4.65,
+      "detected": true
+    },
+    {
+      "id": 4,
+      "language": "React / Next.js",
+      "expected_vuln": "XSS via event handler",
+      "code": "<img src={user.avatar} onError={user.fallback} />",
+      "parsed": {
+        "VULNERABILITY": "Cross-site script injection via avatar src attribute",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "Attacker sets src attribute to <img src=\"x\" onerror=\"alert(1)\"> to inject a script tag.",
+        "FIX": "<img src={user.avatar} alt={user.name} loading=\"lazy\" referrerpolicy=\"no-referrer\" />"
+      },
+      "elapsed": 5.83,
+      "detected": true
+    },
+    {
+      "id": 5,
+      "language": "Node.js / Express",
+      "expected_vuln": "SQL Injection",
+      "code": "db.query(\"SELECT * FROM users WHERE id=\" + req.params.id);",
+      "parsed": {
+        "VULNERABILITY": "SQL injection via id parameter",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "Attacker injects ' OR 1=1--' to dump all users.",
+        "FIX": "db.query(\"SELECT * FROM users WHERE id=\" + req.params.id);"
+      },
+      "elapsed": 4.57,
+      "detected": true
+    },
+    {
+      "id": 6,
+      "language": "Node.js / Express",
+      "expected_vuln": "Command Injection",
+      "code": "exec(req.body.command);",
+      "parsed": {
+        "VULNERABILITY": "Command injection via req.body.command",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "—",
+        "FIX": "const { exec } = require('child_process'); exec(req.body.command);"
+      },
+      "elapsed": 4.33,
+      "detected": true
+    },
+    {
+      "id": 7,
+      "language": "Node.js / Express",
+      "expected_vuln": "Insecure CORS",
+      "code": "res.setHeader('Access-Control-Allow-Origin', '*');",
+      "parsed": {
+        "VULNERABILITY": "No Origin header restriction",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "Cross-site request forgery (CSRF) via Origin header to access any resource.",
+        "FIX": "res.setHeader('Access-Control-Allow-Origin', 'https://your-allowed-domain.com');"
+      },
+      "elapsed": 4.62,
+      "detected": false
+    },
+    {
+      "id": 8,
+      "language": "Node.js / Express",
+      "expected_vuln": "Hardcoded Secret",
+      "code": "jwt.verify(token, 'hardcoded_secret_key');",
+      "parsed": {
+        "VULNERABILITY": "Hardcoded secret key in JWT verification",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "Attacker intercepts the token and uses the hardcoded secret key to decrypt it and gain access to the protected resource.",
+        "FIX": "const secret = process.env.JWT_SECRET;\njwt.verify(token, secret);"
+      },
+      "elapsed": 5.11,
+      "detected": true
+    },
+    {
+      "id": 9,
+      "language": "Java Spring Boot",
+      "expected_vuln": "SQL Injection",
+      "code": "String query = \"SELECT * FROM \" + tableName;\nstmt.execute(query);",
+      "parsed": {
+        "VULNERABILITY": "SQL injection via tableName",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "Attacker injects ' OR 1=1-- into tableName to execute arbitrary SQL queries.",
+        "FIX": "String query = \"SELECT * FROM \" + tableName + \" WHERE id= ?\";\nstmt.execute(query, id);"
+      },
+      "elapsed": 5.19,
+      "detected": true
+    },
+    {
+      "id": 10,
+      "language": "Java Spring Boot",
+      "expected_vuln": "Command Injection",
+      "code": "Runtime.getRuntime().exec(userInput);",
+      "parsed": {
+        "VULNERABILITY": "Command injection via userInput",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "—",
+        "FIX": "org.springframework.shell.ShellUtils.exec(userInput);"
+      },
+      "elapsed": 4.02,
+      "detected": true
+    },
+    {
+      "id": 11,
+      "language": "Java Spring Boot",
+      "expected_vuln": "Overly Permissive Endpoint",
+      "code": "@RequestMapping(value=\"/**\")\npublic ResponseEntity<?> handle(HttpServletRequest req) { ... }",
+      "parsed": {
+        "VULNERABILITY": "No CORS header check for all endpoints",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "Cross-site request forgery (CSRF) attack with any request to any endpoint.",
+        "FIX": "@RequestMapping(value=\"/api/**\", headers = \"Origin=*\")\npublic ResponseEntity<?> handle(HttpServletRequest req) { ... }"
+      },
+      "elapsed": 5.16,
+      "detected": true
+    },
+    {
+      "id": 12,
+      "language": "Java Spring Boot",
+      "expected_vuln": "Timing Attack",
+      "code": "if (password.equals(inputPassword)) { grantAccess(); }",
+      "parsed": {
+        "VULNERABILITY": "Password comparison without salt or hash",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "Attacker passes the password directly to the Spring Security controller to bypass authentication.",
+        "FIX": "if (password.equals(inputPassword)) {\n    if (passwordEncoder.matches(inputPassword, user.getPassword())) {\n        grantAccess();\n    }\n}"
+      },
+      "elapsed": 6.02,
+      "detected": false
+    },
+    {
+      "id": 13,
+      "language": "Python",
+      "expected_vuln": "Insecure Deserialization",
+      "code": "import pickle\nobj = pickle.loads(user_data)",
+      "parsed": {
+        "VULNERABILITY": "Deserialization of arbitrary data in pickle attack.",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "Attacker sends a malicious pickle file containing code to deserialize and execute arbitrary commands on the server.",
+        "FIX": "import json; obj = json.loads(user_data)"
+      },
+      "elapsed": 4.78,
+      "detected": true
+    },
+    {
+      "id": 14,
+      "language": "Python",
+      "expected_vuln": "Command Injection",
+      "code": "import subprocess\nsubprocess.call(user_input, shell=True)",
+      "parsed": {
+        "VULNERABILITY": "Command injection via user_input",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "Attacker injects a command like 'ls -l /etc/passwd' to gain shell access.",
+        "FIX": "import subprocess\nsubprocess.run(user_input, shell=False, check=True)"
+      },
+      "elapsed": 5.2,
+      "detected": true
+    },
+    {
+      "id": 15,
+      "language": "Python",
+      "expected_vuln": "Arbitrary Code Execution via YAML",
+      "code": "import yaml\ndata = yaml.load(user_input)  # not safe_load",
+      "parsed": {
+        "VULNERABILITY": "YAML injection via user_input",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "Attacker injects malicious YAML to dump system credentials or execute arbitrary code.",
+        "FIX": "import yaml\ndata = yaml.safe_load(user_input)"
+      },
+      "elapsed": 4.34,
+      "detected": true
+    },
+    {
+      "id": 16,
+      "language": "Python",
+      "expected_vuln": "Command Injection",
+      "code": "import os\nos.system(f\"ping {host}\")",
+      "parsed": {
+        "VULNERABILITY": "OS command injection via host",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "—",
+        "FIX": "import subprocess\nsubprocess.run(f\"ping {host}\", shell=False)"
+      },
+      "elapsed": 4.96,
+      "detected": true
+    },
+    {
+      "id": 17,
+      "language": "C",
+      "expected_vuln": "Format String Attack",
+      "code": "printf(user_input);  // user-controlled format string",
+      "parsed": {
+        "VULNERABILITY": "Format string attack",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "Attacker controls user_input to execute arbitrary code via printf.",
+        "FIX": "int len = strlen(user_input); printf(\"%s\\n\", (char *)malloc(len + 1)); free(malloc);"
+      },
+      "elapsed": 5.25,
+      "detected": true
+    },
+    {
+      "id": 18,
+      "language": "C",
+      "expected_vuln": "Buffer Overflow",
+      "code": "char buf[64];\nstrcpy(buf, argv[1]);  // no bounds check",
+      "parsed": {
+        "VULNERABILITY": "String copy with no bounds check",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "Attacker passes a string longer than 64 characters to read arbitrary data from the buffer.",
+        "FIX": "char buf[64]; char *p = argv[1]; if (p == NULL || strlen(p) > 64) { abort(); } strcpy(buf, p);"
+      },
+      "elapsed": 6.69,
+      "detected": false
+    },
+    {
+      "id": 19,
+      "language": "GitHub Actions YAML",
+      "expected_vuln": "Script Injection via untrusted input",
+      "code": "- run: echo ${{ github.event.issue.title }}",
+      "parsed": {
+        "VULNERABILITY": "Sensitive data leak via issue title echo",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "Attacker reads issue title to learn repository secrets.",
+        "FIX": "- name: Issue Title Readout\n  id: 0\n  artifacts:\n    name: issue-title-log\n    path: ./.issue-title-log"
+      },
+      "elapsed": 5.6,
+      "detected": true
+    },
+    {
+      "id": 20,
+      "language": "GitHub Actions YAML",
+      "expected_vuln": "Supply Chain Attack (unpinned action)",
+      "code": "- uses: actions/checkout@main  # unpinned version",
+      "parsed": {
+        "VULNERABILITY": "Unpinned Actions/checkout version allows arbitrary code execution.",
+        "SEVERITY": "CRITICAL",
+        "ATTACK": "Attacker pushes a malicious tag to the workflow that executes arbitrary code on the CI/CD server.",
+        "FIX": "- uses: actions/checkout@v3"
+      },
+      "elapsed": 4.65,
+      "detected": true
+    }
+  ]
+}

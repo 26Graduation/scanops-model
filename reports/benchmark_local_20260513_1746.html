@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>ScanOps Local Benchmark</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f4f8;color:#1e293b;padding:24px}
+h1{font-size:1.5rem;font-weight:700;margin-bottom:4px}
+.sub{color:#64748b;font-size:.85rem;margin-bottom:20px}
+.runs{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px}
+.run-card{background:#fff;border-radius:12px;padding:18px 22px;flex:1;min-width:160px;
+           box-shadow:0 1px 4px rgba(0,0,0,.08);text-align:center}
+.run-label{font-size:.72rem;font-weight:600;color:#64748b;text-transform:uppercase;margin-bottom:6px}
+.run-pct{font-size:2rem;font-weight:800}
+.run-sub{font-size:.75rem;color:#94a3b8;margin-top:3px}
+.run-delta{font-size:.82rem;font-weight:700;margin-top:4px}
+.baseline-note{background:#fff;border-radius:10px;padding:12px 18px;margin-bottom:20px;
+                box-shadow:0 1px 4px rgba(0,0,0,.08);font-size:.85rem;color:#475569}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;
+       overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08);font-size:.82rem}
+th{background:#f1f5f9;padding:10px 12px;text-align:left;font-weight:600;color:#475569;font-size:.75rem}
+td{padding:9px 12px;border-bottom:1px solid #f1f5f9;vertical-align:top}
+.sev{display:inline-block;color:#fff;font-size:.72rem;font-weight:700;
+      padding:2px 8px;border-radius:999px}
+</style>
+</head>
+<body>
+<h1>ScanOps — Local Benchmark (Grok-free)</h1>
+<p class="sub">생성일: 2026-05-13 17:46 · 완전 로컬 실행 · Gemma-2 LoRA + ChromaDB RAG</p>
+<div class="baseline-note">베이스라인: Gemma 2B (기존) 35.0% / 4.27s</div>
+<div class="runs">
+        <div class="run-card">
+          <div class="run-label">Gemma:2b Ollama (베이스라인)</div>
+          <div class="run-pct" style="color:#22c55e;">35.0%</div>
+          <div class="run-sub">7/20 탐지 · 평균 3.47s</div>
+          <div class="run-delta" style="color:#22c55e;">+0.0%p vs 기존</div>
+        </div>
+        <div class="run-card">
+          <div class="run-label">RAG + gemma:2b</div>
+          <div class="run-pct" style="color:#22c55e;">35.0%</div>
+          <div class="run-sub">7/20 탐지 · 평균 3.47s</div>
+          <div class="run-delta" style="color:#22c55e;">+0.0%p vs 기존</div>
+        </div>
+        <div class="run-card">
+          <div class="run-label">Gemma-2 2B LoRA (파인튜닝)</div>
+          <div class="run-pct" style="color:#22c55e;">85.0%</div>
+          <div class="run-sub">17/20 탐지 · 평균 5.09s</div>
+          <div class="run-delta" style="color:#22c55e;">+50.0%p vs 기존</div>
+        </div></div>
+
+        <h2 style="margin:24px 0 8px;font-size:1rem;color:#334155;">Gemma:2b Ollama (베이스라인)</h2>
+        <table><thead><tr>
+          <th>#</th><th>언어</th><th>예상 취약점</th><th>탐지 결과</th>
+          <th>심각도</th><th>탐지</th><th>시간</th>
+        </tr></thead><tbody>
+            <tr>
+              <td>#1</td>
+              <td>React / Next.js</td>
+              <td>XSS</td>
+              <td>Cross-Site Scripting (XSS)</td>
+              <td><span class="sev" style="background:#ea580c;">HIGH</span></td>
+              <td style="color:#22c55e;font-weight:700;">✓</td>
+              <td style="color:#22c55e;">2.63s</td>
+            </tr>
+            <tr>
+              <td>#2</td>
+              <td>React / Next.js</td>
+              <td>XSS</td>
+              <td>Cross-site Scripting (XSS)</td>
+              <td><span class="sev" style="background:#ea580c;">HIGH</span></td>
+              <td style="color:#22c55e;font-weight:700;">✓</td>
+              <td style="color:#22c55e;">2.13s</td>
+            </tr>
+            <tr>
+              <td>#3</td>
+              <td>React / Next.js</td>
+              <td>Code Injection via eval</td>
+              <td>Cross-Site Request Forgery (CSRF)</td>
+              <td><span class="sev" style="background:#ea580c;">HIGH</span></td>
+              <td style="color:#ef4444;font-weight:700;">✗</td>
+              <td style="color:#22c55e;">1.75s</td>
+            </tr>
+            <tr>
+              <td>#4</td>
+              <td>React / Next.js</td>
+              <td>XSS via event handler</td>
+              <td>Cross-Site Request Forgery (XSRF)</td>
+              <td><span class="sev" style="background:#ea580c;">HIGH</span></td>
+              <td style="color:#22c55e;font-weight:700;">✓</td>
+              <td style="color:#22c55e;">2.2s</td>
+            </tr>
+            <tr>
+              <td>#5</td>
+              <td>Node.js / Express</td>
+              <td>SQL Injection</td>
+              <td>SQL Injection</td>
+              <td><span class="sev" style="background:#ea580c;">HIGH</span></td>
+              <td style="color:#22c55e;font-weight:700;">✓</td>
+              <td style="color:#22c55e;">1.57s</td>
+            </tr>
+            <tr>
+              <td>#6</td>
+              <td>Node.js / Express</td>
+              <td>Command Injection</td>
+              <td>Buffer Overflow</td>
+              <td><span class="sev" style="background:#ea580c;">HIGH</span></td>
+              <td style="color:#ef4444;font-weight:700;">✗</td>
+              <td style="color:#eab308;">4.61s</td>
+            </tr>
+            <tr>
+              <td>#7</td>
+              <td>Node.js / Express</td>
+              <td>Insecure CORS</td>
+              <td>Cross-Origin Request Forgery (CSRF)</td>
+              <td><span class="sev" style="background:#ea580c;">HIGH</span></td>
+              <td style="color:#ef4444;font-weight:700;">✗</td>
+              <td style="color:#eab308;">5.69s</td>
+            </tr>
+            <tr>
+              <td>#8</td>
+              <td>Node.js / Express</td>
+              <td>Hardcoded Secret</td>
+              <td>JWT verification vulnerability</td>
+              <td><span class="sev" style="background:#ea580c;">HIGH</span></td>
+              <td style="color:#ef4444;font-weight:700;">✗</td>
+              <td style="color:#eab308;">5.12s</td>
+            </tr>
+            <tr>
+              <td>#9</td>
+              <td>Java Spring Boot</td>
+              <td>SQL Injection</td>
+              <td>SQL Injection</td>
+              <td><span class="sev" style="background:#ea580c;">HIGH</span></td>
+              <td style="color:#22c55e;font-weight:700;">✓</td>
+              <td style="color:#eab308;">6.35s</td>
+            </tr>
+            <tr>
+              <td>#10</td>
+              <td>Java Spring Boot</td>
+              <td>Command Injection</td>
+              <td>Reflection</td>
+              <td><span class="sev" style="background:#ea580c;">HIGH</span></td>
+              <td style="color:#ef4444;font-weight:700;">✗</td>
+              <td style="color:#22c55e;">2.26s</td>
+            </tr>
+            <tr>
+              <td>#11</td>
+              <td>Java Spring Boot</td>
+              <td>Overly Permissive Endpoint</td>
+              <td>Cross-Site Request Forgery (XSRF)</td>
+              <td><span class="sev" style="background:#ea580c;">HIGH</span></td>
+              <td style="color:#ef4444;font-weight:700;">✗</td>
+              <td style="color:#eab308;">4.35s</td>
+            </tr>
+            <tr>
+              <td>#12</td>
+              <td>Java Spring Boot</td>
+              <td>Timing Attack</td>
+              <td>Unauthorized Access</td>
+              <td><span class="sev" style="background:#ea580c;">HIGH</span></td>
+              <td style="color:#ef4444;font-weight:700;">✗</td>
+              <td style="color:#22c55e;">1.14s</td>
+            </tr>
+            <tr>
+              <td>#13</td>
+              <td>Python</td>
+              <td>Insecure Deserialization</td>
+              <td>CROSS-OS Attack</td>
+              <td><span class="sev" style="background:#ea580c;">HIGH</span></td>
+              <td style="color:#ef4444;font-weight:700;">✗</td>
+              <td style="color:#22c55e;">1.93s</td>
+            </tr>
+            <tr>
+              <td>#14</td>
+              <td>Python</td>
+              <td>Command Injection</td>
+              <td>Command Injection</td>
+              <td><span class="sev" style="background:#ea580c;">HIGH</span></td>
+              <td style="color:#22c55e;font-weight:700;">✓</td>
+              <td style="color:#22c55e;">1.54s</td>
+            </tr>
+            <tr>
+              <td>#15</td>
+              <td>Python</td>
+              <td>Arbitrary Code Execution via YAML</td>
+              <td>—</td>
+              <td><span class="sev" style="background:#dc2626;">CRITICAL</span></td>
+              <td style="color:#ef4444;font-weight:700;">✗</td>
+              <td style="color:#eab308;">4.81s</td>
+            </tr>
+            <tr>
+              <td>#16</td>
+              <td>Python</td>
+              <td>Command Injection</td>
+              <td>ping vulnerability</td>
+              <td><span class="sev" style="background:#ea580c;">HIGH</span></td>
+              <td style="color:#ef4444;font-weight:700;">✗</td>
+              <td style="color:#22c55e;">2.0s</td>
+            </tr>
+            <tr>
+              <td>#17</td>
+              <td>C</td>
+              <td>Format String Attack</td>
+              <td>—</td>
+              <td><span class="sev" style="background:#ea580c;">HIGH</span></td>
+              <td style="color:#ef4444;font-weight:700;">✗</td>
+              <td style="color:#eab308;">6.4s</td>
+            </tr>
+            <tr>
+              <td>#18</td>
+              <td>C</td>
+              <td>Buffer Overflow</td>
+              <td>Buffer Overflow</td>
+              <td><span class="sev" style="background:#ea580c;">HIGH</span></td>
+              <td style="color:#22c55e;font-weight:700;">✓</td>
+              <td style="color:#eab308;">4.5s</td>
+            </tr>
+            <tr>
+              <td>#19</td>
+              <td>GitHub Actions YAML</td>
+              <td>Script Injection via untrusted input</td>
+              <td>Missing output sanitation</td>
+              <td><span class="sev" style="background:#ea580c;">HIGH</span></td>
+              <td style="color:#ef4444;font-weight:700;">✗</td>
+              <td style="color:#eab308;">4.45s</td>
+            </tr>
+            <tr>
+              <td>#20</td>
+              <td>GitHub Actions YAML</td>
+              <td>Supply Chain Attack (unpinned action)</td>
+              <td>Unknown</td>
+              <td><span class="sev" style="background:#16a34a;">LOW</span></td>
+              <td style="color:#ef4444;font-weight:700;">✗</td>
+              <td style="color:#eab308;">3.95s</td>
+            </tr></tbody></table>
+        <h2 style="margin:24px 0 8px;font-size:1rem;color:#334155;">RAG + gemma:2b</h2>
+        <table><thead><tr>
+          <th>#</th><th>언어</th><th>예상 취약점</th><th>탐지 결과</th>
+          <th>심각도</th><th>탐지</th><th>시간</th>
+        </tr></thead><tbody>
+            <tr>
+              <td>#1</td>
+              <td>React / Next.js</td>
+              <td>XSS</td>
+              <td>Cross-Site Scripting (XSS)</td>
+              <td><span class="sev" style="background:#ea580c;">HIGH</span></td>
+              <td style="color:#22c55e;font-weight:700;">✓</td>
+              <td style="color:#eab308;">5.73s</td>
+            </tr>
+            <tr>
+              <td>#2</td>
+              <td>React / Next.js</td>
+              <td>XSS</td>
+              <td>Cross-site scripting (XSS)</td>
+              <td><span class="sev" style="background:#ea580c;">HIGH</span></td>
+              <td style="color:#22c55e;font-weight:700;">✓</td>
+              <td style="color:#eab308;">5.39s</td>
+            </tr>
+            <tr>
+              <td>#3</td>
+              <td>React / Next.js</td>
+              <td>Code Injection via eval</td>
+              <td>HIGH</td>
+              <td><span class="sev" style="background:#dc2626;">CRITICAL</span></td>
+              <td style="color:#ef4444;font-weight:700;">✗</td>
+              <td style="color:#22c55e;">0.98s</td>
+            </tr>
+            <tr>
+              <td>#4</td>
+              <td>React / Next.js</td>
+              <td>XSS via event handler</td>
+              <td>Cross-Site Request Forgery (CSRF)</td>
+              <td><span class="sev" style="background:#ea580c;">HIGH</span></td>
+              <td style="color:#22c55e;font-weight:700;">✓</td>
+              <td style="color:#22c55e;">2.01s</td>
+            </tr>
+            <tr>
+              <td>#5</td>
+              <td>Node.js / Express</td>
+              <td>SQL Injection</td>
+              <td>SQL Injection</td>
+              <td><span class="sev" style="background:#ea580c;">HIGH</span></td>
+              <td style="color:#22c55e;font-weight:700;">✓</td>
+              <td style="color:#eab308;">5.31s</td>
+            </tr>
+            <tr>
+              <td>#6</td>
+              <td>Node.js / Express</td>
+              <td>Command Injection</td>
+              <td>HIGH</td>
+              <td><span class="sev" style="background:#dc2626;">CRITICAL</span></td>
+              <td style="color:#ef4444;font-weight:700;">✗</td>
+              <td style="color:#22c55e;">1.16s</td>
+            </tr>
+            <tr>
+              <td>#7</td>
+              <td>Node.js / Express</td>
+              <td>Insecure CORS</td>
+              <td>Cross-Origin Resource Sharing (CORS) vulnerability</td>
+              <td><span class="sev" style="background:#ea580c;">HIGH</span></td>
+              <td style="color:#22c55e;font-weight:700;">✓</td>
+              <td style="color:#eab308;">4.13s</td>
+            </tr>
+            <tr>
+              <td>#8</td>
+              <td>Node.js / Express</td>
+              <td>Hardcoded Secret</td>
+              <td>Improper verification of cryptographic signature in ASP.NET Core allows an unauthorized attacker to elevate privileges</td>
+              <td><span class="sev" style="background:#ea580c;">HIGH</span></td>
+              <td style="color:#ef4444;font-weight:700;">✗</td>
+              <td style="color:#22c55e;">1.99s</td>
+            </tr>
+            <tr>
+              <td>#9</td>
+              <td>Java Spring Boot</td>
+              <td>SQL Injection</td>
+              <td>SQL Injection vulnerability in Spring AI's `CosmosDBVectorStore`</td>
+              <td><span class="sev" style="background:#dc2626;">CRITICAL</span></td>
+              <td style="color:#22c55e;font-weight:700;">✓</td>
+              <td style="color:#22c55e;">1.94s</td>
+            </tr>
+            <tr>
+              <td>#10</td>
+              <td>Java Spring Boot</td>
+              <td>Command Injection</td>
+              <td>SSRF vulnerability</td>
+              <td><span class="sev" style="background:#dc2626;">CRITICAL</span></td>
+              <td style="color:#ef4444;font-weight:700;">✗</td>
+              <td style="color:#eab308;">3.82s</td>
+            </tr>
+            <tr>
+              <td>#11</td>
+              <td>Java Spring Boot</td>
+              <td>Overly Permissive Endpoint</td>
+              <td>SSRF vulnerability</td>
+              <td><span class="sev" style="background:#ea580c;">HIGH</span></td>
+              <td style="color:#ef4444;font-weight:700;">✗</td>
+              <td style="color:#22c55e;">2.42s</td>
+            </tr>
+            <tr>
+              <td>#12</td>
+              <td>Java Spring Boot</td>
+              <td>Timing Attack</td>
+              <td>SQL Injection vulnerability in Spring AI's `CosmosDBVectorStore`</td>
+              <td><span class="sev" style="background:#dc2626;">CRITICAL</span></td>
+              <td style="color:#ef4444;font-weight:700;">✗</td>
+              <td style="color:#eab308;">6.25s</td>
+            </tr>
+            <tr>
+              <td>#13</td>
+              <td>Python</td>
+              <td>Insecure Deserialization</td>
+              <td>HIGH</td>
+              <td><span class="sev" style="background:#dc2626;">CRITICAL</span></td>
+              <td style="color:#ef4444;font-weight:700;">✗</td>
+              <td style="color:#22c55e;">1.91s</td>
+            </tr>
+            <tr>
+              <td>#14</td>
+              <td>Python</td>
+              <td>Command Injection</td>
+              <td>Attack</td>
+              <td><span class="sev" style="background:#ea580c;">HIGH</span></td>
+              <td style="color:#ef4444;font-weight:700;">✗</td>
+              <td style="color:#22c55e;">2.1s</td>
+            </tr>
+            <tr>
+              <td>#15</td>
+              <td>Python</td>
+              <td>Arbitrary Code Execution via YAML</td>
+              <td>—</td>
+              <td><span class="sev" style="background:#ea580c;">HIGH</span></td>
+              <td style="color:#ef4444;font-weight:700;">✗</td>
+              <td style="color:#22c55e;">0.0s</td>
+            </tr>
+            <tr>
+              <td>#16</td>
+              <td>Python</td>
+              <td>Command Injection</td>
+              <td>Flowise is a drag &amp; drop user interface to build a customized large language model flow. Prior to 3.1.0, the specific flow can be manipulated to include malicious code, potentially allowing an attacker to take control of the system.</td>
+              <td><span class="sev" style="background:#ea580c;">HIGH</span></td>
+              <td style="color:#ef4444;font-weight:700;">✗</td>
+              <td style="color:#22c55e;">2.56s</td>
+            </tr>
+            <tr>
+              <td>#17</td>
+              <td>C</td>
+              <td>Format String Attack</td>
+              <td>Parsing logic flaws cause non-signature data to be misidentified as valid signatures when processing malformed form fiel</td>
+              <td><span class="sev" style="background:#ea580c;">HIGH</span></td>
+              <td style="color:#ef4444;font-weight:700;">✗</td>
+              <td style="color:#22c55e;">2.47s</td>
+            </tr>
+            <tr>
+              <td>#18</td>
+              <td>C</td>
+              <td>Buffer Overflow</td>
+              <td>BUFFER_OVERFLOW</td>
+              <td><span class="sev" style="background:#ea580c;">HIGH</span></td>
+              <td style="color:#22c55e;font-weight:700;">✓</td>
+              <td style="color:#22c55e;">1.72s</td>
+            </tr>
+            <tr>
+              <td>#19</td>
+              <td>GitHub Actions YAML</td>
+              <td>Script Injection via untrusted input</td>
+              <td>Improper authorization vulnerability</td>
+              <td><span class="sev" style="background:#ea580c;">HIGH</span></td>
+              <td style="color:#ef4444;font-weight:700;">✗</td>
+              <td style="color:#eab308;">6.04s</td>
+            </tr>
+            <tr>
+              <td>#20</td>
+              <td>GitHub Actions YAML</td>
+              <td>Supply Chain Attack (unpinned action)</td>
+              <td>GitLab CI issue</td>
+              <td><span class="sev" style="background:#dc2626;">CRITICAL</span></td>
+              <td style="color:#ef4444;font-weight:700;">✗</td>
+              <td style="color:#eab308;">7.99s</td>
+            </tr></tbody></table>
+        <h2 style="margin:24px 0 8px;font-size:1rem;color:#334155;">Gemma-2 2B LoRA (파인튜닝)</h2>
+        <table><thead><tr>
+          <th>#</th><th>언어</th><th>예상 취약점</th><th>탐지 결과</th>
+          <th>심각도</th><th>탐지</th><th>시간</th>
+        </tr></thead><tbody>
+            <tr>
+              <td>#1</td>
+              <td>React / Next.js</td>
+              <td>XSS</td>
+              <td>Cross-site scripting via dangerouslySetInnerHTML</td>
+              <td><span class="sev" style="background:#dc2626;">CRITICAL</span></td>
+              <td style="color:#22c55e;font-weight:700;">✓</td>
+              <td style="color:#eab308;">7.27s</td>
+            </tr>
+            <tr>
+              <td>#2</td>
+              <td>React / Next.js</td>
+              <td>XSS</td>
+              <td>Cross-site scripting via userAction attribute</td>
+              <td><span class="sev" style="background:#dc2626;">CRITICAL</span></td>
+              <td style="color:#22c55e;font-weight:700;">✓</td>
+              <td style="color:#eab308;">3.65s</td>
+            </tr>
+            <tr>
+              <td>#3</td>
+              <td>React / Next.js</td>
+              <td>Code Injection via eval</td>
+              <td>Code injection via callback parameter</td>
+              <td><span class="sev" style="background:#dc2626;">CRITICAL</span></td>
+              <td style="color:#22c55e;font-weight:700;">✓</td>
+              <td style="color:#eab308;">4.65s</td>
+            </tr>
+            <tr>
+              <td>#4</td>
+              <td>React / Next.js</td>
+              <td>XSS via event handler</td>
+              <td>Cross-site script injection via avatar src attribute</td>
+              <td><span class="sev" style="background:#dc2626;">CRITICAL</span></td>
+              <td style="color:#22c55e;font-weight:700;">✓</td>
+              <td style="color:#eab308;">5.83s</td>
+            </tr>
+            <tr>
+              <td>#5</td>
+              <td>Node.js / Express</td>
+              <td>SQL Injection</td>
+              <td>SQL injection via id parameter</td>
+              <td><span class="sev" style="background:#dc2626;">CRITICAL</span></td>
+              <td style="color:#22c55e;font-weight:700;">✓</td>
+              <td style="color:#eab308;">4.57s</td>
+            </tr>
+            <tr>
+              <td>#6</td>
+              <td>Node.js / Express</td>
+              <td>Command Injection</td>
+              <td>Command injection via req.body.command</td>
+              <td><span class="sev" style="background:#dc2626;">CRITICAL</span></td>
+              <td style="color:#22c55e;font-weight:700;">✓</td>
+              <td style="color:#eab308;">4.33s</td>
+            </tr>
+            <tr>
+              <td>#7</td>
+              <td>Node.js / Express</td>
+              <td>Insecure CORS</td>
+              <td>No Origin header restriction</td>
+              <td><span class="sev" style="background:#dc2626;">CRITICAL</span></td>
+              <td style="color:#ef4444;font-weight:700;">✗</td>
+              <td style="color:#eab308;">4.62s</td>
+            </tr>
+            <tr>
+              <td>#8</td>
+              <td>Node.js / Express</td>
+              <td>Hardcoded Secret</td>
+              <td>Hardcoded secret key in JWT verification</td>
+              <td><span class="sev" style="background:#dc2626;">CRITICAL</span></td>
+              <td style="color:#22c55e;font-weight:700;">✓</td>
+              <td style="color:#eab308;">5.11s</td>
+            </tr>
+            <tr>
+              <td>#9</td>
+              <td>Java Spring Boot</td>
+              <td>SQL Injection</td>
+              <td>SQL injection via tableName</td>
+              <td><span class="sev" style="background:#dc2626;">CRITICAL</span></td>
+              <td style="color:#22c55e;font-weight:700;">✓</td>
+              <td style="color:#eab308;">5.19s</td>
+            </tr>
+            <tr>
+              <td>#10</td>
+              <td>Java Spring Boot</td>
+              <td>Command Injection</td>
+              <td>Command injection via userInput</td>
+              <td><span class="sev" style="background:#dc2626;">CRITICAL</span></td>
+              <td style="color:#22c55e;font-weight:700;">✓</td>
+              <td style="color:#eab308;">4.02s</td>
+            </tr>
+            <tr>
+              <td>#11</td>
+              <td>Java Spring Boot</td>
+              <td>Overly Permissive Endpoint</td>
+              <td>No CORS header check for all endpoints</td>
+              <td><span class="sev" style="background:#dc2626;">CRITICAL</span></td>
+              <td style="color:#22c55e;font-weight:700;">✓</td>
+              <td style="color:#eab308;">5.16s</td>
+            </tr>
+            <tr>
+              <td>#12</td>
+              <td>Java Spring Boot</td>
+              <td>Timing Attack</td>
+              <td>Password comparison without salt or hash</td>
+              <td><span class="sev" style="background:#dc2626;">CRITICAL</span></td>
+              <td style="color:#ef4444;font-weight:700;">✗</td>
+              <td style="color:#eab308;">6.02s</td>
+            </tr>
+            <tr>
+              <td>#13</td>
+              <td>Python</td>
+              <td>Insecure Deserialization</td>
+              <td>Deserialization of arbitrary data in pickle attack.</td>
+              <td><span class="sev" style="background:#dc2626;">CRITICAL</span></td>
+              <td style="color:#22c55e;font-weight:700;">✓</td>
+              <td style="color:#eab308;">4.78s</td>
+            </tr>
+            <tr>
+              <td>#14</td>
+              <td>Python</td>
+              <td>Command Injection</td>
+              <td>Command injection via user_input</td>
+              <td><span class="sev" style="background:#dc2626;">CRITICAL</span></td>
+              <td style="color:#22c55e;font-weight:700;">✓</td>
+              <td style="color:#eab308;">5.2s</td>
+            </tr>
+            <tr>
+              <td>#15</td>
+              <td>Python</td>
+              <td>Arbitrary Code Execution via YAML</td>
+              <td>YAML injection via user_input</td>
+              <td><span class="sev" style="background:#dc2626;">CRITICAL</span></td>
+              <td style="color:#22c55e;font-weight:700;">✓</td>
+              <td style="color:#eab308;">4.34s</td>
+            </tr>
+            <tr>
+              <td>#16</td>
+              <td>Python</td>
+              <td>Command Injection</td>
+              <td>OS command injection via host</td>
+              <td><span class="sev" style="background:#dc2626;">CRITICAL</span></td>
+              <td style="color:#22c55e;font-weight:700;">✓</td>
+              <td style="color:#eab308;">4.96s</td>
+            </tr>
+            <tr>
+              <td>#17</td>
+              <td>C</td>
+              <td>Format String Attack</td>
+              <td>Format string attack</td>
+              <td><span class="sev" style="background:#dc2626;">CRITICAL</span></td>
+              <td style="color:#22c55e;font-weight:700;">✓</td>
+              <td style="color:#eab308;">5.25s</td>
+            </tr>
+            <tr>
+              <td>#18</td>
+              <td>C</td>
+              <td>Buffer Overflow</td>
+              <td>String copy with no bounds check</td>
+              <td><span class="sev" style="background:#dc2626;">CRITICAL</span></td>
+              <td style="color:#ef4444;font-weight:700;">✗</td>
+              <td style="color:#eab308;">6.69s</td>
+            </tr>
+            <tr>
+              <td>#19</td>
+              <td>GitHub Actions YAML</td>
+              <td>Script Injection via untrusted input</td>
+              <td>Sensitive data leak via issue title echo</td>
+              <td><span class="sev" style="background:#dc2626;">CRITICAL</span></td>
+              <td style="color:#22c55e;font-weight:700;">✓</td>
+              <td style="color:#eab308;">5.6s</td>
+            </tr>
+            <tr>
+              <td>#20</td>
+              <td>GitHub Actions YAML</td>
+              <td>Supply Chain Attack (unpinned action)</td>
+              <td>Unpinned Actions/checkout version allows arbitrary code execution.</td>
+              <td><span class="sev" style="background:#dc2626;">CRITICAL</span></td>
+              <td style="color:#22c55e;font-weight:700;">✓</td>
+              <td style="color:#eab308;">4.65s</td>
+            </tr></tbody></table>
+</body>
+</html>
