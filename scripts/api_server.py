@@ -410,6 +410,9 @@ def _parse_all_blocks(raw: str) -> list[dict]:
         sev  = parsed.get("SEVERITY", "—")
         if not vuln or vuln in ("—", "N/A", ""):
             continue
+        # 파싱 오류 필터: "SOLUTION:", ";" 포함된 이름은 제거
+        if "solution:" in vuln.lower() or ";" in vuln:
+            continue
         key = (vuln.lower()[:40], sev.lower())
         if key in seen:
             continue
@@ -479,44 +482,77 @@ def analyze_pr(req: PrScanRequest, _: None = Security(_require_api_key)):
         if not content or len(content) > 12_000:
             continue
 
-        result = run_adaptive(AnalyzeRequest(
-            language=language,
-            code=content,
-            file_path=pr_file.filename,
-            use_rag=True,
-        ))
+        # Stage1(QLoRA) + Stage2(base+RAG) 로 raw 응답 수집 후 전체 블록 파싱
+        cves = search_cves(f"{language} security vulnerability {content[:120]}")
+        # Stage 1
+        try:
+            prompt_ft = build_ft_user_prompt(language, content)
+            raw_ft, _ = call_model(prompt_ft, MODEL_FT, is_finetuned=True, timeout=60)
+        except Exception:
+            raw_ft = ""
+        # Stage 2
+        try:
+            prompt_b = build_base_rag_prompt(language, content, cves)
+            raw_b, _ = call_model(prompt_b, MODEL_BASE, is_finetuned=False, timeout=90)
+        except Exception:
+            raw_b = ""
 
-        if not result.detected:
+        # 두 응답 합쳐서 전체 취약점 블록 파싱 (중복 제거)
+        combined = raw_ft + "\n---\n" + raw_b
+        all_blocks = _parse_all_blocks(combined)
+
+        if not all_blocks:
             findings.append(PrFinding(
-                filename=pr_file.filename,
-                detected=False,
-                vulnerability=result.vulnerability,
-                severity=result.severity,
-                cvss_score=result.cvss_score,
-                attack=result.attack,
-                fix=result.fix,
-                cve_references=result.cve_references,
-                diff_line=None,
+                filename=pr_file.filename, detected=False,
+                vulnerability="—", severity="—", cvss_score=None,
+                attack="—", fix="—", cve_references=[], diff_line=None,
             ))
             continue
 
-        # 취약점 키워드와 매칭되는 모든 라인 찾기 → 라인마다 개별 Finding
-        diff_lines = _find_diff_lines(pr_file.patch, result.vulnerability)
-        if not diff_lines:
-            diff_lines = [None]
+        for parsed in all_blocks:
+            vuln = parsed.get("VULNERABILITY", "—")
+            sev  = parsed.get("SEVERITY", "—")
+            if not vuln or vuln in ("—", "N/A", ""):
+                continue
 
-        for diff_line in diff_lines:
-            findings.append(PrFinding(
-                filename=pr_file.filename,
-                detected=True,
-                vulnerability=result.vulnerability,
-                severity=result.severity,
-                cvss_score=result.cvss_score,
-                attack=result.attack,
-                fix=result.fix,
-                cve_references=result.cve_references,
-                diff_line=diff_line,
-            ))
+            _cvss_raw = parsed.get("CVSS", "")
+            cvss_score: Optional[float] = None
+            _m = re.search(r"(\d+(?:\.\d+)?)", _cvss_raw or "")
+            if _m:
+                try:
+                    v = float(_m.group(1))
+                    cvss_score = v if 0.0 <= v <= 10.0 else None
+                except ValueError:
+                    pass
+
+            # 이 취약점 타입에 맞는 모든 라인 찾기
+            diff_lines = _find_diff_lines(pr_file.patch, vuln)
+            if not diff_lines:
+                diff_lines = [None]
+
+            # CVE 보강
+            cve_q = f"{language} {vuln} {content[:80]}"
+            file_cves = search_cves(cve_q, top_k=3)
+            cve_refs = [
+                CveReference(
+                    cve_id=c.get("cve_id", "N/A"), severity=c.get("severity", "N/A"),
+                    base_score=c.get("base_score", 0), cwe_id=c.get("cwe_id", "N/A"),
+                    description=c.get("description", "")[:200],
+                ) for c in file_cves
+            ]
+
+            for diff_line in diff_lines:
+                findings.append(PrFinding(
+                    filename=pr_file.filename,
+                    detected=True,
+                    vulnerability=vuln,
+                    severity=sev,
+                    cvss_score=cvss_score,
+                    attack=_translate_ko(parsed.get("ATTACK", "—")),
+                    fix=_translate_ko(parsed.get("FIX", "—")),
+                    cve_references=cve_refs,
+                    diff_line=diff_line,
+                ))
 
     vulnerable_count = sum(1 for f in findings if f.detected)
     return PrScanResponse(
