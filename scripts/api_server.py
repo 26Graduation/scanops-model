@@ -418,31 +418,31 @@ def _parse_all_blocks(raw: str) -> list[dict]:
     return results
 
 
-def _find_diff_line(patch: str, vuln_name: str) -> Optional[int]:
-    """patch에서 취약점 키워드와 매칭되는 실제 추가 라인 번호를 반환한다."""
+_VULN_KEYWORDS = {
+    "ssrf":              ["fetch(", "axios.get", "http.get", "request.get", "url(", "open("],
+    "xss":               ["innerhtml", "dangerouslysetinnerhtml", "__html", "document.write", "outerhtml"],
+    "sql injection":     ["select ", "insert ", "update ", "delete ", "executequery", "createquery"],
+    "command injection": ["exec(", "spawn(", "os.system", "subprocess", "shell=true"],
+    "path traversal":    ["readfile", "writefile", "../", "path.join", "fs.open"],
+    "hardcoded":         ["password", "secret", "api_key", "apikey", "token"],
+    "cors":              ["access-control-allow-origin", "cors(", "allowedorigins"],
+    "deserialization":   ["objectinputstream", "readobject", "pickle.loads", "unserialize"],
+    "xxe":               ["documentbuilder", "xmlreader", "saxparser"],
+}
+
+
+def _find_diff_lines(patch: str, vuln_name: str) -> list[int]:
+    """patch에서 취약점 키워드와 매칭되는 모든 추가 라인 번호를 반환한다."""
     if not patch:
-        return None
+        return []
 
-    VULN_KEYWORDS = {
-        "ssrf":                 ["fetch(", "axios.get", "http.get", "request.get", "url(", "open("],
-        "xss":                  ["innerhtml", "dangerouslysetinnerhtml", "__html", "document.write", "outerhtml"],
-        "sql injection":        ["select ", "insert ", "update ", "delete ", "executequery", "createquery"],
-        "command injection":    ["exec(", "spawn(", "os.system", "subprocess", "shell=true"],
-        "path traversal":       ["readfile", "writefile", "../", "path.join", "fs.open"],
-        "hardcoded":            ["password", "secret", "api_key", "apikey", "token"],
-        "cors":                 ["access-control-allow-origin", "cors(", "allowedorigins"],
-        "deserialization":      ["objectinputstream", "readobject", "pickle.loads", "unserialize"],
-        "xxe":                  ["documentbuilder", "xmlreader", "saxparser"],
-    }
-
-    # 취약점 이름에 해당하는 키워드 목록 찾기
     keywords: list[str] = []
     vuln_lower = vuln_name.lower()
-    for key, kws in VULN_KEYWORDS.items():
+    for key, kws in _VULN_KEYWORDS.items():
         if key in vuln_lower:
             keywords.extend(kws)
 
-    # patch에서 추가된 라인(+로 시작) 순회하며 키워드 매칭
+    matched: list[int] = []
     current_line = 0
     for patch_line in patch.split("\n"):
         hunk = re.match(r"@@ -\d+(?:,\d+)? \+(\d+)", patch_line)
@@ -455,11 +455,14 @@ def _find_diff_line(patch: str, vuln_name: str) -> Optional[int]:
         if patch_line.startswith("+"):
             line_lower = patch_line[1:].lower()
             if keywords and any(kw in line_lower for kw in keywords):
-                return current_line
+                matched.append(current_line)
 
-    # 키워드 매칭 실패 시 첫 번째 추가 라인 반환
+    if matched:
+        return matched
+
+    # 키워드 매칭 실패 시 첫 번째 추가 라인 fallback
     m = re.search(r"@@ -\d+(?:,\d+)? \+(\d+)", patch)
-    return int(m.group(1)) if m else None
+    return [int(m.group(1))] if m else []
 
 
 @app.post("/analyze/pr", response_model=PrScanResponse)
@@ -483,19 +486,37 @@ def analyze_pr(req: PrScanRequest, _: None = Security(_require_api_key)):
             use_rag=True,
         ))
 
-        diff_line = _find_diff_line(pr_file.patch, result.vulnerability)
+        if not result.detected:
+            findings.append(PrFinding(
+                filename=pr_file.filename,
+                detected=False,
+                vulnerability=result.vulnerability,
+                severity=result.severity,
+                cvss_score=result.cvss_score,
+                attack=result.attack,
+                fix=result.fix,
+                cve_references=result.cve_references,
+                diff_line=None,
+            ))
+            continue
 
-        findings.append(PrFinding(
-            filename=pr_file.filename,
-            detected=result.detected,
-            vulnerability=result.vulnerability,
-            severity=result.severity,
-            cvss_score=result.cvss_score,
-            attack=result.attack,
-            fix=result.fix,
-            cve_references=result.cve_references,
-            diff_line=diff_line,
-        ))
+        # 취약점 키워드와 매칭되는 모든 라인 찾기 → 라인마다 개별 Finding
+        diff_lines = _find_diff_lines(pr_file.patch, result.vulnerability)
+        if not diff_lines:
+            diff_lines = [None]
+
+        for diff_line in diff_lines:
+            findings.append(PrFinding(
+                filename=pr_file.filename,
+                detected=True,
+                vulnerability=result.vulnerability,
+                severity=result.severity,
+                cvss_score=result.cvss_score,
+                attack=result.attack,
+                fix=result.fix,
+                cve_references=result.cve_references,
+                diff_line=diff_line,
+            ))
 
     vulnerable_count = sum(1 for f in findings if f.detected)
     return PrScanResponse(
