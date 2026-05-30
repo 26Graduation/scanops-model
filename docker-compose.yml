@@ -1,0 +1,15 @@
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    restart: unless-stopped
+
+  # 로컬 Ollama 사용 시 별도 실행 불필요 (brew services start ollama)
+  # Railway 배포 시 Qdrant는 Railway 서비스로 분리 배포 후 QDRANT_URL 환경변수 지정
+
+volumes:
+  qdrant_data:

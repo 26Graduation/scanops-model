@@ -1,0 +1,1390 @@
+<!DOCTYPE html><html lang="ko"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RAG 파이프라인 v2 벤치마크 — ScanOps</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f4f8;color:#1e293b;padding:24px}
+h1{font-size:1.6rem;font-weight:700;margin-bottom:4px}
+.sub{color:#64748b;font-size:.88rem;margin-bottom:24px}
+code{font-family:monospace;font-size:.85em;background:#f1f5f9;padding:1px 5px;border-radius:4px}
+.rag-badge{display:inline-block;background:#0891b2;color:#fff;font-size:.78rem;font-weight:700;padding:3px 12px;border-radius:999px;margin-left:8px;vertical-align:middle}
+.pipeline-note{background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:.85rem;color:#0369a1;line-height:1.7}
+.pipeline-note strong{color:#0c4a6e}
+
+.top-stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.hero{background:#1e293b;color:#fff;border-radius:12px;padding:18px 28px;flex:1;min-width:140px}
+.hero-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;opacity:.6}
+.hero-value{font-size:2rem;font-weight:800;margin-top:2px}
+
+.baseline-row{background:#fff;border-radius:12px;padding:14px 20px;margin-bottom:20px;
+               box-shadow:0 1px 4px rgba(0,0,0,.08);display:flex;gap:24px;flex-wrap:wrap;align-items:center}
+.bl-label{font-size:.72rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.05em}
+.bl-val{font-size:.95rem;font-weight:700;color:#475569}
+.bl-delta{font-size:.9rem;font-weight:700}
+
+.lang-stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:28px}
+.stat{background:#fff;border-radius:12px;padding:14px 18px;flex:1;min-width:130px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.stat-label{font-size:.72rem;font-weight:600;color:#64748b;margin-bottom:4px}
+.stat-value{font-size:1.5rem;font-weight:800}
+.stat-sub{font-size:.72rem;color:#94a3b8;margin-top:2px}
+
+.charts{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:28px}
+.chart-box{background:#fff;border-radius:12px;padding:20px;flex:1;min-width:260px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.chart-box h2{font-size:.9rem;font-weight:600;color:#334155;margin-bottom:14px}
+canvas{max-height:200px}
+
+.lang-header{color:#fff;font-weight:700;font-size:.9rem;padding:10px 18px;border-radius:10px 10px 0 0}
+section{margin-bottom:28px}
+.case-card{background:#fff;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.case-card+.case-card{margin-top:1px}
+section .case-card:last-child{border-radius:0 0 10px 10px}
+.case-header{display:flex;align-items:center;gap:10px;padding:10px 16px;background:#f8fafc;border-bottom:1px solid #e2e8f0;flex-wrap:wrap}
+.case-num{font-weight:800;font-size:.8rem;color:#64748b}
+.expected{font-size:.78rem;color:#475569;flex:1}
+.tick{font-size:.78rem;font-weight:700}
+.code-block{background:#0f172a;padding:12px 16px}
+.code-block pre{color:#e2e8f0;font-family:monospace;font-size:.8rem;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.response-grid{display:grid;grid-template-columns:1fr 1fr}
+.resp-item{padding:10px 16px;border-right:1px solid #f1f5f9;border-bottom:1px solid #f1f5f9}
+.resp-item.full{grid-column:1/-1;border-right:none}
+.resp-label{display:block;font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#94a3b8;margin-bottom:3px}
+.resp-value{font-size:.83rem;color:#334155;line-height:1.5}
+.sev-badge{display:inline-block;color:#fff;font-size:.75rem;font-weight:700;padding:2px 10px;border-radius:999px}
+.fix-block{font-family:monospace;font-size:.78rem;color:#1e293b;background:#f0fdf4;padding:8px 10px;border-radius:6px;white-space:pre-wrap;word-break:break-word;line-height:1.6}
+
+.cve-details{background:#f0f9ff;border-top:2px solid #bae6fd}
+.cve-details summary{padding:9px 16px;font-size:.78rem;font-weight:700;color:#0369a1;cursor:pointer;user-select:none}
+.cve-table{width:100%;border-collapse:collapse;font-size:.75rem}
+.cve-table th{background:#e0f2fe;padding:6px 12px;text-align:left;font-weight:700;color:#0369a1}
+.cve-table td{padding:6px 12px;border-bottom:1px solid #e0f2fe;color:#334155;vertical-align:top}
+.cve-table tr:last-child td{border-bottom:none}
+.no-cve{padding:9px 16px;font-size:.75rem;color:#94a3b8;background:#fafafa;border-top:1px solid #f1f5f9}
+</style></head><body>
+
+<h1>RAG 파이프라인 v2 <span class="rag-badge">2단계 파이프라인</span></h1>
+<p class="sub">ScanOps · 2026-05-11 23:12 · 20개 케이스 · 모델: <code>grok-3</code> · CVE top-3 근거</p>
+
+<div class="pipeline-note">
+  <strong>📐 2단계 파이프라인 구조</strong><br>
+  1단계: 코드 → Grok 단독 탐지 (CVE 컨텍스트 없음) → 취약점/CWE 판별<br>
+  2단계: 탐지된 CWE + 취약점명 → ChromaDB 검색 → 유사 CVE 근거 반환 (유사도 0.5 이상)<br>
+  <strong>탐지율은 1단계 결과로만 판정</strong> — CVE 컨텍스트 오염 없음
+</div>
+
+<div class="top-stats">
+  <div class="hero"><div class="hero-label">총 케이스</div><div class="hero-value">20</div></div>
+  <div class="hero" style="background:#166534;"><div class="hero-label">탐지</div>
+    <div class="hero-value">20<span style="font-size:1rem;opacity:.8;"> / 20</span></div></div>
+  <div class="hero" style="background:#1d4ed8;"><div class="hero-label">탐지율</div>
+    <div class="hero-value">100.0%</div></div>
+  <div class="hero" style="background:#0891b2;"><div class="hero-label">CVE 근거 확보</div>
+    <div class="hero-value">20<span style="font-size:1rem;opacity:.8;"> / 20</span></div></div>
+</div>
+
+<div class="baseline-row">
+  <div><div class="bl-label">베이스라인 (grok-3 단독)</div>
+    <div class="bl-val">100.0% 탐지 · 5.72s 평균</div></div>
+  <div><div class="bl-label">탐지율 변화</div>
+    <div class="bl-delta" style="color:#22c55e;">+0.0%p</div></div>
+  <div><div class="bl-label">응답시간 변화</div>
+    <div class="bl-delta" style="color:#22c55e;">-0.27s</div></div>
+</div>
+
+<div class="lang-stats"><div class="stat" style="border-top:4px solid #06b6d4;">
+          <div class="stat-label">React / Next.js</div>
+          <div class="stat-value" style="color:#06b6d4;">
+            5.23s</div>
+          <div class="stat-sub">평균 · 4/4 탐지</div>
+        </div><div class="stat" style="border-top:4px solid #22c55e;">
+          <div class="stat-label">Node.js / Express</div>
+          <div class="stat-value" style="color:#22c55e;">
+            4.22s</div>
+          <div class="stat-sub">평균 · 4/4 탐지</div>
+        </div><div class="stat" style="border-top:4px solid #f97316;">
+          <div class="stat-label">Java Spring Boot</div>
+          <div class="stat-value" style="color:#f97316;">
+            6.75s</div>
+          <div class="stat-sub">평균 · 4/4 탐지</div>
+        </div><div class="stat" style="border-top:4px solid #a855f7;">
+          <div class="stat-label">Python</div>
+          <div class="stat-value" style="color:#a855f7;">
+            5.57s</div>
+          <div class="stat-sub">평균 · 4/4 탐지</div>
+        </div><div class="stat" style="border-top:4px solid #64748b;">
+          <div class="stat-label">C</div>
+          <div class="stat-value" style="color:#64748b;">
+            7.92s</div>
+          <div class="stat-sub">평균 · 2/2 탐지</div>
+        </div><div class="stat" style="border-top:4px solid #ec4899;">
+          <div class="stat-label">GitHub Actions YAML</div>
+          <div class="stat-value" style="color:#ec4899;">
+            3.07s</div>
+          <div class="stat-sub">평균 · 2/2 탐지</div>
+        </div></div>
+<div class="charts">
+  <div class="chart-box"><h2>언어별 평균 응답시간 (초)</h2><canvas id="ct"></canvas></div>
+  <div class="chart-box"><h2>언어별 탐지율 (%)</h2><canvas id="cd"></canvas></div>
+</div>
+<section><div class="lang-header" style="background:#06b6d4;">React / Next.js</div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#1</span>
+                <span class="expected">예상 취약점: XSS</span>
+                <span class="tick" style="color:#22c55e;">✓ 탐지됨</span>
+              </div>
+              <div class="code-block"><pre>return &lt;div dangerouslySetInnerHTML={{__html: userInput}} /&gt;;</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">취약점</span>
+                  <span class="resp-value">Cross-Site Scripting (XSS) - CWE-79</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">심각도</span>
+                  <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">공격 시나리오</span>
+                  <span class="resp-value">An attacker can inject malicious JavaScript code through userInput, leading to execution in the user's browser.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">수정 코드</span>
+                  <pre class="fix-block">return &lt;div&gt;{userInput}&lt;/div&gt;;</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">응답시간 (1단계)</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">3.68s</span>
+                </div>
+              </div>
+              
+              <details class="cve-details" open>
+                <summary>CVE 근거 3개 (유사도 ≥ 0.5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE ID</th><th>CWE</th><th>심각도</th><th>유사도</th><th>설명</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-4919</td>
+                  <td>CWE-79</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#166534;font-weight:700;">0.7505</td>
+                  <td>IBM Guardium Data Protection 12.1 is vulnerable to cross-site scripting. This vulnerabilit…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-4918</td>
+                  <td>CWE-79</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#166534;font-weight:700;">0.7443</td>
+                  <td>IBM Guardium Data Protection 12.1 is vulnerable to stored cross-site scripting. This vulne…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-31013</td>
+                  <td>CWE-79</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#166534;font-weight:700;">0.7287</td>
+                  <td>Dovestones Softwares ADPhonebook &lt;4.0.1.1 has a reflected cross-site scripting (XSS) vulne…</td>
+                </tr></tbody>
+                </table>
+              </details>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#2</span>
+                <span class="expected">예상 취약점: XSS (javascript: URI)</span>
+                <span class="tick" style="color:#22c55e;">✓ 탐지됨</span>
+              </div>
+              <div class="code-block"><pre>return &lt;a href={`javascript:${userAction}`}&gt;Click&lt;/a&gt;;</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">취약점</span>
+                  <span class="resp-value">Cross-Site Scripting (XSS) - CWE-79</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">심각도</span>
+                  <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">공격 시나리오</span>
+                  <span class="resp-value">An attacker can inject malicious JavaScript code through `userAction`, executing arbitrary scripts in the user's browser.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">수정 코드</span>
+                  <pre class="fix-block">return &lt;a href="#" onClick={() =&gt; handleUserAction(userAction)}&gt;Click&lt;/a&gt;;</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">응답시간 (1단계)</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">3.76s</span>
+                </div>
+              </div>
+              
+              <details class="cve-details" open>
+                <summary>CVE 근거 3개 (유사도 ≥ 0.5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE ID</th><th>CWE</th><th>심각도</th><th>유사도</th><th>설명</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-4919</td>
+                  <td>CWE-79</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#166534;font-weight:700;">0.7505</td>
+                  <td>IBM Guardium Data Protection 12.1 is vulnerable to cross-site scripting. This vulnerabilit…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-4918</td>
+                  <td>CWE-79</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#166534;font-weight:700;">0.7443</td>
+                  <td>IBM Guardium Data Protection 12.1 is vulnerable to stored cross-site scripting. This vulne…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-31013</td>
+                  <td>CWE-79</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#166534;font-weight:700;">0.7287</td>
+                  <td>Dovestones Softwares ADPhonebook &lt;4.0.1.1 has a reflected cross-site scripting (XSS) vulne…</td>
+                </tr></tbody>
+                </table>
+              </details>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#3</span>
+                <span class="expected">예상 취약점: Code Injection via eval</span>
+                <span class="tick" style="color:#22c55e;">✓ 탐지됨</span>
+              </div>
+              <div class="code-block"><pre>eval(searchParams.get('callback'));</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">취약점</span>
+                  <span class="resp-value">Arbitrary Code Execution (CWE-94)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">심각도</span>
+                  <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">공격 시나리오</span>
+                  <span class="resp-value">An attacker can inject malicious JavaScript code through the 'callback' query parameter, leading to execution of arbitrary code on the server or client.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">수정 코드</span>
+                  <pre class="fix-block">// Remove eval and use a safe alternative or validate input
+const callback = searchParams.get('callback');
+if (callback &amp;&amp; typeof callback === 'string' &amp;&amp; /^[a-zA-Z0-9_]+$/.test(callback)) {
+  // Use callback safely or map to predefined functions
+  const allowedCallbacks = {
+    default: () =&gt; { /* safe default behavior */ }
+  };
+  const fn = allowedCallbacks[callback] || allowedCallbacks.default;
+  fn();
+} else {
+  // Handle invalid or missing callback safely
+  console.warn('Invalid callback provided');
+}</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">응답시간 (1단계)</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">7.58s</span>
+                </div>
+              </div>
+              
+              <details class="cve-details" open>
+                <summary>CVE 근거 3개 (유사도 ≥ 0.5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE ID</th><th>CWE</th><th>심각도</th><th>유사도</th><th>설명</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-40517</td>
+                  <td>CWE-78</td>
+                  <td>HIGH</td>
+                  <td style="color:#166534;font-weight:700;">0.7058</td>
+                  <td>radare2 prior to 6.1.4 contains a command injection vulnerability in the PDB parser's prin…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-41304</td>
+                  <td>CWE-77</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.6962</td>
+                  <td>WWBN AVideo is an open source video platform. In versions 29.0 and below, the `cloneServer…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2018-25270</td>
+                  <td>CWE-639</td>
+                  <td>CRITICAL</td>
+                  <td style="color:#92400e;font-weight:700;">0.6876</td>
+                  <td>ThinkPHP 5.0.23 contains a remote code execution vulnerability that allows unauthenticated…</td>
+                </tr></tbody>
+                </table>
+              </details>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#4</span>
+                <span class="expected">예상 취약점: XSS via event handler</span>
+                <span class="tick" style="color:#22c55e;">✓ 탐지됨</span>
+              </div>
+              <div class="code-block"><pre>&lt;img src={user.avatar} onError={user.fallback} /&gt;</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">취약점</span>
+                  <span class="resp-value">Cross-Site Scripting (XSS) via Uncontrolled Input (CWE-79)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">심각도</span>
+                  <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">공격 시나리오</span>
+                  <span class="resp-value">An attacker can inject malicious code through `user.avatar` or `user.fallback` if they are not sanitized, leading to script execution in the user's browser.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">수정 코드</span>
+                  <pre class="fix-block">&lt;img src={user.avatar} onError={() =&gt; {}} alt="User Avatar" /&gt;</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">응답시간 (1단계)</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">5.91s</span>
+                </div>
+              </div>
+              
+              <details class="cve-details" open>
+                <summary>CVE 근거 3개 (유사도 ≥ 0.5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE ID</th><th>CWE</th><th>심각도</th><th>유사도</th><th>설명</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-4919</td>
+                  <td>CWE-79</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#166534;font-weight:700;">0.736</td>
+                  <td>IBM Guardium Data Protection 12.1 is vulnerable to cross-site scripting. This vulnerabilit…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-41472</td>
+                  <td>CWE-79</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#166534;font-weight:700;">0.733</td>
+                  <td>CyberPanel versions prior to 2.4.4 contain a stored cross-site scripting vulnerability in …</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-31953</td>
+                  <td>CWE-79</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#166534;font-weight:700;">0.7328</td>
+                  <td>Xibo is an open source digital signage platform with a web content management system and W…</td>
+                </tr></tbody>
+                </table>
+              </details>
+            </div></section><section><div class="lang-header" style="background:#22c55e;">Node.js / Express</div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#5</span>
+                <span class="expected">예상 취약점: SQL Injection</span>
+                <span class="tick" style="color:#22c55e;">✓ 탐지됨</span>
+              </div>
+              <div class="code-block"><pre>db.query("SELECT * FROM users WHERE id=" + req.params.id);</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">취약점</span>
+                  <span class="resp-value">SQL Injection (CWE-89)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">심각도</span>
+                  <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">공격 시나리오</span>
+                  <span class="resp-value">An attacker can manipulate the 'id' parameter to execute arbitrary SQL code, potentially accessing or modifying unauthorized data.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">수정 코드</span>
+                  <pre class="fix-block">db.query("SELECT * FROM users WHERE id = ?", [req.params.id]);</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">응답시간 (1단계)</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">3.62s</span>
+                </div>
+              </div>
+              
+              <details class="cve-details" open>
+                <summary>CVE 근거 3개 (유사도 ≥ 0.5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE ID</th><th>CWE</th><th>심각도</th><th>유사도</th><th>설명</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2025-50229</td>
+                  <td>CWE-89</td>
+                  <td>CRITICAL</td>
+                  <td style="color:#166534;font-weight:700;">0.7723</td>
+                  <td>Jizhicms v2.5.4 is vulnerable to SQL injection in the product editing module.…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-41460</td>
+                  <td>CWE-89</td>
+                  <td>CRITICAL</td>
+                  <td style="color:#166534;font-weight:700;">0.7493</td>
+                  <td>SocialEngine versions 7.8.0 and prior contain a SQL injection vulnerability in the /activi…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-33078</td>
+                  <td>CWE-89</td>
+                  <td>HIGH</td>
+                  <td style="color:#166534;font-weight:700;">0.7451</td>
+                  <td>Roxy-WI is a web interface for managing Haproxy, Nginx, Apache and Keepalived servers. Ver…</td>
+                </tr></tbody>
+                </table>
+              </details>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#6</span>
+                <span class="expected">예상 취약점: Command Injection</span>
+                <span class="tick" style="color:#22c55e;">✓ 탐지됨</span>
+              </div>
+              <div class="code-block"><pre>exec(req.body.command);</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">취약점</span>
+                  <span class="resp-value">Command Injection (CWE-78)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">심각도</span>
+                  <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">공격 시나리오</span>
+                  <span class="resp-value">An attacker can execute arbitrary system commands by sending malicious input through req.body.command.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">수정 코드</span>
+                  <pre class="fix-block">const { exec } = require('child_process');
+const allowedCommands = ['ls', 'pwd', 'echo'];
+if (allowedCommands.includes(req.body.command)) {
+    exec(req.body.command, (error, stdout, stderr) =&gt; {
+        if (error) {
+            res.status(500).send('Error executing command');
+            return;
+        }
+        res.send(stdout);
+    });
+} else {
+    res.status(400).send('Invalid command');
+}</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">응답시간 (1단계)</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">5.99s</span>
+                </div>
+              </div>
+              
+              <details class="cve-details" open>
+                <summary>CVE 근거 3개 (유사도 ≥ 0.5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE ID</th><th>CWE</th><th>심각도</th><th>유사도</th><th>설명</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-38834</td>
+                  <td>CWE-77</td>
+                  <td>HIGH</td>
+                  <td style="color:#166534;font-weight:700;">0.7283</td>
+                  <td>Tenda W30E V2.0 V16.01.0.21 was found to contain a command injection vulnerability in the …</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-33277</td>
+                  <td>CWE-78</td>
+                  <td>HIGH</td>
+                  <td style="color:#166534;font-weight:700;">0.7241</td>
+                  <td>An OS command Injection issue exists in LogonTracer prior to v2.0.0. An arbitrary OS comma…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-40520</td>
+                  <td>CWE-78</td>
+                  <td>HIGH</td>
+                  <td style="color:#166534;font-weight:700;">0.7107</td>
+                  <td>FreePBX api module version 17.0.8 and prior contain a command injection vulnerability in t…</td>
+                </tr></tbody>
+                </table>
+              </details>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#7</span>
+                <span class="expected">예상 취약점: Insecure CORS</span>
+                <span class="tick" style="color:#22c55e;">✓ 탐지됨</span>
+              </div>
+              <div class="code-block"><pre>res.setHeader('Access-Control-Allow-Origin', '*');</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">취약점</span>
+                  <span class="resp-value">Cross-Origin Resource Sharing (CORS) Misconfiguration (CWE-942)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">심각도</span>
+                  <span class="sev-badge" style="background:#ca8a04;">MEDIUM</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">공격 시나리오</span>
+                  <span class="resp-value">Allowing all origins via '' can enable unauthorized domains to access sensitive resources, potentially leading to data theft.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">수정 코드</span>
+                  <pre class="fix-block">res.setHeader('Access-Control-Allow-Origin', 'https://trusted-domain.com');</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">응답시간 (1단계)</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">4.37s</span>
+                </div>
+              </div>
+              
+              <details class="cve-details" open>
+                <summary>CVE 근거 3개 (유사도 ≥ 0.5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE ID</th><th>CWE</th><th>심각도</th><th>유사도</th><th>설명</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-41057</td>
+                  <td>CWE-346</td>
+                  <td>HIGH</td>
+                  <td style="color:#166534;font-weight:700;">0.776</td>
+                  <td>WWBN AVideo is an open source video platform. In versions 29.0 and below, the CORS origin …</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-33596</td>
+                  <td>CWE-190</td>
+                  <td>LOW</td>
+                  <td style="color:#166534;font-weight:700;">0.7145</td>
+                  <td>A client might theoretically be able to cause a mismatch between queries sent to a backend…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-41347</td>
+                  <td>CWE-352</td>
+                  <td>LOW</td>
+                  <td style="color:#166534;font-weight:700;">0.7132</td>
+                  <td>OpenClaw before 2026.3.31 lacks browser-origin validation in HTTP operator endpoints when …</td>
+                </tr></tbody>
+                </table>
+              </details>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#8</span>
+                <span class="expected">예상 취약점: Hardcoded Secret</span>
+                <span class="tick" style="color:#22c55e;">✓ 탐지됨</span>
+              </div>
+              <div class="code-block"><pre>jwt.verify(token, 'hardcoded_secret_key');</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">취약점</span>
+                  <span class="resp-value">Hardcoded Secret Key (CWE-798)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">심각도</span>
+                  <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">공격 시나리오</span>
+                  <span class="resp-value">An attacker can extract the hardcoded secret key from the source code to forge or decrypt JWT tokens, gaining unauthorized access.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">수정 코드</span>
+                  <pre class="fix-block">const secretKey = process.env.JWT_SECRET_KEY;
+jwt.verify(token, secretKey);</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">응답시간 (1단계)</span>
+                  <span class="resp-value" style="color:#22c55e;font-weight:700;">2.91s</span>
+                </div>
+              </div>
+              
+              <details class="cve-details" open>
+                <summary>CVE 근거 3개 (유사도 ≥ 0.5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE ID</th><th>CWE</th><th>심각도</th><th>유사도</th><th>설명</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-35503</td>
+                  <td>CWE-798</td>
+                  <td>CRITICAL</td>
+                  <td style="color:#166534;font-weight:700;">0.7224</td>
+                  <td>A vulnerability in SenseLive X3050’s web management interface allows authentication logic …</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-40431</td>
+                  <td>CWE-319</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#92400e;font-weight:700;">0.6959</td>
+                  <td>A vulnerability exists in SenseLive X3050’s web management interface due to its reliance o…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-41279</td>
+                  <td>CWE-639</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.6893</td>
+                  <td>Flowise is a drag &amp; drop user interface to build a customized large language model flow. P…</td>
+                </tr></tbody>
+                </table>
+              </details>
+            </div></section><section><div class="lang-header" style="background:#f97316;">Java Spring Boot</div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#9</span>
+                <span class="expected">예상 취약점: SQL Injection</span>
+                <span class="tick" style="color:#22c55e;">✓ 탐지됨</span>
+              </div>
+              <div class="code-block"><pre>String query = "SELECT * FROM " + tableName;
+stmt.execute(query);</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">취약점</span>
+                  <span class="resp-value">SQL Injection (CWE-89)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">심각도</span>
+                  <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">공격 시나리오</span>
+                  <span class="resp-value">An attacker can manipulate the `tableName` input to execute arbitrary SQL code, potentially accessing or modifying unauthorized data.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">수정 코드</span>
+                  <pre class="fix-block">String query = "SELECT * FROM ?";
+PreparedStatement stmt = connection.prepareStatement(query);
+stmt.setString(1, tableName);
+stmt.execute();</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">응답시간 (1단계)</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">3.37s</span>
+                </div>
+              </div>
+              
+              <details class="cve-details" open>
+                <summary>CVE 근거 3개 (유사도 ≥ 0.5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE ID</th><th>CWE</th><th>심각도</th><th>유사도</th><th>설명</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2025-50229</td>
+                  <td>CWE-89</td>
+                  <td>CRITICAL</td>
+                  <td style="color:#166534;font-weight:700;">0.7723</td>
+                  <td>Jizhicms v2.5.4 is vulnerable to SQL injection in the product editing module.…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-41460</td>
+                  <td>CWE-89</td>
+                  <td>CRITICAL</td>
+                  <td style="color:#166534;font-weight:700;">0.7493</td>
+                  <td>SocialEngine versions 7.8.0 and prior contain a SQL injection vulnerability in the /activi…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-33078</td>
+                  <td>CWE-89</td>
+                  <td>HIGH</td>
+                  <td style="color:#166534;font-weight:700;">0.7451</td>
+                  <td>Roxy-WI is a web interface for managing Haproxy, Nginx, Apache and Keepalived servers. Ver…</td>
+                </tr></tbody>
+                </table>
+              </details>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#10</span>
+                <span class="expected">예상 취약점: Command Injection</span>
+                <span class="tick" style="color:#22c55e;">✓ 탐지됨</span>
+              </div>
+              <div class="code-block"><pre>Runtime.getRuntime().exec(userInput);</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">취약점</span>
+                  <span class="resp-value">Command Injection (CWE-78)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">심각도</span>
+                  <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">공격 시나리오</span>
+                  <span class="resp-value">An attacker can execute arbitrary system commands by providing malicious input to userInput.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">수정 코드</span>
+                  <pre class="fix-block">// Avoid direct execution of user input
+throw new UnsupportedOperationException("Direct command execution is not allowed");</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">응답시간 (1단계)</span>
+                  <span class="resp-value" style="color:#22c55e;font-weight:700;">2.86s</span>
+                </div>
+              </div>
+              
+              <details class="cve-details" open>
+                <summary>CVE 근거 3개 (유사도 ≥ 0.5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE ID</th><th>CWE</th><th>심각도</th><th>유사도</th><th>설명</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-38834</td>
+                  <td>CWE-77</td>
+                  <td>HIGH</td>
+                  <td style="color:#166534;font-weight:700;">0.7283</td>
+                  <td>Tenda W30E V2.0 V16.01.0.21 was found to contain a command injection vulnerability in the …</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-33277</td>
+                  <td>CWE-78</td>
+                  <td>HIGH</td>
+                  <td style="color:#166534;font-weight:700;">0.7241</td>
+                  <td>An OS command Injection issue exists in LogonTracer prior to v2.0.0. An arbitrary OS comma…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-40520</td>
+                  <td>CWE-78</td>
+                  <td>HIGH</td>
+                  <td style="color:#166534;font-weight:700;">0.7107</td>
+                  <td>FreePBX api module version 17.0.8 and prior contain a command injection vulnerability in t…</td>
+                </tr></tbody>
+                </table>
+              </details>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#11</span>
+                <span class="expected">예상 취약점: Overly Permissive Endpoint</span>
+                <span class="tick" style="color:#22c55e;">✓ 탐지됨</span>
+              </div>
+              <div class="code-block"><pre>@RequestMapping(value="/**")
+public ResponseEntity&lt;?&gt; handle(HttpServletRequest req) {}</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">취약점</span>
+                  <span class="resp-value">Improper Input Validation (CWE-20)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">심각도</span>
+                  <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">공격 시나리오</span>
+                  <span class="resp-value">An attacker can send malicious input through the request path or parameters, potentially leading to injection attacks or unauthorized access.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">수정 코드</span>
+                  <pre class="fix-block">@RequestMapping(value="/specific-endpoint")
+public ResponseEntity&lt;?&gt; handle(HttpServletRequest req) {
+    // Validate and sanitize input
+    String input = req.getParameter("input");
+    if (input != null &amp;&amp; !input.matches("[a-zA-Z0-9]+")) {
+        return ResponseEntity.badRequest().body("Invalid input");
+    }
+    // Process request
+    return ResponseEntity.ok().body("Processed");
+}
+```
+
+VULNERABILITY: Unrestricted URL Mapping (CWE-862)
+SEVERITY: CRITICAL
+ATTACK: Using /** allows attackers to access any endpoint, bypassing intended access controls and exposing sensitive functionality.
+FIX:
+```java
+@RequestMapping(value="/specific-endpoint")
+public ResponseEntity&lt;?&gt; handle(HttpServletRequest req) {
+    return ResponseEntity.ok().body("Processed");
+}
+```
+
+VULNERABILITY: Exposure of Sensitive Information (CWE-200)
+SEVERITY: MEDIUM
+ATTACK: Directly using HttpServletRequest may inadvertently expose sensitive headers or data in logs or responses if not handled properly.
+FIX:
+```java
+@RequestMapping(value="/specific-endpoint")
+public ResponseEntity&lt;?&gt; handle(@RequestParam(required = false) String input) {
+    return ResponseEntity.ok().body("Processed");
+}</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">응답시간 (1단계)</span>
+                  <span class="resp-value" style="color:#ef4444;font-weight:700;">14.51s</span>
+                </div>
+              </div>
+              
+              <details class="cve-details" open>
+                <summary>CVE 근거 3개 (유사도 ≥ 0.5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE ID</th><th>CWE</th><th>심각도</th><th>유사도</th><th>설명</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-5262</td>
+                  <td>CWE-79</td>
+                  <td>HIGH</td>
+                  <td style="color:#166534;font-weight:700;">0.7301</td>
+                  <td>GitLab has remediated an issue in GitLab CE/EE affecting all versions from 16.1.0 before 1…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-1660</td>
+                  <td>CWE-770</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#166534;font-weight:700;">0.7256</td>
+                  <td>GitLab has remediated an issue in GitLab CE/EE affecting all versions from 12.3 before 18.…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-3254</td>
+                  <td>CWE-1021</td>
+                  <td>LOW</td>
+                  <td style="color:#166534;font-weight:700;">0.714</td>
+                  <td>GitLab has remediated an issue in GitLab CE/EE affecting all versions from 18.11 before 18…</td>
+                </tr></tbody>
+                </table>
+              </details>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#12</span>
+                <span class="expected">예상 취약점: Timing Attack</span>
+                <span class="tick" style="color:#22c55e;">✓ 탐지됨</span>
+              </div>
+              <div class="code-block"><pre>if (password.equals(inputPassword)) { grantAccess(); }</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">취약점</span>
+                  <span class="resp-value">Use of Hard-coded Credentials or Weak Password Comparison (CWE-798)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">심각도</span>
+                  <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">공격 시나리오</span>
+                  <span class="resp-value">An attacker can exploit the direct string comparison of passwords, potentially bypassing authentication through timing attacks or accessing hard-coded credentials.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">수정 코드</span>
+                  <pre class="fix-block">if (BCrypt.checkpw(inputPassword, password)) { grantAccess(); }</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">응답시간 (1단계)</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">6.27s</span>
+                </div>
+              </div>
+              
+              <details class="cve-details" open>
+                <summary>CVE 근거 3개 (유사도 ≥ 0.5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE ID</th><th>CWE</th><th>심각도</th><th>유사도</th><th>설명</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-35503</td>
+                  <td>CWE-798</td>
+                  <td>CRITICAL</td>
+                  <td style="color:#166534;font-weight:700;">0.7367</td>
+                  <td>A vulnerability in SenseLive X3050’s web management interface allows authentication logic …</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-39462</td>
+                  <td>CWE-522</td>
+                  <td>CRITICAL</td>
+                  <td style="color:#166534;font-weight:700;">0.7016</td>
+                  <td>A vulnerability exists in SenseLive X3050’s web management interface in which password upd…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-24303</td>
+                  <td>CWE-284</td>
+                  <td>CRITICAL</td>
+                  <td style="color:#92400e;font-weight:700;">0.6922</td>
+                  <td>Improper access control in Microsoft Partner Center allows an authorized attacker to eleva…</td>
+                </tr></tbody>
+                </table>
+              </details>
+            </div></section><section><div class="lang-header" style="background:#a855f7;">Python</div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#13</span>
+                <span class="expected">예상 취약점: Insecure Deserialization</span>
+                <span class="tick" style="color:#22c55e;">✓ 탐지됨</span>
+              </div>
+              <div class="code-block"><pre>import pickle
+obj = pickle.loads(user_data)</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">취약점</span>
+                  <span class="resp-value">Arbitrary Code Execution (CWE-502: Deserialization of Untrusted Data)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">심각도</span>
+                  <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">공격 시나리오</span>
+                  <span class="resp-value">An attacker can provide malicious serialized data in `user_data` to execute arbitrary code during deserialization.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">수정 코드</span>
+                  <pre class="fix-block"># Avoid using pickle for untrusted data; use a safer alternative like JSON
+import json
+obj = json.loads(user_data)</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">응답시간 (1단계)</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">4.61s</span>
+                </div>
+              </div>
+              
+              <details class="cve-details" open>
+                <summary>CVE 근거 3개 (유사도 ≥ 0.5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE ID</th><th>CWE</th><th>심각도</th><th>유사도</th><th>설명</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2025-62233</td>
+                  <td>CWE-502</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#166534;font-weight:700;">0.7246</td>
+                  <td>Deserialization of Untrusted Data vulnerability in Apache DolphinScheduler RPC module. Thi…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-25874</td>
+                  <td>CWE-502</td>
+                  <td>CRITICAL</td>
+                  <td style="color:#166534;font-weight:700;">0.7221</td>
+                  <td>LeRobot through 0.5.1 contains an unsafe deserialization vulnerability in the async infere…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-5652</td>
+                  <td>CWE-639</td>
+                  <td>CRITICAL</td>
+                  <td style="color:#166534;font-weight:700;">0.7189</td>
+                  <td>An insecure direct object reference vulnerability in the Users API component of Crafty Con…</td>
+                </tr></tbody>
+                </table>
+              </details>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#14</span>
+                <span class="expected">예상 취약점: Command Injection</span>
+                <span class="tick" style="color:#22c55e;">✓ 탐지됨</span>
+              </div>
+              <div class="code-block"><pre>import subprocess
+subprocess.call(user_input, shell=True)</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">취약점</span>
+                  <span class="resp-value">Command Injection (CWE-78)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">심각도</span>
+                  <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">공격 시나리오</span>
+                  <span class="resp-value">An attacker can provide malicious input to execute arbitrary system commands.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">수정 코드</span>
+                  <pre class="fix-block">import subprocess
+subprocess.call(user_input.split(), shell=False)</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">응답시간 (1단계)</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">5.67s</span>
+                </div>
+              </div>
+              
+              <details class="cve-details" open>
+                <summary>CVE 근거 3개 (유사도 ≥ 0.5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE ID</th><th>CWE</th><th>심각도</th><th>유사도</th><th>설명</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-38834</td>
+                  <td>CWE-77</td>
+                  <td>HIGH</td>
+                  <td style="color:#166534;font-weight:700;">0.7283</td>
+                  <td>Tenda W30E V2.0 V16.01.0.21 was found to contain a command injection vulnerability in the …</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-33277</td>
+                  <td>CWE-78</td>
+                  <td>HIGH</td>
+                  <td style="color:#166534;font-weight:700;">0.7241</td>
+                  <td>An OS command Injection issue exists in LogonTracer prior to v2.0.0. An arbitrary OS comma…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-40520</td>
+                  <td>CWE-78</td>
+                  <td>HIGH</td>
+                  <td style="color:#166534;font-weight:700;">0.7107</td>
+                  <td>FreePBX api module version 17.0.8 and prior contain a command injection vulnerability in t…</td>
+                </tr></tbody>
+                </table>
+              </details>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#15</span>
+                <span class="expected">예상 취약점: Arbitrary Code Execution via YAML</span>
+                <span class="tick" style="color:#22c55e;">✓ 탐지됨</span>
+              </div>
+              <div class="code-block"><pre>import yaml
+data = yaml.load(user_input)  # not safe_load</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">취약점</span>
+                  <span class="resp-value">Unsafe YAML Deserialization (CWE-502)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">심각도</span>
+                  <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">공격 시나리오</span>
+                  <span class="resp-value">An attacker can provide malicious YAML input to execute arbitrary code during deserialization.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">수정 코드</span>
+                  <pre class="fix-block">import yaml
+data = yaml.safe_load(user_input)</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">응답시간 (1단계)</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">7.14s</span>
+                </div>
+              </div>
+              
+              <details class="cve-details" open>
+                <summary>CVE 근거 3개 (유사도 ≥ 0.5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE ID</th><th>CWE</th><th>심각도</th><th>유사도</th><th>설명</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-41603</td>
+                  <td>CWE-297</td>
+                  <td>HIGH</td>
+                  <td style="color:#166534;font-weight:700;">0.7133</td>
+                  <td>Improper Validation of Certificate with Host Mismatch vulnerability in Apache Thrift. This…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-41409</td>
+                  <td>CWE-502</td>
+                  <td>CRITICAL</td>
+                  <td style="color:#166534;font-weight:700;">0.7101</td>
+                  <td>The fix for CVE-2024-52046 in Apache MINA AbstractIoBuffer.getObject() was incomplete. The…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-41606</td>
+                  <td>CWE-674</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#166534;font-weight:700;">0.7071</td>
+                  <td>Uncontrolled Recursion vulnerability in Apache Thrift. This issue affects Apache Thrift: b…</td>
+                </tr></tbody>
+                </table>
+              </details>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#16</span>
+                <span class="expected">예상 취약점: Command Injection</span>
+                <span class="tick" style="color:#22c55e;">✓ 탐지됨</span>
+              </div>
+              <div class="code-block"><pre>import os
+os.system(f"ping {host}")</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">취약점</span>
+                  <span class="resp-value">Command Injection (CWE-78)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">심각도</span>
+                  <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">공격 시나리오</span>
+                  <span class="resp-value">An attacker can inject malicious commands through the 'host' variable, leading to arbitrary code execution on the system.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">수정 코드</span>
+                  <pre class="fix-block">import subprocess
+host = host.replace(";", "").replace("&amp;", "").replace("|", "")
+subprocess.run(["ping", host])</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">응답시간 (1단계)</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">4.87s</span>
+                </div>
+              </div>
+              
+              <details class="cve-details" open>
+                <summary>CVE 근거 3개 (유사도 ≥ 0.5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE ID</th><th>CWE</th><th>심각도</th><th>유사도</th><th>설명</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-38834</td>
+                  <td>CWE-77</td>
+                  <td>HIGH</td>
+                  <td style="color:#166534;font-weight:700;">0.7283</td>
+                  <td>Tenda W30E V2.0 V16.01.0.21 was found to contain a command injection vulnerability in the …</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-33277</td>
+                  <td>CWE-78</td>
+                  <td>HIGH</td>
+                  <td style="color:#166534;font-weight:700;">0.7241</td>
+                  <td>An OS command Injection issue exists in LogonTracer prior to v2.0.0. An arbitrary OS comma…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-40520</td>
+                  <td>CWE-78</td>
+                  <td>HIGH</td>
+                  <td style="color:#166534;font-weight:700;">0.7107</td>
+                  <td>FreePBX api module version 17.0.8 and prior contain a command injection vulnerability in t…</td>
+                </tr></tbody>
+                </table>
+              </details>
+            </div></section><section><div class="lang-header" style="background:#64748b;">C</div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#17</span>
+                <span class="expected">예상 취약점: Format String Attack</span>
+                <span class="tick" style="color:#22c55e;">✓ 탐지됨</span>
+              </div>
+              <div class="code-block"><pre>printf(user_input);  // user-controlled format string</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">취약점</span>
+                  <span class="resp-value">Format String Vulnerability (CWE-134)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">심각도</span>
+                  <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">공격 시나리오</span>
+                  <span class="resp-value">An attacker can provide malicious format specifiers in user_input to read or write arbitrary memory, potentially leading to code execution.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">수정 코드</span>
+                  <pre class="fix-block">printf("%s", user_input);</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">응답시간 (1단계)</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">4.1s</span>
+                </div>
+              </div>
+              
+              <details class="cve-details" open>
+                <summary>CVE 근거 3개 (유사도 ≥ 0.5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE ID</th><th>CWE</th><th>심각도</th><th>유사도</th><th>설명</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2018-25271</td>
+                  <td>CWE-787</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#166534;font-weight:700;">0.7445</td>
+                  <td>Textpad 8.1.2 contains a denial of service vulnerability that allows local attackers to cr…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-41603</td>
+                  <td>CWE-297</td>
+                  <td>HIGH</td>
+                  <td style="color:#166534;font-weight:700;">0.7393</td>
+                  <td>Improper Validation of Certificate with Host Mismatch vulnerability in Apache Thrift. This…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-6779</td>
+                  <td>CWE-20</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#166534;font-weight:700;">0.7373</td>
+                  <td>Other issue in the JavaScript Engine component. This vulnerability was fixed in Firefox 15…</td>
+                </tr></tbody>
+                </table>
+              </details>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#18</span>
+                <span class="expected">예상 취약점: Buffer Overflow</span>
+                <span class="tick" style="color:#22c55e;">✓ 탐지됨</span>
+              </div>
+              <div class="code-block"><pre>char buf[64];
+strcpy(buf, argv[1]);  // no bounds check</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">취약점</span>
+                  <span class="resp-value">Buffer Overflow (CWE-120)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">심각도</span>
+                  <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">공격 시나리오</span>
+                  <span class="resp-value">An attacker can provide input longer than 64 bytes to overwrite adjacent memory, potentially leading to code execution.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">수정 코드</span>
+                  <pre class="fix-block">char buf[64];
+strncpy(buf, argv[1], sizeof(buf) - 1);
+buf[sizeof(buf) - 1] = '\0';</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">응답시간 (1단계)</span>
+                  <span class="resp-value" style="color:#ef4444;font-weight:700;">11.74s</span>
+                </div>
+              </div>
+              
+              <details class="cve-details" open>
+                <summary>CVE 근거 3개 (유사도 ≥ 0.5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE ID</th><th>CWE</th><th>심각도</th><th>유사도</th><th>설명</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2018-25268</td>
+                  <td>CWE-787</td>
+                  <td>HIGH</td>
+                  <td style="color:#166534;font-weight:700;">0.7728</td>
+                  <td>LanSpy 2.0.1.159 contains a local buffer overflow vulnerability that allows attackers to o…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2018-25266</td>
+                  <td>CWE-787</td>
+                  <td>MEDIUM</td>
+                  <td style="color:#166534;font-weight:700;">0.7681</td>
+                  <td>Angry IP Scanner 3.5.3 contains a buffer overflow vulnerability in the preferences dialog …</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-7032</td>
+                  <td>CWE-119</td>
+                  <td>HIGH</td>
+                  <td style="color:#166534;font-weight:700;">0.7672</td>
+                  <td>A flaw has been found in Tenda F456 1.0.0.5. Affected is the function SafeEmailFilter of t…</td>
+                </tr></tbody>
+                </table>
+              </details>
+            </div></section><section><div class="lang-header" style="background:#ec4899;">GitHub Actions YAML</div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#19</span>
+                <span class="expected">예상 취약점: Script Injection via untrusted input</span>
+                <span class="tick" style="color:#22c55e;">✓ 탐지됨</span>
+              </div>
+              <div class="code-block"><pre>- run: echo ${{ github.event.issue.title }}</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">취약점</span>
+                  <span class="resp-value">Command Injection (CWE-78)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">심각도</span>
+                  <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">공격 시나리오</span>
+                  <span class="resp-value">An attacker can inject malicious commands through the issue title, leading to arbitrary code execution on the runner.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">수정 코드</span>
+                  <pre class="fix-block">- run: echo "${{ github.event.issue.title }}" | sed 's/[^a-zA-Z0-9 ]//g'</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">응답시간 (1단계)</span>
+                  <span class="resp-value" style="color:#eab308;font-weight:700;">3.74s</span>
+                </div>
+              </div>
+              
+              <details class="cve-details" open>
+                <summary>CVE 근거 3개 (유사도 ≥ 0.5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE ID</th><th>CWE</th><th>심각도</th><th>유사도</th><th>설명</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-38834</td>
+                  <td>CWE-77</td>
+                  <td>HIGH</td>
+                  <td style="color:#166534;font-weight:700;">0.7283</td>
+                  <td>Tenda W30E V2.0 V16.01.0.21 was found to contain a command injection vulnerability in the …</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-33277</td>
+                  <td>CWE-78</td>
+                  <td>HIGH</td>
+                  <td style="color:#166534;font-weight:700;">0.7241</td>
+                  <td>An OS command Injection issue exists in LogonTracer prior to v2.0.0. An arbitrary OS comma…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-40520</td>
+                  <td>CWE-78</td>
+                  <td>HIGH</td>
+                  <td style="color:#166534;font-weight:700;">0.7107</td>
+                  <td>FreePBX api module version 17.0.8 and prior contain a command injection vulnerability in t…</td>
+                </tr></tbody>
+                </table>
+              </details>
+            </div>
+            <div class="case-card">
+              <div class="case-header">
+                <span class="case-num">#20</span>
+                <span class="expected">예상 취약점: Supply Chain Attack (unpinned action)</span>
+                <span class="tick" style="color:#22c55e;">✓ 탐지됨</span>
+              </div>
+              <div class="code-block"><pre>- uses: actions/checkout@main  # unpinned version</pre></div>
+              <div class="response-grid">
+                <div class="resp-item">
+                  <span class="resp-label">취약점</span>
+                  <span class="resp-value">Unpinned Dependency Version (CWE-829)</span>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">심각도</span>
+                  <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">공격 시나리오</span>
+                  <span class="resp-value">An attacker could compromise the `actions/checkout` repository or publish a malicious version at `main`, leading to arbitrary code execution in the workflow.</span>
+                </div>
+                <div class="resp-item full">
+                  <span class="resp-label">수정 코드</span>
+                  <pre class="fix-block">- uses: actions/checkout@v3.5.2  # pinned to a specific version or commit SHA</pre>
+                </div>
+                <div class="resp-item">
+                  <span class="resp-label">응답시간 (1단계)</span>
+                  <span class="resp-value" style="color:#22c55e;font-weight:700;">2.39s</span>
+                </div>
+              </div>
+              
+              <details class="cve-details" open>
+                <summary>CVE 근거 3개 (유사도 ≥ 0.5)</summary>
+                <table class="cve-table">
+                  <thead><tr><th>CVE ID</th><th>CWE</th><th>심각도</th><th>유사도</th><th>설명</th></tr></thead>
+                  <tbody>
+                <tr>
+                  <td>CVE-2026-41873</td>
+                  <td>CWE-444</td>
+                  <td>CRITICAL</td>
+                  <td style="color:#92400e;font-weight:700;">0.6862</td>
+                  <td>** UNSUPPORTED WHEN ASSIGNED ** Inconsistent Interpretation of HTTP Requests ('HTTP Reques…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-33608</td>
+                  <td>CWE-94</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.6825</td>
+                  <td>An attacker can send a notify request that causes a new secondary domain to be added to th…</td>
+                </tr>
+                <tr>
+                  <td>CVE-2026-41636</td>
+                  <td>CWE-674</td>
+                  <td>HIGH</td>
+                  <td style="color:#92400e;font-weight:700;">0.6812</td>
+                  <td>Uncontrolled Recursion vulnerability in Apache Thrift Node.js bindings This issue affects …</td>
+                </tr></tbody>
+                </table>
+              </details>
+            </div></section>
+<script>
+const L=["React / Next.js", "Node.js / Express", "Java Spring Boot", "Python", "C", "GitHub Actions YAML"],T=[5.23, 4.22, 6.75, 5.57, 7.92, 3.07],D=[100.0, 100.0, 100.0, 100.0, 100.0, 100.0],C=["#06b6d4", "#22c55e", "#f97316", "#a855f7", "#64748b", "#ec4899"];
+new Chart(document.getElementById('ct'),{type:'bar',data:{labels:L,datasets:[{label:'평균(초)',data:T,backgroundColor:C,borderRadius:5,borderSkipped:false}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true},x:{grid:{display:false}}}}});
+new Chart(document.getElementById('cd'),{type:'bar',data:{labels:L,datasets:[{label:'탐지율%',data:D,backgroundColor:C,borderRadius:5,borderSkipped:false}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,max:100},x:{grid:{display:false}}}}});
+</script>
+</body></html>
