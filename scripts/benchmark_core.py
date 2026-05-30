@@ -372,7 +372,12 @@ def parse_response(text: str) -> dict:
         text, re.MULTILINE | re.IGNORECASE,
     )
     if m_fix:
-        raw = re.sub(r"^```[^\n]*\n", "", m_fix.group(1).strip()).rstrip("`").strip()
+        fix_raw = m_fix.group(1).strip()
+        # 다음 VULNERABILITY: 블록이나 --- 구분자에서 자르기
+        cut = re.search(r"\n(?:---+\n|[ \t]*VULNERABILITY\s*:)", fix_raw, re.IGNORECASE)
+        if cut:
+            fix_raw = fix_raw[:cut.start()].strip()
+        raw = re.sub(r"^```[^\n]*\n", "", fix_raw).rstrip("`").strip()
         fields["FIX"] = raw
     else:
         fields["FIX"] = "—"

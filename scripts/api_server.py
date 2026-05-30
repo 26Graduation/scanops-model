@@ -387,6 +387,81 @@ def analyze_batch(req: BatchRequest):
     )
 
 
+def _parse_all_blocks(raw: str) -> list[dict]:
+    """LLM 응답에서 모든 취약점 블록을 파싱한다.
+    --- 구분자 또는 VULNERABILITY: 키워드 재등장 기준으로 분리.
+    중복 취약점(이름+심각도 동일)은 제거한다.
+    """
+    # --- 구분자로 먼저 시도
+    if re.search(r"\n---+", raw):
+        parts = re.split(r"\n---+\n?", raw)
+    else:
+        # VULNERABILITY: 재등장 기준으로 분리
+        parts = re.split(r"(?=\nVULNERABILITY\s*:)", raw)
+
+    seen: set[tuple] = set()
+    results = []
+    for block in parts:
+        block = block.strip()
+        if not block:
+            continue
+        parsed = parse_response(block)
+        vuln = parsed.get("VULNERABILITY", "—")
+        sev  = parsed.get("SEVERITY", "—")
+        if not vuln or vuln in ("—", "N/A", ""):
+            continue
+        key = (vuln.lower()[:40], sev.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        results.append(parsed)
+    return results
+
+
+def _find_diff_line(patch: str, vuln_name: str) -> Optional[int]:
+    """patch에서 취약점 키워드와 매칭되는 실제 추가 라인 번호를 반환한다."""
+    if not patch:
+        return None
+
+    VULN_KEYWORDS = {
+        "ssrf":                 ["fetch(", "axios.get", "http.get", "request.get", "url(", "open("],
+        "xss":                  ["innerhtml", "dangerouslysetinnerhtml", "__html", "document.write", "outerhtml"],
+        "sql injection":        ["select ", "insert ", "update ", "delete ", "executequery", "createquery"],
+        "command injection":    ["exec(", "spawn(", "os.system", "subprocess", "shell=true"],
+        "path traversal":       ["readfile", "writefile", "../", "path.join", "fs.open"],
+        "hardcoded":            ["password", "secret", "api_key", "apikey", "token"],
+        "cors":                 ["access-control-allow-origin", "cors(", "allowedorigins"],
+        "deserialization":      ["objectinputstream", "readobject", "pickle.loads", "unserialize"],
+        "xxe":                  ["documentbuilder", "xmlreader", "saxparser"],
+    }
+
+    # 취약점 이름에 해당하는 키워드 목록 찾기
+    keywords: list[str] = []
+    vuln_lower = vuln_name.lower()
+    for key, kws in VULN_KEYWORDS.items():
+        if key in vuln_lower:
+            keywords.extend(kws)
+
+    # patch에서 추가된 라인(+로 시작) 순회하며 키워드 매칭
+    current_line = 0
+    for patch_line in patch.split("\n"):
+        hunk = re.match(r"@@ -\d+(?:,\d+)? \+(\d+)", patch_line)
+        if hunk:
+            current_line = int(hunk.group(1)) - 1
+            continue
+        if patch_line.startswith("-"):
+            continue
+        current_line += 1
+        if patch_line.startswith("+"):
+            line_lower = patch_line[1:].lower()
+            if keywords and any(kw in line_lower for kw in keywords):
+                return current_line
+
+    # 키워드 매칭 실패 시 첫 번째 추가 라인 반환
+    m = re.search(r"@@ -\d+(?:,\d+)? \+(\d+)", patch)
+    return int(m.group(1)) if m else None
+
+
 @app.post("/analyze/pr", response_model=PrScanResponse)
 def analyze_pr(req: PrScanRequest, _: None = Security(_require_api_key)):
     """GitHub PR diff 보안 스캔 — GitHub Action에서 호출"""
@@ -408,12 +483,7 @@ def analyze_pr(req: PrScanRequest, _: None = Security(_require_api_key)):
             use_rag=True,
         ))
 
-        # patch에서 첫 번째 추가 라인 번호 추출
-        diff_line: Optional[int] = None
-        if pr_file.patch:
-            m = re.search(r"@@ -\d+(?:,\d+)? \+(\d+)", pr_file.patch)
-            if m:
-                diff_line = int(m.group(1))
+        diff_line = _find_diff_line(pr_file.patch, result.vulnerability)
 
         findings.append(PrFinding(
             filename=pr_file.filename,
