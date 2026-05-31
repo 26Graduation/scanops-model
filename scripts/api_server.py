@@ -387,6 +387,56 @@ def analyze_batch(req: BatchRequest):
     )
 
 
+# 실제 취약점 이름에 등장하는 키워드 — 이 중 하나도 없고 CWE도 없으면 헛것으로 간주
+_VALID_VULN_TERMS = (
+    "xss", "cross-site", "cross site", "csrf", "ssrf", "sql", "injection",
+    "command", "code execution", "rce", "remote code", "eval", "deserial",
+    "xxe", "xml external", "path traversal", "directory traversal", "lfi", "rfi",
+    "cors", "open redirect", "prototype pollution", "idor", "broken access",
+    "authentication", "authorization", "hardcoded", "secret", "credential",
+    "sensitive", "insecure", "ssti", "template injection", "ldap", "nosql",
+    "race condition", "buffer overflow", "integer overflow", "format string",
+    "weak", "crypto", "random", "jwt", "session", "clickjacking", "dom",
+    "untrusted", "validation", "sanitiz", "redos", "denial of service", "dos",
+)
+
+
+def _is_valid_vuln_name(name: str) -> bool:
+    """LLM이 토해낸 헛것(예: 'AI Assistant', 'On the first line')을 거른다.
+    CWE-ID가 있거나 알려진 취약점 용어를 포함해야 진짜로 본다.
+    """
+    if not name:
+        return False
+    low = name.lower()
+    if re.search(r"cwe[-\s]?\d+", low):
+        return True
+    if any(term in low for term in _VALID_VULN_TERMS):
+        return True
+    # 문장형 잡설(소문자로 시작하는 산문, 너무 긴 이름)은 거름
+    return False
+
+
+def _vuln_category(name: str) -> str:
+    """취약점 이름을 카테고리로 정규화 (LLM 결과 ↔ 규칙 결과 중복 판정용)."""
+    low = (name or "").lower()
+    if "ssrf" in low or "request forgery" in low:        return "ssrf"
+    if "xss" in low or "cross-site script" in low or "cross site script" in low:
+        return "xss"
+    if "eval" in low or "code injection" in low or "code execution" in low or "rce" in low:
+        return "code-injection"
+    if "command injection" in low:                       return "command-injection"
+    if "sql" in low:                                     return "sql-injection"
+    if "path traversal" in low or "directory traversal" in low: return "path-traversal"
+    if "deserial" in low:                                return "deserialization"
+    if "xxe" in low or "xml external" in low:            return "xxe"
+    if "prototype pollution" in low:                     return "prototype-pollution"
+    if "csrf" in low:                                    return "csrf"
+    if "cors" in low:                                    return "cors"
+    if "open redirect" in low:                           return "open-redirect"
+    # 그 외에는 이름 앞부분으로 구분
+    return low[:24]
+
+
 def _parse_all_blocks(raw: str) -> list[dict]:
     """LLM 응답에서 모든 취약점 블록을 파싱한다.
     --- 구분자 또는 VULNERABILITY: 키워드 재등장 기준으로 분리.
@@ -412,6 +462,9 @@ def _parse_all_blocks(raw: str) -> list[dict]:
             continue
         # 파싱 오류 필터: "SOLUTION:", ";" 포함된 이름은 제거
         if "solution:" in vuln.lower() or ";" in vuln:
+            continue
+        # 헛것 필터: 알려진 취약점 용어/CWE 없는 이름은 LLM 환각으로 보고 제거
+        if not _is_valid_vuln_name(vuln):
             continue
         key = (vuln.lower()[:40], sev.lower())
         if key in seen:
@@ -468,6 +521,60 @@ def _find_diff_lines(patch: str, vuln_name: str) -> list[int]:
     return [int(m.group(1))] if m else []
 
 
+# 고신호 위험 싱크 — LLM이 놓쳐도 무조건 탐지하는 결정적 규칙
+# (정규식, 취약점명, 심각도, CVSS, 공격 시나리오, 수정 방법)
+_SINK_RULES: list[tuple] = [
+    (re.compile(r"\beval\s*\("),
+     "Code Injection (CWE-95)", "CRITICAL", 9.8,
+     "공격자가 입력값을 통해 임의 JavaScript 코드를 실행시킬 수 있습니다.",
+     "eval() 사용을 제거하고 신뢰할 수 없는 입력을 절대 실행하지 마세요."),
+    (re.compile(r"dangerouslySetInnerHTML|\.innerHTML\s*=|\.outerHTML\s*=|document\.write\s*\("),
+     "Cross-Site Scripting (XSS, CWE-79)", "HIGH", 7.5,
+     "공격자가 악성 스크립트를 주입해 다른 사용자의 세션·쿠키를 탈취할 수 있습니다.",
+     "DOMPurify로 HTML을 새니타이즈하거나 textContent를 사용하세요."),
+    (re.compile(r"\bfetch\s*\(\s*[a-zA-Z_$][\w$.\[\]]*\s*\)|axios\.(?:get|post|request)\s*\(\s*[a-zA-Z_$]"),
+     "Server-Side Request Forgery (SSRF, CWE-918)", "HIGH", 8.1,
+     "공격자가 임의 URL로 요청을 유도해 내부 자원에 접근하거나 정보를 탈취할 수 있습니다.",
+     "허용된 도메인 화이트리스트로 URL을 검증한 뒤 요청하세요."),
+]
+
+
+def _rule_based_findings(patch: str) -> list[dict]:
+    """patch의 추가 라인에서 고신호 위험 싱크를 결정적으로 탐지한다.
+    LLM이 놓친 eval/XSS/SSRF를 보장 탐지하기 위한 안전망.
+    같은 취약점 카테고리는 라인별로 모아 1건으로 반환한다.
+    """
+    if not patch:
+        return []
+
+    # 카테고리명 → {정보, 라인목록}
+    hits: dict[str, dict] = {}
+    current_line = 0
+    for patch_line in patch.split("\n"):
+        hunk = re.match(r"@@ -\d+(?:,\d+)? \+(\d+)", patch_line)
+        if hunk:
+            current_line = int(hunk.group(1)) - 1
+            continue
+        if patch_line.startswith("-"):
+            continue
+        current_line += 1
+        if not patch_line.startswith("+"):
+            continue
+        added = patch_line[1:]
+        # 주석 줄은 건너뜀 (//, #, * 로 시작)
+        stripped = added.strip()
+        if stripped.startswith(("//", "#", "*", "/*")):
+            continue
+        for rx, vuln, sev, cvss, attack, fix in _SINK_RULES:
+            if rx.search(added):
+                slot = hits.setdefault(vuln, {
+                    "vulnerability": vuln, "severity": sev, "cvss": cvss,
+                    "attack": attack, "fix": fix, "lines": [],
+                })
+                slot["lines"].append(current_line)
+    return list(hits.values())
+
+
 @app.post("/analyze/pr", response_model=PrScanResponse)
 def analyze_pr(req: PrScanRequest, _: None = Security(_require_api_key)):
     """GitHub PR diff 보안 스캔 — GitHub Action에서 호출"""
@@ -501,13 +608,9 @@ def analyze_pr(req: PrScanRequest, _: None = Security(_require_api_key)):
         combined = raw_ft + "\n---\n" + raw_b
         all_blocks = _parse_all_blocks(combined)
 
-        if not all_blocks:
-            findings.append(PrFinding(
-                filename=pr_file.filename, detected=False,
-                vulnerability="—", severity="—", cvss_score=None,
-                attack="—", fix="—", cve_references=[], diff_line=None,
-            ))
-            continue
+        # 이 파일에서 이미 잡은 취약점 카테고리 (LLM + 규칙 중복 방지)
+        covered: set[str] = set()
+        file_findings: list[PrFinding] = []
 
         for parsed in all_blocks:
             vuln = parsed.get("VULNERABILITY", "—")
@@ -530,6 +633,8 @@ def analyze_pr(req: PrScanRequest, _: None = Security(_require_api_key)):
             if not diff_lines:
                 diff_lines = [None]
 
+            covered.add(_vuln_category(vuln))
+
             # CVE 보강
             cve_q = f"{language} {vuln} {content[:80]}"
             file_cves = search_cves(cve_q, top_k=3)
@@ -542,7 +647,7 @@ def analyze_pr(req: PrScanRequest, _: None = Security(_require_api_key)):
             ]
 
             for diff_line in diff_lines:
-                findings.append(PrFinding(
+                file_findings.append(PrFinding(
                     filename=pr_file.filename,
                     detected=True,
                     vulnerability=vuln,
@@ -553,6 +658,36 @@ def analyze_pr(req: PrScanRequest, _: None = Security(_require_api_key)):
                     cve_references=cve_refs,
                     diff_line=diff_line,
                 ))
+
+        # 결정적 안전망: LLM이 놓친 고신호 위험 싱크 보장 탐지
+        for rule in _rule_based_findings(pr_file.patch):
+            if _vuln_category(rule["vulnerability"]) in covered:
+                continue  # LLM이 이미 잡은 카테고리는 건너뜀
+            covered.add(_vuln_category(rule["vulnerability"]))
+            r_cves = search_cves(f"{language} {rule['vulnerability']}", top_k=3)
+            r_refs = [
+                CveReference(
+                    cve_id=c.get("cve_id", "N/A"), severity=c.get("severity", "N/A"),
+                    base_score=c.get("base_score", 0), cwe_id=c.get("cwe_id", "N/A"),
+                    description=c.get("description", "")[:200],
+                ) for c in r_cves
+            ]
+            for diff_line in (rule["lines"] or [None]):
+                file_findings.append(PrFinding(
+                    filename=pr_file.filename, detected=True,
+                    vulnerability=rule["vulnerability"], severity=rule["severity"],
+                    cvss_score=rule["cvss"], attack=rule["attack"], fix=rule["fix"],
+                    cve_references=r_refs, diff_line=diff_line,
+                ))
+
+        if file_findings:
+            findings.extend(file_findings)
+        else:
+            findings.append(PrFinding(
+                filename=pr_file.filename, detected=False,
+                vulnerability="—", severity="—", cvss_score=None,
+                attack="—", fix="—", cve_references=[], diff_line=None,
+            ))
 
     vulnerable_count = sum(1 for f in findings if f.detected)
     return PrScanResponse(

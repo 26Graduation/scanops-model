@@ -163,7 +163,7 @@ def build_ft_user_prompt(language: str, code: str) -> str:
     return (
         f"Analyze this {language} code for security vulnerabilities:\n\n"
         f"```{hint}\n{code}\n```\n\n"
-        f"Respond starting with VULNERABILITY: on the first line."
+        f"{OUTPUT_FORMAT}"
     )
 
 
