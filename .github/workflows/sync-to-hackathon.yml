@@ -1,0 +1,54 @@
+name: Sync to hackathon repo
+
+# main에 push될 때마다 이 레포의 내용을 PNU 해커톤 제출 레포의
+# 동일 이름 서브폴더로 미러링한다.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repo
+        uses: actions/checkout@v4
+        with:
+          path: source
+          fetch-depth: 1
+
+      - name: Checkout hackathon repo
+        uses: actions/checkout@v4
+        with:
+          repository: PNU-2026-AI-Hackathon/pnuai-c-03-scanops
+          token: ${{ secrets.SYNC_TOKEN }}
+          path: hackathon
+          fetch-depth: 1
+
+      - name: Mirror this repo into its subfolder
+        run: |
+          SUB="${{ github.event.repository.name }}"
+          rm -rf "hackathon/$SUB"
+          mkdir -p "hackathon/$SUB"
+          rsync -a --exclude='.git' source/ "hackathon/$SUB/"
+
+      - name: Commit & push (재시도 포함)
+        run: |
+          cd hackathon
+          SUB="${{ github.event.repository.name }}"
+          git config user.name "scanops-sync[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "변경 없음 — 스킵"
+            exit 0
+          fi
+          git commit -m "sync: ${SUB}@${GITHUB_SHA::7}"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "push 성공"; exit 0; fi
+            echo "push 충돌 — rebase 후 재시도 ($i/5)"
+            git pull --rebase --autostash origin main || true
+            sleep $(( (RANDOM % 5) + 2 ))
+          done
+          echo "::error::push 5회 실패"
+          exit 1
