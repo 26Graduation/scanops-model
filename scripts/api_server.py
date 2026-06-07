@@ -30,7 +30,7 @@ sys.path.insert(0, str(BASE_DIR / "scripts"))
 from fastapi import FastAPI, HTTPException, Security
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security.api_key import APIKeyHeader
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from scripts.benchmark_qwen_rag import (
     build_ft_user_prompt,
@@ -40,6 +40,15 @@ from scripts.benchmark_qwen_rag import (
     parse_response,
 )
 from scripts.grok_client import query_llm as grok_query
+from scanops.core.code_graph import (
+    CodeFile,
+    build_code_graph,
+    evidence_from_neo4j,
+    evidence_for_finding,
+    kg_risk_score,
+    should_suppress_finding,
+    sync_to_neo4j,
+)
 
 app = FastAPI(
     title="ScanOps Model API",
@@ -112,6 +121,18 @@ class CveReference(BaseModel):
     description: str
 
 
+class GraphEvidence(BaseModel):
+    category: str
+    verdict: str
+    filename: str
+    variable: str
+    sink: str
+    source: str
+    path: list[str]
+    summary: str
+    confidence: float
+
+
 class AnalyzeResponse(BaseModel):
     language: str
     file_path: Optional[str]
@@ -123,6 +144,9 @@ class AnalyzeResponse(BaseModel):
     attack: str
     fix: str
     cve_references: list[CveReference]
+    kg_risk_score: Optional[float] = None
+    graph_evidence: list[GraphEvidence] = Field(default_factory=list)
+    suppressed_by_graph: bool = False
     elapsed: float
 
 
@@ -160,6 +184,9 @@ class PrFinding(BaseModel):
     attack: str
     fix: str
     cve_references: list[CveReference]
+    kg_risk_score: Optional[float] = None
+    graph_evidence: list[GraphEvidence] = Field(default_factory=list)
+    suppressed_by_graph: bool = False
     diff_line: Optional[int] = None   # patch 첫 번째 추가 라인 번호
 
 
@@ -271,7 +298,62 @@ def _is_valid_vuln(text: str) -> bool:
     return True
 
 
-def run_adaptive(req: AnalyzeRequest) -> AnalyzeResponse:
+def _graph_files_from_requests(files: list[AnalyzeRequest | PrFile]) -> list[CodeFile]:
+    rows = []
+    for file in files:
+        filename = getattr(file, "file_path", None) or getattr(file, "filename", None) or "<stdin>"
+        language = getattr(file, "language", None) or _detect_language(filename) or "Unknown"
+        content = getattr(file, "code", None) or getattr(file, "content", "")
+        rows.append(CodeFile(filename=filename, language=language, content=content))
+    return rows
+
+
+def _enrich_with_graph(
+    response: AnalyzeResponse,
+    graph,
+    vulnerability: str,
+    filename: Optional[str],
+    analysis_id: str,
+) -> AnalyzeResponse:
+    evidence = evidence_from_neo4j(analysis_id, filename, vulnerability)
+    if not evidence:
+        evidence = evidence_for_finding(graph, filename, vulnerability)
+    response.graph_evidence = [GraphEvidence(**e.to_dict()) for e in evidence]
+    response.kg_risk_score = kg_risk_score(response.cvss_score, evidence)
+    response.suppressed_by_graph = should_suppress_finding(vulnerability, evidence)
+    if response.suppressed_by_graph:
+        response.detected = False
+        response.severity = "INFO"
+        response.kg_risk_score = 0.0
+        response.attack = "지식 그래프 분석 결과 사용자 입력 흐름이 아닌 정적 import로 확인되어 오탐으로 판단했습니다."
+        response.fix = "수정 불필요: 해당 값은 코드베이스 내 정적 asset import에서 유래합니다."
+    return response
+
+
+def _enrich_pr_finding_with_graph(finding: PrFinding, graph, analysis_id: str) -> PrFinding:
+    evidence = evidence_from_neo4j(analysis_id, finding.filename, finding.vulnerability)
+    if not evidence:
+        evidence = evidence_for_finding(graph, finding.filename, finding.vulnerability)
+    finding.graph_evidence = [GraphEvidence(**e.to_dict()) for e in evidence]
+    finding.kg_risk_score = kg_risk_score(finding.cvss_score, evidence)
+    finding.suppressed_by_graph = should_suppress_finding(finding.vulnerability, evidence)
+    if finding.suppressed_by_graph:
+        finding.detected = False
+        finding.severity = "INFO"
+        finding.kg_risk_score = 0.0
+        finding.attack = "지식 그래프 분석 결과 사용자 입력 흐름이 아닌 정적 import로 확인되어 오탐으로 판단했습니다."
+        finding.fix = "수정 불필요: 해당 값은 코드베이스 내 정적 asset import에서 유래합니다."
+    return finding
+
+
+def _sync_graph_for_demo(graph, analysis_id: str) -> None:
+    try:
+        sync_to_neo4j(graph, analysis_id=analysis_id)
+    except Exception:
+        pass
+
+
+def run_adaptive(req: AnalyzeRequest, graph=None, analysis_id: str = "latest") -> AnalyzeResponse:
     t0 = time.time()
     cves: list[dict] = []
 
@@ -325,7 +407,7 @@ def run_adaptive(req: AnalyzeRequest) -> AnalyzeResponse:
             except ValueError:
                 pass
 
-    return AnalyzeResponse(
+    response = AnalyzeResponse(
         language    = req.language,
         file_path   = req.file_path,
         detected    = vuln not in ("—", "N/A", "", None),
@@ -347,6 +429,9 @@ def run_adaptive(req: AnalyzeRequest) -> AnalyzeResponse:
         ],
         elapsed = round(time.time() - t0, 2),
     )
+    if graph is not None:
+        response = _enrich_with_graph(response, graph, vuln, req.file_path, analysis_id)
+    return response
 
 
 # ── 엔드포인트 ────────────────────────────────────────────────────────────────
@@ -362,18 +447,24 @@ def analyze(req: AnalyzeRequest):
         raise HTTPException(status_code=400, detail="code is empty")
     if not req.language.strip():
         raise HTTPException(status_code=400, detail="language is required")
-    return run_adaptive(req)
+    graph = build_code_graph(_graph_files_from_requests([req]))
+    analysis_id = f"single:{req.file_path or '<stdin>'}"
+    _sync_graph_for_demo(graph, analysis_id=analysis_id)
+    return run_adaptive(req, graph=graph, analysis_id=analysis_id)
 
 
 @app.post("/analyze/batch", response_model=BatchResponse)
 def analyze_batch(req: BatchRequest):
     t0 = time.time()
     results: list[AnalyzeResponse] = []
+    graph = build_code_graph(_graph_files_from_requests(req.files))
+    analysis_id = "batch"
+    _sync_graph_for_demo(graph, analysis_id=analysis_id)
 
     for file_req in req.files:
         if not file_req.code.strip():
             continue
-        r = run_adaptive(file_req)
+        r = run_adaptive(file_req, graph=graph, analysis_id=analysis_id)
         results.append(r)
         if req.stop_on_first and r.detected:
             break
@@ -580,6 +671,9 @@ def analyze_pr(req: PrScanRequest, _: None = Security(_require_api_key)):
     """GitHub PR diff 보안 스캔 — GitHub Action에서 호출"""
     t0 = time.time()
     findings: list[PrFinding] = []
+    graph = build_code_graph(_graph_files_from_requests(req.files))
+    analysis_id = f"pr:{req.repo}#{req.pr_number}"
+    _sync_graph_for_demo(graph, analysis_id=analysis_id)
 
     for pr_file in req.files:
         language = _detect_language(pr_file.filename)
@@ -647,7 +741,7 @@ def analyze_pr(req: PrScanRequest, _: None = Security(_require_api_key)):
             ]
 
             for diff_line in diff_lines:
-                file_findings.append(PrFinding(
+                finding = PrFinding(
                     filename=pr_file.filename,
                     detected=True,
                     vulnerability=vuln,
@@ -657,7 +751,8 @@ def analyze_pr(req: PrScanRequest, _: None = Security(_require_api_key)):
                     fix=_translate_ko(parsed.get("FIX", "—")),
                     cve_references=cve_refs,
                     diff_line=diff_line,
-                ))
+                )
+                file_findings.append(_enrich_pr_finding_with_graph(finding, graph, analysis_id))
 
         # 결정적 안전망: LLM이 놓친 고신호 위험 싱크 보장 탐지
         for rule in _rule_based_findings(pr_file.patch):
@@ -673,12 +768,13 @@ def analyze_pr(req: PrScanRequest, _: None = Security(_require_api_key)):
                 ) for c in r_cves
             ]
             for diff_line in (rule["lines"] or [None]):
-                file_findings.append(PrFinding(
+                finding = PrFinding(
                     filename=pr_file.filename, detected=True,
                     vulnerability=rule["vulnerability"], severity=rule["severity"],
                     cvss_score=rule["cvss"], attack=rule["attack"], fix=rule["fix"],
                     cve_references=r_refs, diff_line=diff_line,
-                ))
+                )
+                file_findings.append(_enrich_pr_finding_with_graph(finding, graph, analysis_id))
 
         if file_findings:
             findings.extend(file_findings)
