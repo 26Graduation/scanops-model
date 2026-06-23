@@ -59,21 +59,21 @@ VULNERABLE/SAFE만 판정.
 | 시스템 | 정확도(100케이스) | TP | FN | FP | TN | Recall | Specificity | 평균 응답 |
 |---|---|---|---|---|---|---|---|---|
 | **ScanOps (그래프 엔진)** | **100.0%** | 51 | 0 | 0 | 49 | 100.0% | 100.0% | ~0.1ms |
-| Grok-3-mini (코드만) | 68.0% | 19 | 32 | 0 | 49 | 37.3% | 100.0% | 4.13s |
+| Grok-3-mini (코드만) | 67.0% | 18 | 33 | 0 | 49 | 35.3% | 100.0% | 3.94s |
 
 ### 그룹별 정확도
 
 | 그룹 | n | ScanOps | Grok |
 |---|---|---|---|
 | cve_2026 (실제 2026 NVD CVE 기반) | 50 | 100.0% | 64.0% |
-| structural (sink×hop×alias 조합) | 50 | 100.0% | 72.0% |
+| structural (sink×hop×alias 조합) | 50 | 100.0% | 70.0% |
 
 ### sink 종류별 Grok 정확도
 
 | sink | n | Grok 정확도 |
 |---|---|---|
 | `dangerouslySetInnerHTML` | 14 | 100.0% |
-| `innerHTML` | 16 | 100.0% |
+| `innerHTML` | 16 | 93.8% |
 | `axios.get` | 12 | 83.3% |
 | `axios.request` | 12 | 83.3% |
 | `img src` | 21 | 47.6% |
@@ -89,7 +89,7 @@ VULNERABLE/SAFE만 판정.
 - **Grok은 오탐(FP)이 0건** — 정적 import 49케이스 전부 SAFE로 정확히
   판정했다(specificity 100%). 즉 "확신 없으면 안전하다고 본다"는 보수적
   태도를 보인다.
-- 문제는 **미탐(FN)이 32건(recall 37.3%)** 으로 매우 높다는 점이다. 특히
+- 문제는 **미탐(FN)이 33건(recall 35.3%)** 으로 매우 높다는 점이다. 특히
   `fetch`/`axios.post` 같은 SSRF sink(정확도 30~33%)와 `img src` XSS sink
   (47.6%)에서, 사용자 입력이 prop·alias를 거쳐 실제로 sink까지 도달하는데도
   Grok은 "확실한 증거가 없다"며 SAFE로 판정한 경우가 많았다. 반면
@@ -108,8 +108,8 @@ VULNERABLE/SAFE만 판정.
 |---|---|---|
 | 최신 CVE 탐지율 (2026 NVD, 단일 코드 분석) | 92.0% | 86.0% |
 | 응답 속도 (NVD 100케이스) | 0.2s | 2.14s |
-| 코드 그래프 taint 추적 정확도 (100케이스) | **100.0%** | 68.0% |
-| 코드 그래프 taint 추적 Recall | 100.0% | **37.3%** |
+| 코드 그래프 taint 추적 정확도 (100케이스) | **100.0%** | 67.0% |
+| 코드 그래프 taint 추적 Recall | 100.0% | **35.3%** |
 | 모델 크기 | 1.5B (로컬) + 그래프 엔진 | 대형 프런티어 모델 (API) |
 
 작은 1.5B 모델이라도 (1) RAG로 최신 NVD CVE를 실시간 반영하고 (2) 코드
@@ -117,7 +117,7 @@ VULNERABLE/SAFE만 판정.
 추론하는 대형 모델보다 탐지율·정확도·속도 모든 면에서 우위를 보일 수 있다.
 특히 그래프 기반 taint 추적은 모델 크기 문제가 아니라 **아키텍처 문제**라는
 것을 100케이스 규모로 확인했다 — Grok은 멀티파일 데이터 흐름 증명에 구조적
-한계가 있어 recall이 37.3%까지 떨어진다.
+한계가 있어 recall이 35.3%까지 떨어진다.
 
 ## 재현 방법
 
@@ -127,4 +127,6 @@ source .venv/bin/activate
 python scripts/benchmark_v5.py                 # 1. NVD 100케이스 (탐지율/오탐률)
 python scripts/graph_benchmark_cases.py        # 2. 그래프 케이스 100개 자체 점검
 python scripts/benchmark_graph_vs_grok.py      # 3. 그래프 100케이스 vs Grok
+python scripts/generate_v6_html_report.py      # 4. 두 벤치마크 종합 HTML 리포트 생성
+                                                #    → reports/v6_scanops_vs_grok_report.html
 ```

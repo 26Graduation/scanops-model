@@ -110,10 +110,20 @@ def build_case(
         source_lines.append(f"const aliased = {var};")
         var = "aliased"
 
+    # import 문은 파일 최상단에, const/alias 대입문은 함수 본문 안에 와야
+    # 문법적으로 유효한 코드가 된다 (hop>=1일 때 import를 함수 안에 잘못
+    # 넣으면 안 됨).
+    header_lines = [l for l in source_lines if l.startswith("import ")]
+    body_source_lines = [l for l in source_lines if not l.startswith("import ")]
+
     if hop == 0:
         # 같은 파일에서 source -> sink 직결 (prop 전달 없음)
         sink_line = _sink_line(sink_kind, var)
-        body_lines = ["export default function Root() {"] + [f"  {l}" for l in source_lines]
+        body_lines = (
+            header_lines
+            + ["", "export default function Root() {"]
+            + [f"  {l}" for l in body_source_lines]
+        )
         if sink_kind in ("img", "dangerouslySetInnerHTML"):
             body_lines.append(f"  return {sink_line}")
         else:
@@ -124,29 +134,31 @@ def build_case(
         target_file = "src/Root.tsx"
 
     elif hop == 1:
+        root_lines = (
+            ["import Leaf from './Leaf';"]
+            + header_lines
+            + ["", "export default function Root() {"]
+            + [f"  {l}" for l in body_source_lines]
+            + [f"  return <Leaf val={{{var}}} />;", "}", ""]
+        )
         files = {
             "src/Leaf.tsx": _leaf_body(sink_kind, "val"),
-            "src/Root.tsx": (
-                "import Leaf from './Leaf';\n\n"
-                "export default function Root() {\n"
-                + "\n".join(f"  {l}" for l in source_lines)
-                + f"\n  return <Leaf val={{{var}}} />;\n"
-                "}\n"
-            ),
+            "src/Root.tsx": "\n".join(root_lines),
         }
         target_file = "src/Leaf.tsx"
 
     else:  # hop == 2
+        root_lines = (
+            ["import Mid from './Mid';"]
+            + header_lines
+            + ["", "export default function Root() {"]
+            + [f"  {l}" for l in body_source_lines]
+            + [f"  return <Mid val={{{var}}} />;", "}", ""]
+        )
         files = {
             "src/Leaf.tsx": _leaf_body(sink_kind, "val"),
             "src/Mid.tsx": _wrapper_body("Mid", "Leaf", "val"),
-            "src/Root.tsx": (
-                "import Mid from './Mid';\n\n"
-                "export default function Root() {\n"
-                + "\n".join(f"  {l}" for l in source_lines)
-                + f"\n  return <Mid val={{{var}}} />;\n"
-                "}\n"
-            ),
+            "src/Root.tsx": "\n".join(root_lines),
         }
         target_file = "src/Leaf.tsx"
 
