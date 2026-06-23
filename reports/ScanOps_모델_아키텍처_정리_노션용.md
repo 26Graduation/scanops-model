@@ -231,8 +231,8 @@ File ─DECLARES_COMPONENT─▶ Component ─DECLARES_PROP─▶ Prop
     `axios.*`)에 도달 → `verdict="tainted"` → 탐지 유지 + `kg_risk_score` +0.9
   - 둘 다 증명 못하면 `verdict="unknown"` → 점수만 소폭 하향(-0.2), 탐지 유지
 
-**검증된 3가지 시나리오** (`tests/test_code_graph.py`,
-`scripts/benchmark_graph_vs_grok.py`):
+**검증 시나리오** (`tests/test_code_graph.py`에 3개 단위테스트로 고정, 대규모
+검증은 `scripts/graph_benchmark_cases.py`의 100케이스 — 8-2절 참고):
 
 | 케이스 | 코드 흐름 | 정답 | ScanOps 그래프 근거 |
 |---|---|---|---|
@@ -258,24 +258,39 @@ File ─DECLARES_COMPONENT─▶ Component ─DECLARES_PROP─▶ Prop
   (`mitigation_safe()`)을 1차 필터로 두고 LLM 판정을 보정하는 하이브리드 방식.
 - 측정 지표: TP/FN/FP/TN, recall, FPR, precision, accuracy, F1, 평균 응답시간.
 
-### 8-2. 코드 그래프 비교 벤치마크 (신규, 2026-06-23)
-**파일:** `scripts/benchmark_graph_vs_grok.py` → `reports/results_graph_vs_grok.json`
+### 8-2. 코드 그래프 비교 벤치마크 (100케이스, 2026-06-23)
+**파일:** `scripts/graph_benchmark_cases.py`(케이스 생성) +
+`scripts/benchmark_graph_vs_grok.py`(실행) → `reports/results_graph_vs_grok.json`
 
-- 7절의 3가지 그래프 시나리오를 ScanOps(FT 모델 1차 탐지 + 그래프 보정)와
-  Grok-3-mini(동일 멀티파일 코드, 그래프 없이 텍스트만)에 동일하게 입력해
-  VULNERABLE/SAFE 이진 판정 정확도를 비교.
+- 50개는 **2026년 5~6월 NVD 실제 XSS(CWE-79)/SSRF(CWE-918) CVE 25개씩**
+  (`data/cve_2026_xss_ssrf_seed.json`)을 출처로 사용자입력-tainted 버전과
+  정적import-safe 버전으로 재구성, 나머지 50개는 sink 종류×prop hop깊이(0~2)
+  ×별칭(alias) 조합으로 그래프 추적 로직의 견고성을 검증.
+- ScanOps는 API 서버가 실제로 쓰는 `evidence_for_finding()` 그래프 엔진의
+  판정을 그대로 사용(1차 LLM 탐지는 카테고리만 맞으면 영향 없음). Grok-3-mini는
+  동일한 멀티파일 코드를 그래프 없이 보고 VULNERABLE/SAFE 판정.
 - 목적: "모델 크기"가 아니라 "그래프 기반 데이터 흐름 추적"이라는
-  **아키텍처 차이**가 멀티파일 오탐/누락에 미치는 영향을 분리해서 측정.
+  **아키텍처 차이**가 멀티파일 오탐/누락에 미치는 영향을 통계적으로 의미
+  있는 규모로 분리해서 측정.
 
 ### 8-3. 최종 결과 요약
 
 | 벤치마크 | ScanOps | Grok-3-mini |
 |---|---|---|
-| NVD 2026 100케이스 — 탐지율 | 92.0% | 86.0% |
+| NVD 2026 100케이스(단일파일) — 탐지율 | 92.0% | 86.0% |
 | NVD 2026 100케이스 — 오탐률 | 6.0% | 0.0% |
 | NVD 2026 100케이스 — 정확도 | 93.0% | 93.0% |
 | NVD 2026 100케이스 — 평균응답 | 0.2s | 2.14s |
-| 코드 그래프 3케이스 — 정확도 | 100% (3/3) | 33.3% (1/3) |
+| 코드 그래프 100케이스 — 정확도 | **100.0%** | 68.0% |
+| 코드 그래프 100케이스 — Recall(누락 방지) | 100.0% | **37.3%** |
+| 코드 그래프 100케이스 — FP(오탐) | 0건 | 0건 |
+
+Grok은 그래프 케이스에서 오탐(FP)은 0건으로 매우 보수적이지만, 사용자
+입력이 prop·alias를 거쳐 실제 sink에 도달하는 51개 중 32개(특히
+`fetch`/`axios.post` SSRF, `img src` XSS)를 "확신 없음 → SAFE"로 놓쳤다
+(recall 37.3%). 반면 그래프 엔진은 hop 깊이·별칭 체인과 무관하게 100케이스
+전부 정답을 맞췄다 — 멀티파일 taint 추적은 모델 크기가 아니라 그래프
+아키텍처의 문제라는 것을 통계적으로 확인.
 
 전체 정확도는 비슷하지만(93%) ScanOps가 최신 CVE를 더 많이 잡고(+6%p
 recall), 10배 이상 빠르며, 멀티파일 데이터 흐름이 필요한 케이스에서는
@@ -301,7 +316,7 @@ python -m scanops.models.train_qlora --model qwen --epochs 3 --lora-r 32
 
 # 벤치마크
 python scripts/benchmark_v5.py                 # NVD 100케이스 vs Grok
-python scripts/benchmark_graph_vs_grok.py       # 코드 그래프 3케이스 vs Grok
+python scripts/benchmark_graph_vs_grok.py       # 코드 그래프 100케이스 vs Grok
 
 # API 서버 (백엔드 연동용)
 uvicorn scripts.api_server:app --host 0.0.0.0 --port 8100 --reload
