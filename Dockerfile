@@ -17,6 +17,7 @@ RUN pip install --no-cache-dir \
     httpx>=0.27 \
     python-dotenv>=1.0 \
     qdrant-client>=1.9 \
+    neo4j>=5.20 \
     sentence-transformers>=2.7 \
     rich>=13
 
