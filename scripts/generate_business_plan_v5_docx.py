@@ -147,7 +147,7 @@ def chart_headtohead():
     """Grok이 놓치고 ScanOps가 잡은 신규 CVE 사례."""
     fig, ax = plt.subplots(figsize=(9.0, 3.4), facecolor='#FAFAFA'); ax.set_facecolor('#F7F9FC')
     labels = ['Missing AuthZ\n(CVE-2026-44754)', 'Prototype Pollution\n(CVE-2026-11572)',
-              'Hardcoded Cred\n(CVE-2026-21404)', 'Missing Auth\n(CVE-2023-54350)',
+              'Hardcoded Cred\n(CVE-2026-21404)', 'Missing AuthZ\n(CVE-2026-44751)',
               'Rate Limit\n(CVE-2026-11572)']
     scan = [1, 1, 1, 1, 1]   # 탐지
     grok = [0, 0, 0, 0, 0]   # 미탐
