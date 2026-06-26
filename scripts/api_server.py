@@ -298,6 +298,15 @@ def _is_valid_vuln(text: str) -> bool:
     return True
 
 
+def _no_vuln(text: Optional[str]) -> bool:
+    """VULNERABILITY 값이 '취약점 없음(NONE)'을 의미하는지 판정.
+    QLoRA v5부터는 안전한 코드에 대해 모델이 'VULNERABILITY: NONE'을
+    출력하도록 학습됐으므로, 이를 명시적으로 미탐지로 처리해야 한다."""
+    if text in ("—", "N/A", "", None):
+        return True
+    return isinstance(text, str) and text.strip().upper() == "NONE"
+
+
 def _graph_files_from_requests(files: list[AnalyzeRequest | PrFile]) -> list[CodeFile]:
     rows = []
     for file in files:
@@ -374,15 +383,15 @@ def run_adaptive(req: AnalyzeRequest, graph=None, analysis_id: str = "latest") -
     final   = parsed_ft
 
     if ok_ft:
-        # Stage 1 완전 성공 — RAG로 CVE 컨텍스트 보강
-        if req.use_rag:
+        # Stage 1 완전 성공 — VULNERABILITY: NONE(안전 판정)이면 RAG도 건너뜀
+        if req.use_rag and not _no_vuln(vuln_ft):
             cve_q = f"{req.language} {vuln_ft} {req.code[:120]}"
             cves  = search_cves(cve_q)
     else:
         # Stage 2: base + RAG 폴백
         # Stage 1이 VULNERABILITY를 식별했다면 더 정확한 CVE 쿼리에 활용
         stage = 2
-        hint  = vuln_ft if vuln_ft not in ("—", "N/A", "", None) else "security vulnerability"
+        hint  = vuln_ft if not _no_vuln(vuln_ft) else "security vulnerability"
         cve_q = f"{req.language} {hint} {req.code[:120]}"
         cves  = search_cves(cve_q) if req.use_rag else []
         try:
@@ -410,7 +419,7 @@ def run_adaptive(req: AnalyzeRequest, graph=None, analysis_id: str = "latest") -
     response = AnalyzeResponse(
         language    = req.language,
         file_path   = req.file_path,
-        detected    = vuln not in ("—", "N/A", "", None),
+        detected    = not _no_vuln(vuln),
         stage       = stage,
         vulnerability = vuln,
         severity    = sev,

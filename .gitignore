@@ -35,3 +35,4 @@ reports/charts/
 
 # 노트북 체크포인트
 .ipynb_checkpoints/
+.cache/

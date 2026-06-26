@@ -105,9 +105,15 @@ SYSTEM_FT   = (
 )
 
 OUTPUT_FORMAT = """\
-List ALL security vulnerabilities found in the code. Report EACH vulnerability instance separately, even if the same vulnerability type appears multiple times in different locations.
+First decide whether the code has a REAL, exploitable security vulnerability.
 
-For EACH vulnerability, use EXACTLY this format, separated by ---:
+If the code is SAFE (no real vulnerability — e.g. parameterized queries, output \
+escaping, input validation, strong crypto/hash, secure randomness, proper auth \
+checks already present), respond with EXACTLY one line:
+VULNERABILITY: NONE
+
+If the code DOES have a real vulnerability, list ALL of them. For EACH \
+vulnerability, use EXACTLY this format, separated by ---:
 VULNERABILITY: [vulnerability name with CWE ID]
 SEVERITY: [CRITICAL/HIGH/MEDIUM/LOW]
 CVSS: [CVSS base score, e.g. 9.8]
