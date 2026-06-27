@@ -217,7 +217,7 @@ def _call_finetuned(user_content: str, model: str, timeout: int = 90) -> tuple[s
         ],
         "stream": False,
         "options": {
-            "temperature":    0.05,
+            "temperature":    0.0,   # 결정적(재현 가능)
             "top_p":          0.8,
             "num_predict":    400,
             "stop":           ["<|im_end|>", "<|endoftext|>", "[EMPTY_151643]", "\n\n\n"],
