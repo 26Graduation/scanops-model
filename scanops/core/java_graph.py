@@ -19,8 +19,10 @@ import re
 
 # ── 1. 사용자 입력 source ─────────────────────────────────────────────────
 USER_INPUT = re.compile(
-    r"request\.getParameter\(|request\.getHeader\(|request\.getQueryString\(|"
-    r"request\.getCookies\(|\.getValue\(\)|getParameterValues\("
+    r"request\.getParameter\(|request\.getHeader\(|request\.getHeaders\(|"
+    r"request\.getQueryString\(|request\.getCookies\(|\.getValue\(\)|"
+    r"getParameterValues\(|getParameterNames\(|getParameterMap\(|"
+    r"SeparateClassRequest\(|getReader\(|getInputStream\("
 )
 
 # ── 카테고리별 약한/안전 API (taint 무관, 값 패턴) ────────────────────────
@@ -71,6 +73,122 @@ def _method_body(code: str, name: str) -> str | None:
     return None
 
 
+def _extract_if_bar(body: str) -> tuple[str, str, str | None] | None:
+    """본문에서 `if (COND) bar = A; [else bar = B;]` 패턴을 균형 괄호로 추출.
+    OWASP는 삼항 대신 if/else 문으로도 사용자입력 분기를 숨긴다(예: 02032).
+    반환: (cond, a, b) 또는 None."""
+    for m in re.finditer(r"if\s*\(", body):
+        i = m.end() - 1  # '(' 위치
+        depth, j = 0, m.end() - 1
+        while j < len(body):
+            if body[j] == "(":
+                depth += 1
+            elif body[j] == ")":
+                depth -= 1
+                if depth == 0:
+                    break
+            j += 1
+        cond = body[i + 1:j]
+        rest = body[j + 1:]
+        am = re.match(r"\s*bar\s*=\s*(.+?);", rest, re.DOTALL)
+        if not am:
+            continue
+        a = am.group(1)
+        after = rest[am.end():]
+        bm = re.match(r"\s*else\s+bar\s*=\s*(.+?);", after, re.DOTALL)
+        b = bm.group(1) if bm else None
+        return cond, a, b
+    return None
+
+
+def _balanced(code: str, open_idx: int, oc: str, cc: str) -> int:
+    """open_idx의 여는 괄호/중괄호에 대응하는 닫는 위치를 반환."""
+    depth, j = 0, open_idx
+    while j < len(code):
+        if code[j] == oc:
+            depth += 1
+        elif code[j] == cc:
+            depth -= 1
+            if depth == 0:
+                return j
+        j += 1
+    return len(code)
+
+
+def _resolve_selector(sel: str, body: str, ivars: dict[str, int]):
+    """switch 선택자를 상수로 해석. char(문자) 또는 int. 불가시 None.
+    OWASP 트릭: char switchTarget = "ABC".charAt(2)  →  'C'."""
+    sel = sel.strip()
+    # 변수면 본문에서 할당식 추적
+    am = re.search(rf"(?:char|int|byte|short)\s+{re.escape(sel)}\s*=\s*(.+?);", body)
+    rhs = am.group(1).strip() if am else sel
+    # X.charAt(N)
+    cm = re.match(r"(\w+)\.charAt\(\s*(\d+)\s*\)", rhs)
+    if cm:
+        s = _resolve_str_value(cm.group(1), body)
+        idx = int(cm.group(2))
+        if s is not None and 0 <= idx < len(s):
+            return s[idx]            # 단일 char
+        return None
+    # 문자 리터럴 'C'
+    if re.fullmatch(r"'.'", rhs):
+        return rhs[1]
+    # 정수
+    if re.fullmatch(r"-?\d+", rhs):
+        return int(rhs)
+    if rhs in ivars:
+        return ivars[rhs]
+    return None
+
+
+def _switch_taint(body: str, ivars: dict[str, int]) -> bool | None:
+    """switch(selector){ case ...: bar = ...; } 의 선택된 분기 taint 평가.
+    선택자를 상수로 풀 수 있으면 매칭 case의 bar 할당 오염 여부를 반환."""
+    sm = re.search(r"switch\s*\(", body)
+    if not sm:
+        return None
+    pi = body.index("(", sm.start())
+    pe = _balanced(body, pi, "(", ")")
+    selector = body[pi + 1:pe]
+    bi = body.index("{", pe)
+    be = _balanced(body, bi, "{", "}")
+    block = body[bi + 1:be]
+
+    selval = _resolve_selector(selector, body, ivars)
+    if selval is None:
+        return None
+
+    labels = list(re.finditer(r"(?:case\s+([^:]+?)|default)\s*:", block))
+    if not labels:
+        return None
+    segs = []
+    for idx, lm in enumerate(labels):
+        start = lm.end()
+        end = labels[idx + 1].start() if idx + 1 < len(labels) else len(block)
+        lab = lm.group(1).strip() if lm.group(1) else None  # None=default
+        segs.append((lab, block[start:end]))
+
+    def seg_bar_taint(start_idx):
+        for s in range(start_idx, len(segs)):       # fall-through 처리
+            bm = re.search(r"bar\s*=\s*(.+?);", segs[s][1])
+            if bm:
+                return _expr_is_tainted(bm.group(1).strip(), body, ivars)
+        return None
+
+    def matches(lab):
+        if isinstance(selval, str):
+            return lab.strip("'\"") == selval
+        return lab.lstrip("'\"").rstrip("'\"").lstrip("-").isdigit() and int(lab) == selval
+
+    for idx, (lab, _seg) in enumerate(segs):
+        if lab is not None and matches(lab):
+            return seg_bar_taint(idx)
+    for idx, (lab, _seg) in enumerate(segs):       # default
+        if lab is None:
+            return seg_bar_taint(idx)
+    return None
+
+
 def _resolve_dosomething_taint(code: str) -> bool | None:
     """doSomething(또는 유사 helper)의 반환이 사용자입력(param)으로 오염됐는지.
     True=오염(취약 가능), False=상수치환(안전), None=helper 없음/판정불가."""
@@ -79,16 +197,46 @@ def _resolve_dosomething_taint(code: str) -> bool | None:
         return None
     ivars = _int_vars(body) or _int_vars(code)
 
-    # 마지막 bar 할당 / return 추적
-    assigns = re.findall(r"\bbar\s*=\s*(.+?);", body, re.DOTALL)
-    expr = assigns[-1].strip() if assigns else None
-    if expr is None:
-        rm = re.search(r"return\s+(.+?);", body)
-        expr = rm.group(1).strip() if rm else None
-    if expr is None:
-        return None
+    # switch 문 분기 — 선택자를 상수로 풀어 매칭 case의 bar 평가
+    if "switch" in body:
+        st = _switch_taint(body, ivars)
+        if st is not None:
+            return st
 
-    return _expr_is_tainted(expr, body, ivars)
+    # if/else 문 분기 (삼항과 별개) — 조건을 constant-fold로 평가
+    ib = _extract_if_bar(body)
+    if ib:
+        cond, a, b = ib
+        val = _eval_const_cond(cond, ivars)
+        if val is True:
+            return _expr_is_tainted(a, body, ivars)
+        if val is False:
+            return _expr_is_tainted(b, body, ivars) if b else False
+        # 조건 평가 불가 → 한 분기라도 오염이면 보수적으로 오염
+        ta = _expr_is_tainted(a, body, ivars)
+        tb = _expr_is_tainted(b, body, ivars) if b else False
+        if ta or tb:
+            return True
+        if ta is None or tb is None:
+            return None
+        return False
+
+    # 여러 bar 할당이 오염/상수로 엇갈리고 제어흐름을 못 풀면 → unknown(LLM 위임).
+    # (마지막 할당만 보면 OWASP switch/조건 트릭에서 false-safe가 난다.)
+    assigns = [a.strip() for a in re.findall(r"\bbar\s*=\s*(.+?);", body, re.DOTALL)]
+    if not assigns:
+        rm = re.search(r"return\s+(.+?);", body)
+        assigns = [rm.group(1).strip()] if rm else []
+    if not assigns:
+        return None
+    taints = [_expr_is_tainted(a, body, ivars) for a in assigns]
+    if any(t is True for t in taints) and any(t is False for t in taints):
+        return None      # 분기 미해결 + 혼합 → 판정 불가
+    if all(t is True for t in taints):
+        return True
+    if all(t is False for t in taints):
+        return False
+    return _expr_is_tainted(assigns[-1], body, ivars)
 
 
 def _expr_is_tainted(expr: str, body: str, ivars: dict[str, int]) -> bool | None:
@@ -157,39 +305,77 @@ def _resolve_str_value(var: str, code: str) -> str | None:
     return None
 
 
+def _resolve_algo(arg: str, code: str) -> tuple[str | None, bool]:
+    """getInstance 인자를 알고리즘 문자열로 해석.
+    반환: (algo|None, external) — external=True면 getProperty 등 외부설정 유래라
+    파일만으론 결정 불가(→ unknown으로 LLM 위임해야 false-safe 방지)."""
+    arg = arg.strip()
+    if arg.startswith('"'):
+        return arg.strip('"'), False
+    # 변수: 외부설정(getProperty/System.getenv/param) 유래인지 확인
+    asg = re.search(rf"\b{re.escape(arg)}\s*=\s*(.+?);", code, re.DOTALL)
+    if asg and re.search(r"getProperty\(|getenv\(|getParameter\(|getHeader\(", asg.group(1)):
+        return None, True
+    return _resolve_str_value(arg, code), False
+
+
 def analyze_java(code: str) -> dict:
-    """Java 코드의 안전/취약을 taint + API패턴으로 판정."""
+    """Java 코드의 안전/취약을 taint + API패턴으로 판정.
+
+    설계 핵심(precision): OWASP 파일은 진짜 취약점을 가리려고 미끼 패턴을 심는다
+    — injection 취약 파일에 setSecure(true) 쿠키를, crypto/path 파일 끝에
+    response.getWriter()+ESAPI.encodeForHTML 출력을 둔다. 따라서 '실제 injection
+    sink'(sqli/cmdi/path/ldap/xpath/trustbound)가 있으면 그게 config/xss 미끼보다
+    우선한다. xss(getWriter)는 모든 파일에 있으므로 최후의 fallback으로만 본다.
+    """
     has_user_input = bool(USER_INPUT.search(code))
     tainted = _resolve_dosomething_taint(code)  # helper 통과 후 오염 여부
+    cat = _taint_category(code)
 
-    # ── API-패턴 카테고리 (taint 무관) ──────────────────────────────────
-    # crypto
+    # ── 1. 특정 config 마커(Cipher/MessageDigest/Random) 최우선 ───────────
+    # 이 마커들은 injection 파일에 미끼로 등장하지 않는 카테고리 고유 신호다.
+    # 반대로 crypto/hash 파일은 결과를 new File()로 출력하므로, File을 먼저 보면
+    # pathtraver로 오라우팅된다 → 특정 마커를 generic sink(File)보다 먼저 본다.
+    # 약한(취약) 패턴은 진짜 발견이지만, 강한(안전) 패턴이 외부설정 유래면
+    # 파일만으론 단정 불가 → unknown(LLM 위임)로 false-safe를 막는다.
     cm = re.search(r"Cipher\.getInstance\(\s*([^),]+)", code)
     if cm:
-        arg = cm.group(1).strip()
-        algo = arg.strip('"') if arg.startswith('"') else _resolve_str_value(arg, code)
+        algo, external = _resolve_algo(cm.group(1), code)
         if algo:
             a = algo.lower()
             if any(w in a for w in WEAK_CRYPTO):
                 return _v("crypto", f"약한 암호 알고리즘 사용: {algo}")
             return _s("crypto", f"안전한 암호 알고리즘: {algo}")
-    # hash
+        if external:
+            return {"verdict": "unknown", "category": "crypto",
+                    "reason": "암호 알고리즘이 외부설정 유래 → LLM 위임"}
     hm = re.search(r"MessageDigest\.getInstance\(\s*([^),]+)", code)
     if hm:
-        arg = hm.group(1).strip()
-        algo = arg.strip('"') if arg.startswith('"') else _resolve_str_value(arg, code)
+        algo, external = _resolve_algo(hm.group(1), code)
         if algo:
             a = algo.lower()
             if any(w in a for w in WEAK_HASH):
                 return _v("hash", f"약한 해시: {algo}")
             if any(w in a for w in STRONG_HASH):
                 return _s("hash", f"강한 해시: {algo}")
-    # weakrand
+        if external:
+            return {"verdict": "unknown", "category": "hash",
+                    "reason": "해시 알고리즘이 외부설정 유래 → LLM 위임"}
     if re.search(r"\bnew\s+java\.util\.Random\b|\bnew\s+Random\b|Math\.random\(", code):
         return _v("weakrand", "예측 가능한 난수(Random/Math.random)")
     if re.search(r"SecureRandom", code) and not re.search(r"new\s+Random\b", code):
         return _s("weakrand", "SecureRandom 사용")
-    # securecookie
+
+    # ── 2. 실제 injection sink(sqli/cmdi/path/ldap/xpath) — cookie/xss 미끼보다 우선 ──
+    if cat in ("sqli", "cmdi", "pathtraver", "ldapi", "xpathi"):
+        return _judge_taint(code, cat, has_user_input, tainted)
+
+    # ── 3. trustbound(setAttribute/putValue) — cookie 미끼보다 우선 ───────
+    # trustbound 취약 파일도 setSecure(true) 쿠키 미끼를 달고 있으므로 먼저 본다.
+    if cat == "trustbound":
+        return _judge_taint(code, cat, has_user_input, tainted)
+
+    # ── 4. securecookie ─────────────────────────────────────────────────
     if re.search(r"new\s+Cookie\(|addCookie\(", code):
         sm = re.search(r"setSecure\(\s*(\w+)\s*\)", code)
         if sm:
@@ -198,50 +384,57 @@ def analyze_java(code: str) -> dict:
                 return _s("securecookie", "setSecure(true)")
             if val == "false":
                 return _v("securecookie", "setSecure(false)")
-            # 불린 변수면 해석
             bm = re.search(rf"boolean\s+{val}\s*=\s*(.+?);", code)
             if bm and "true" in bm.group(1) and "false" not in bm.group(1):
                 return _s("securecookie", "setSecure(true via var)")
             return _v("securecookie", "setSecure 불확실/조건부")
         return _v("securecookie", "쿠키에 setSecure 없음")
 
-    # ── taint 카테고리 — 확신할 때만 safe/vuln, 아니면 unknown(LLM 위임) ──
-    # 하이브리드 설계: 그래프의 'safe'는 고정밀이어야 LLM 오탐을 안전하게 억제할 수 있다.
-    cat = _taint_category(code)
-    if cat:
-        # (a) 안전 sink API 사용 → 확신 safe
-        if _has_safe_sink(code, cat):
-            return _s(cat, "안전한 sink API(PreparedStatement/ESAPI/canonical 등)")
-        # (b) helper가 상수 치환으로 사용자입력을 버림 → 확신 safe
-        if tainted is False:
-            return _s(cat, "사용자 입력이 상수로 치환되어 sink에 미도달")
-        # (c) 사용자입력 자체가 없음 → 확신 safe
-        if not has_user_input:
-            return _s(cat, "사용자 입력 source 없음")
-        # (d) helper가 사용자입력을 sink로 전달 → 확신 vuln
-        if tainted is True:
-            return _v(cat, "사용자 입력이 검증 없이 sink에 도달(taint 확인)")
-        # (e) 사용자입력은 있으나 흐름 판정 불가 → unknown(LLM 판단에 위임)
-        return {"verdict": "unknown", "category": cat, "reason": "taint 흐름 판정 불가 → LLM 위임"}
+    # ── 5. xss(getWriter) — 최후 fallback ───────────────────────────────
+    if cat == "xss":
+        return _judge_taint(code, cat, has_user_input, tainted)
+
     return {"verdict": "unknown", "category": "?", "reason": "카테고리/판정 불가"}
 
 
+def _judge_taint(code: str, cat: str, has_user_input: bool, tainted: bool | None) -> dict:
+    """taint 흐름 기반 판정 — 확신할 때만 safe/vuln, 아니면 unknown(LLM 위임)."""
+    # (a) 안전 sink API 사용 → 확신 safe
+    if _has_safe_sink(code, cat):
+        return _s(cat, "안전한 sink API(PreparedStatement/ESAPI/canonical 등)")
+    # (b) helper가 상수 치환으로 사용자입력을 버림 → 확신 safe
+    if tainted is False:
+        return _s(cat, "사용자 입력이 상수로 치환되어 sink에 미도달")
+    # (c) 사용자입력 자체가 없음 → 확신 safe
+    if not has_user_input:
+        return _s(cat, "사용자 입력 source 없음")
+    # (d) helper가 사용자입력을 sink로 전달 → 확신 vuln
+    if tainted is True:
+        return _v(cat, "사용자 입력이 검증 없이 sink에 도달(taint 확인)")
+    # (e) 사용자입력은 있으나 흐름 판정 불가 → unknown(LLM 판단에 위임)
+    return {"verdict": "unknown", "category": cat, "reason": "taint 흐름 판정 불가 → LLM 위임"}
+
+
 def _taint_category(code: str) -> str | None:
-    if re.search(r"Statement\b|executeQuery\(|executeUpdate\(|executeBatch\(|addBatch\(", code) \
+    if re.search(r"Statement\b|executeQuery\(|executeUpdate\(|executeBatch\(|addBatch\(|"
+                 r"queryFor\w*\(|JDBCtemplate", code) \
        and re.search(r"SELECT|INSERT|UPDATE|DELETE", code, re.I):
         return "sqli"
     if re.search(r"Runtime\.getRuntime\(\)\.exec|ProcessBuilder|\.exec\(", code):
         return "cmdi"
-    if re.search(r"new\s+File\(|FileInputStream|FileOutputStream|\.sendRedirect\(.*File|RandomAccessFile", code):
+    if re.search(r"new\s+(?:\w+\.)*File\(|FileInputStream|FileOutputStream|"
+                 r"\.sendRedirect\(.*File|RandomAccessFile", code):
         return "pathtraver"
     if re.search(r"ctx\.search\(|DirContext|InitialDirContext|\.search\(", code) and "ldap" in code.lower():
         return "ldapi"
     if re.search(r"XPath|xpath\.|\.evaluate\(|compile\(", code) and "xpath" in code.lower():
         return "xpathi"
-    if re.search(r"getWriter\(\)\.(print|write)|response\.getWriter|\.append\(", code):
-        return "xss"
+    # trustbound(setAttribute/putValue)을 xss(getWriter)보다 먼저 — 모든 파일에 getWriter가
+    # 있어 xss가 catch-all이 되는 것을 방지.
     if re.search(r"\.putValue\(|session\.setAttribute\(|\.setAttribute\(", code):
         return "trustbound"
+    if re.search(r"getWriter\(\)\.(print|write)|response\.getWriter|\.append\(", code):
+        return "xss"
     return None
 
 

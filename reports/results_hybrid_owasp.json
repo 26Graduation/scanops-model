@@ -1,0 +1,914 @@
+{
+  "generated": "2026-06-27T19:45:44",
+  "llm_metrics": {
+    "tp": 23,
+    "fn": 32,
+    "fp": 20,
+    "tn": 35,
+    "recall": 41.8,
+    "fpr": 36.4,
+    "precision": 53.5,
+    "accuracy": 52.7,
+    "f1": 46.9
+  },
+  "hybrid_metrics": {
+    "tp": 45,
+    "fn": 10,
+    "fp": 8,
+    "tn": 47,
+    "recall": 81.8,
+    "fpr": 14.5,
+    "precision": 84.9,
+    "accuracy": 83.6,
+    "f1": 83.3
+  },
+  "grok_metrics": {
+    "recall": 60.0,
+    "fpr": 30.9,
+    "precision": 66.0,
+    "accuracy": 64.5,
+    "f1": 62.9
+  },
+  "cases": [
+    {
+      "id": "BenchmarkTest02610",
+      "label": "safe",
+      "category": "cmdi",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest01191",
+      "label": "vuln",
+      "category": "cmdi",
+      "llm": true,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest01532",
+      "label": "safe",
+      "category": "cmdi",
+      "llm": true,
+      "graph": "safe",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest02249",
+      "label": "vuln",
+      "category": "cmdi",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest02698",
+      "label": "safe",
+      "category": "cmdi",
+      "llm": true,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest00908",
+      "label": "safe",
+      "category": "cmdi",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest00173",
+      "label": "vuln",
+      "category": "cmdi",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest02137",
+      "label": "vuln",
+      "category": "cmdi",
+      "llm": true,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest01691",
+      "label": "vuln",
+      "category": "cmdi",
+      "llm": false,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest01529",
+      "label": "safe",
+      "category": "cmdi",
+      "llm": false,
+      "graph": "safe",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest01980",
+      "label": "vuln",
+      "category": "crypto",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest00357",
+      "label": "safe",
+      "category": "crypto",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest00856",
+      "label": "vuln",
+      "category": "crypto",
+      "llm": true,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest01565",
+      "label": "vuln",
+      "category": "crypto",
+      "llm": true,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest01148",
+      "label": "vuln",
+      "category": "crypto",
+      "llm": true,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest00777",
+      "label": "safe",
+      "category": "crypto",
+      "llm": true,
+      "graph": "safe",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest02375",
+      "label": "vuln",
+      "category": "crypto",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest01022",
+      "label": "safe",
+      "category": "crypto",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest01151",
+      "label": "safe",
+      "category": "crypto",
+      "llm": false,
+      "graph": "safe",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest00121",
+      "label": "safe",
+      "category": "crypto",
+      "llm": true,
+      "graph": "safe",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest00371",
+      "label": "vuln",
+      "category": "hash",
+      "llm": true,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest00075",
+      "label": "safe",
+      "category": "hash",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest01911",
+      "label": "vuln",
+      "category": "hash",
+      "llm": true,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest00869",
+      "label": "vuln",
+      "category": "hash",
+      "llm": true,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest02673",
+      "label": "safe",
+      "category": "hash",
+      "llm": false,
+      "graph": "safe",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest00639",
+      "label": "safe",
+      "category": "hash",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest01041",
+      "label": "vuln",
+      "category": "hash",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest01039",
+      "label": "safe",
+      "category": "hash",
+      "llm": false,
+      "graph": "safe",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest00631",
+      "label": "vuln",
+      "category": "hash",
+      "llm": false,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest02678",
+      "label": "safe",
+      "category": "hash",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest00948",
+      "label": "safe",
+      "category": "ldapi",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest01832",
+      "label": "vuln",
+      "category": "ldapi",
+      "llm": false,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest01491",
+      "label": "safe",
+      "category": "ldapi",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest01023",
+      "label": "vuln",
+      "category": "ldapi",
+      "llm": false,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest01501",
+      "label": "vuln",
+      "category": "ldapi",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest02208",
+      "label": "vuln",
+      "category": "ldapi",
+      "llm": true,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest01327",
+      "label": "safe",
+      "category": "ldapi",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest01755",
+      "label": "safe",
+      "category": "ldapi",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest01831",
+      "label": "vuln",
+      "category": "ldapi",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest02572",
+      "label": "safe",
+      "category": "ldapi",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest02302",
+      "label": "vuln",
+      "category": "pathtraver",
+      "llm": false,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest01841",
+      "label": "safe",
+      "category": "pathtraver",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest02560",
+      "label": "vuln",
+      "category": "pathtraver",
+      "llm": false,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest02555",
+      "label": "vuln",
+      "category": "pathtraver",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest02032",
+      "label": "vuln",
+      "category": "pathtraver",
+      "llm": false,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest01036",
+      "label": "safe",
+      "category": "pathtraver",
+      "llm": false,
+      "graph": "safe",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest00265",
+      "label": "safe",
+      "category": "pathtraver",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest02563",
+      "label": "safe",
+      "category": "pathtraver",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest01331",
+      "label": "safe",
+      "category": "pathtraver",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest02303",
+      "label": "vuln",
+      "category": "pathtraver",
+      "llm": false,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest01789",
+      "label": "vuln",
+      "category": "securecookie",
+      "llm": false,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest02006",
+      "label": "safe",
+      "category": "securecookie",
+      "llm": false,
+      "graph": "safe",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest02507",
+      "label": "vuln",
+      "category": "securecookie",
+      "llm": false,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest00242",
+      "label": "safe",
+      "category": "securecookie",
+      "llm": true,
+      "graph": "safe",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest00169",
+      "label": "vuln",
+      "category": "securecookie",
+      "llm": false,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest00404",
+      "label": "safe",
+      "category": "securecookie",
+      "llm": true,
+      "graph": "safe",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest01062",
+      "label": "safe",
+      "category": "securecookie",
+      "llm": false,
+      "graph": "safe",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest01935",
+      "label": "safe",
+      "category": "securecookie",
+      "llm": false,
+      "graph": "safe",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest00348",
+      "label": "vuln",
+      "category": "securecookie",
+      "llm": false,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest01186",
+      "label": "vuln",
+      "category": "securecookie",
+      "llm": false,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest00845",
+      "label": "vuln",
+      "category": "sqli",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest02364",
+      "label": "vuln",
+      "category": "sqli",
+      "llm": false,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest01969",
+      "label": "safe",
+      "category": "sqli",
+      "llm": true,
+      "graph": "safe",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest02091",
+      "label": "vuln",
+      "category": "sqli",
+      "llm": false,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest02097",
+      "label": "safe",
+      "category": "sqli",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest02367",
+      "label": "safe",
+      "category": "sqli",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest01008",
+      "label": "vuln",
+      "category": "sqli",
+      "llm": true,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest00930",
+      "label": "safe",
+      "category": "sqli",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest00773",
+      "label": "safe",
+      "category": "sqli",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest01721",
+      "label": "vuln",
+      "category": "sqli",
+      "llm": false,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest01548",
+      "label": "vuln",
+      "category": "trustbound",
+      "llm": true,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest00994",
+      "label": "vuln",
+      "category": "trustbound",
+      "llm": false,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest01873",
+      "label": "safe",
+      "category": "trustbound",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest00991",
+      "label": "vuln",
+      "category": "trustbound",
+      "llm": false,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest00992",
+      "label": "safe",
+      "category": "trustbound",
+      "llm": false,
+      "graph": "safe",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest01142",
+      "label": "safe",
+      "category": "trustbound",
+      "llm": false,
+      "graph": "safe",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest01615",
+      "label": "vuln",
+      "category": "trustbound",
+      "llm": true,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest01957",
+      "label": "safe",
+      "category": "trustbound",
+      "llm": true,
+      "graph": "safe",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest01709",
+      "label": "vuln",
+      "category": "trustbound",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest01454",
+      "label": "safe",
+      "category": "trustbound",
+      "llm": true,
+      "graph": "safe",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest00914",
+      "label": "safe",
+      "category": "weakrand",
+      "llm": false,
+      "graph": "safe",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest00506",
+      "label": "safe",
+      "category": "weakrand",
+      "llm": true,
+      "graph": "safe",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest01453",
+      "label": "safe",
+      "category": "weakrand",
+      "llm": false,
+      "graph": "safe",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest01843",
+      "label": "vuln",
+      "category": "weakrand",
+      "llm": true,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest02420",
+      "label": "vuln",
+      "category": "weakrand",
+      "llm": false,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest01999",
+      "label": "vuln",
+      "category": "weakrand",
+      "llm": true,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest02161",
+      "label": "safe",
+      "category": "weakrand",
+      "llm": true,
+      "graph": "safe",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest01276",
+      "label": "vuln",
+      "category": "weakrand",
+      "llm": true,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest00368",
+      "label": "vuln",
+      "category": "weakrand",
+      "llm": true,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest02440",
+      "label": "safe",
+      "category": "weakrand",
+      "llm": false,
+      "graph": "safe",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest01633",
+      "label": "safe",
+      "category": "xpathi",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest00116",
+      "label": "safe",
+      "category": "xpathi",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest00520",
+      "label": "safe",
+      "category": "xpathi",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest02100",
+      "label": "vuln",
+      "category": "xpathi",
+      "llm": false,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest01316",
+      "label": "vuln",
+      "category": "xpathi",
+      "llm": true,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest01224",
+      "label": "vuln",
+      "category": "xpathi",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest00442",
+      "label": "vuln",
+      "category": "xpathi",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest00117",
+      "label": "safe",
+      "category": "xpathi",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest02189",
+      "label": "vuln",
+      "category": "xpathi",
+      "llm": false,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest01632",
+      "label": "safe",
+      "category": "xpathi",
+      "llm": false,
+      "graph": "safe",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest00476",
+      "label": "safe",
+      "category": "xss",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest00382",
+      "label": "vuln",
+      "category": "xss",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest02131",
+      "label": "vuln",
+      "category": "xss",
+      "llm": false,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest00156",
+      "label": "vuln",
+      "category": "xss",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest02235",
+      "label": "safe",
+      "category": "xss",
+      "llm": false,
+      "graph": "safe",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest00716",
+      "label": "safe",
+      "category": "xss",
+      "llm": true,
+      "graph": "safe",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest00030",
+      "label": "vuln",
+      "category": "xss",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest01589",
+      "label": "vuln",
+      "category": "xss",
+      "llm": true,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "id": "BenchmarkTest01421",
+      "label": "safe",
+      "category": "xss",
+      "llm": true,
+      "graph": "safe",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest00884",
+      "label": "safe",
+      "category": "xss",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false
+    }
+  ]
+}

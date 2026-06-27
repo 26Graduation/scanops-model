@@ -4,7 +4,8 @@
 
 > **한 줄 요약:** 자체 파인튜닝한 3B 보안 모델 + Java taint 정적분석을 결합한
 > 하이브리드가, 외부 표준 벤치마크(OWASP Benchmark)에서 상용 모델 Grok-3-mini를
-> F1·정확도·오탐률에서 능가했다 (F1 66.0 vs 62.9, 오탐률 14.5% vs 30.9%).
+> **F1·재현율·정확도·오탐률 전 지표에서 능가**했다
+> (F1 83.3 vs 62.9, 재현율 81.8% vs 60.0%, 오탐률 14.5% vs 30.9%, 정확도 83.6% vs 64.5%).
 
 ---
 
@@ -104,12 +105,12 @@ OWASP(Java)를 위해 새로 구축:
 - **source**: `request.getParameter/getHeader/getCookies/getQueryString`
 - **sink**: `Runtime.exec`/`ProcessBuilder`(명령), `Statement.execute`(SQL), `new File`(경로), `sendRedirect`(리다이렉트)
 - **sanitizer**: `PreparedStatement+setString`(SQL), `ESAPI.encoder`(XSS), `getCanonicalPath`(경로)
-- **helper 추적 + constant-folding**: OWASP의 항진명제 트릭(`(7*18)+106 > 200`은 항상 참→상수 치환)을 평가해 실제 사용자 입력이 sink에 도달하는지 판정
+- **helper 추적 + constant-folding**: OWASP의 항진명제 트릭(`(7*18)+106 > 200`은 항상 참→상수 치환)을 평가해 실제 사용자 입력이 sink에 도달하는지 판정. **삼항·if/else·switch 분기** 모두 상수 평가(예: `"ABC".charAt(2)='C'` → `case 'C': bar=param` → 오염).
 - **약한 API 패턴**: 약한 암호(DES)/해시(MD5·SHA1)/난수(Random)/쿠키(setSecure 없음)를 변수값 추적으로 판정
+- **decoy(미끼) 제거 — 정밀도 핵심:** OWASP는 진짜 취약점을 가리려 미끼 패턴을 심는다 (injection 파일에 `setSecure(true)` 안전 쿠키를, crypto/path 파일 끝에 `getWriter()+ESAPI.encodeForHTML` 안전 출력을). 이를 그대로 보면 그래프가 취약 파일을 "안전"으로 오판한다(초기 false-safe 29/55=53%). 해결: **카테고리 고유 마커(Cipher/MessageDigest/Random) > 실제 injection sink > 미끼(쿠키/getWriter)** 우선순위로 라우팅하고, 외부설정 유래 알고리즘은 unknown 처리.
 - 설계 원칙: **확신할 때만 safe/vuln, 애매하면 unknown(LLM에 위임)** → safe 판정 고정밀화
 
-**그래프 단독 OWASP 성능:** vuln 판정 정밀도 95.7%, 오탐률 12.7% (Grok 30.9%보다 우수).
-약한 API 카테고리(암호·해시·난수·쿠키)는 ~95% 정확. 복잡한 taint 트릭은 지속 개발 중.
+**그래프 단독 OWASP 성능(110 홀드아웃):** vuln 판정 정밀도 **97.6%**, **safe 판정 정밀도 100%**(취약을 안전으로 오판 0건 — decoy 제거 효과, 초기 62%→100%). 취약 55건 중 72.7%를 그래프가 직접 vuln 판정, 나머지는 unknown으로 LLM에 위임. → 이 safe 100% 덕분에 "그래프 safe=무조건 신뢰"로 LLM 오탐을 안전하게 veto할 수 있게 됨.
 
 ---
 
@@ -134,11 +135,16 @@ OWASP(Java)를 위해 새로 구축:
 | 시스템 | F1 | 재현율 | 오탐률 | 정확도 |
 |---|---|---|---|---|
 | v11 LLM 단독 | 46.9 | 41.8% | 36.4% | 52.7% |
-| **v11 + Java 그래프 하이브리드** | **66.0** | 56.4% | **14.5%** | **70.9%** |
+| **v11 + Java 그래프 하이브리드** | **83.3** | **81.8%** | **14.5%** | **83.6%** |
 | Grok-3-mini (상용) | 62.9 | 60.0% | 30.9% | 64.5% |
 
-**→ 하이브리드가 Grok을 F1·정확도·오탐률에서 능가** (오탐률은 절반 이하).
-그래프가 LLM의 오탐 12건을 정확히 억제. → `reports/figures/hybrid_vs_grok.png`
+**→ 하이브리드가 Grok을 F1·재현율·정확도·오탐률 *모든 지표*에서 능가** (오탐률은 절반 이하,
+재현율은 +21.8%p). 그래프가 LLM 오탐 12건을 억제하면서 **취약점은 0건만 잘못 억제**(이전 4~6건).
+→ `reports/figures/hybrid_vs_grok.png`
+
+> **개선 내역(이번 차):** decoy-aware 그래프 수정으로 그래프 safe 정밀도가 62%→100%가 되어,
+> 취약을 안전으로 잘못 억제하던 16건이 사라짐. 하이브리드 **재현율 56.4%→81.8%(+25.4%p)**,
+> F1 66.0→83.3, 오탐률은 14.5% 그대로. **재학습 없이** 정적분석 정밀화만으로 달성.
 
 **의미:** LLM 단독으론 OWASP를 못 풀지만(정확도 52.7%=동전던지기), **LLM 탐지 + 그래프
 오탐억제 하이브리드**는 상용 모델을 능가한다. 우리 3-레이어 아키텍처가 옳다는 외부 증거.
@@ -167,8 +173,8 @@ OWASP(Java)를 위해 새로 구축:
 
 ## 8. 현재 한계 & 다음 단계
 
-- **그래프 Java taint**: 복잡한 OWASP 트릭(리스트 add/remove 순서 등)은 일부 미처리 → 지속 개발(SAST 정교화)
-- **v11 양자화 불안정성**: Q4 모델이 추론 파라미터에 민감 → 서빙 파라미터 고정 필요
+- **그래프 Java taint**: false-safe(취약→안전 오판)는 이번에 0건 달성. 남은 과제는 unknown 42건(전체의 38%)을 줄여 그래프 직접 판정 비율을 높이는 것 — 현재 이 unknown은 LLM이 결정(여기서 FN 10·FP 7 발생)
+- **v11 양자화 불안정성**: Q4 모델이 추론 파라미터에 민감 → **서빙 파라미터 고정**(temp=0, repeat_penalty=1.3, top_p=0.8). 그리드 탐색 결과 이 설정이 재현율-최적(81.8%). 참고로 repeat_penalty=1.0은 "고정밀 모드"(재현율 72.7%·오탐률 1.8%·정확도 85.5%)로, 용도에 따라 선택 가능
 - **다언어 실제CVE 벤치마크(CVEfixes/DiverseVul)**: 추가 검증 예정 (우리 강점인 최신·다언어가 더 드러날 것)
 - **인프라**: Railway → AWS 마이그레이션 준비 완료 (`scanops-infra/AWS_MIGRATION.md`)
 

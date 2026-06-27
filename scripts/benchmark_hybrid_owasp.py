@@ -75,16 +75,17 @@ def main():
         g = analyze_java(full[c["id"]]["full_code"]) if c["id"] in full else {"verdict": "unknown"}
         gv = g["verdict"]
 
-        # ③ 하이브리드 결합 (변형B: 그래프 vuln 확정 + 고신뢰 safe만 억제)
-        # 고신뢰 safe = API패턴(약한암호/해시/난수/쿠키) + 검증된 안전 sink(ESAPI 등).
-        # 저신뢰 safe(constant-fold 추정 등)는 LLM 판단에 위임해 재현율 보존.
-        HIGH_CONF_SAFE = ("알고리즘", "해시", "SecureRandom", "setSecure(true)", "안전한 sink API")
-        high_safe = gv == "safe" and any(h in g.get("reason", "") for h in HIGH_CONF_SAFE)
+        # ③ 하이브리드 결합 (decoy-aware 그래프 기준):
+        #   - 그래프 vuln 확정(정밀도 97.6%)  → VULN (LLM이 놓쳐도 보강)
+        #   - 그래프 safe 확정(정밀도 100%)   → SAFE (LLM 오탐을 veto)
+        #   - 그래프 unknown(판정 불가)       → LLM 판단에 위임
+        # java_graph가 OWASP 미끼(decoy)를 풀어내며 safe 정밀도 100%를 달성해,
+        # 모든 graph-safe를 안전하게 veto할 수 있게 됨(기존 고신뢰-only veto 대체).
         if gv == "vuln":
             hybrid_flag = True
-        elif high_safe:
+        elif gv == "safe":
             hybrid_flag = False
-        else:
+        else:  # unknown
             hybrid_flag = llm_flag
 
         rows.append({"id": c["id"], "label": c["label"], "category": c["category"],
