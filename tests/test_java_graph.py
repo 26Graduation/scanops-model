@@ -73,6 +73,55 @@ def test_switch_constant_fold_taint():
     assert analyze_java(code + helper)["verdict"] == "vuln"
 
 
+def _list_helper(get_idx: int) -> str:
+    return f"""
+        String param = request.getParameter("p");
+        String bar = doSomething(request, param);
+        String sql = "SELECT * FROM u WHERE n='" + bar + "'"; stmt.executeQuery(sql);
+        private static String doSomething(HttpServletRequest request, String param) {{
+            String bar = "";
+            if (param != null) {{
+                java.util.List<String> valuesList = new java.util.ArrayList<String>();
+                valuesList.add("safe");
+                valuesList.add(param);
+                valuesList.add("moresafe");
+                valuesList.remove(0);
+                bar = valuesList.get({get_idx});
+            }}
+            return bar;
+        }}
+    """
+
+
+def test_list_remove_reorder_tainted_get():
+    # add("safe")·add(param)·add("x")·remove(0) → [param,"x"]; get(0)=param → 취약.
+    assert analyze_java(_list_helper(0))["verdict"] == "vuln"
+
+
+def test_list_remove_reorder_safe_get():
+    # 같은 리스트에서 get(1)="moresafe" → 안전.
+    assert analyze_java(_list_helper(1))["verdict"] == "safe"
+
+
+def test_map_put_get_key_last_wins():
+    # 순차 재할당: 마지막 bar=map.get("keyA")="a_Value" → 안전(last-wins).
+    code = """
+        String param = request.getParameter("p");
+        String bar = doSomething(request, param);
+        String sql = "SELECT * FROM u WHERE n='" + bar + "'"; stmt.executeQuery(sql);
+        private static String doSomething(HttpServletRequest request, String param) {
+            String bar = "safe!";
+            java.util.HashMap<String, Object> m = new java.util.HashMap<String, Object>();
+            m.put("keyA", "a_Value");
+            m.put("keyB", param);
+            bar = (String) m.get("keyB");
+            bar = (String) m.get("keyA");
+            return bar;
+        }
+    """
+    assert analyze_java(code)["verdict"] == "safe"
+
+
 def test_securerandom_with_setattribute_is_weakrand_safe_not_trustbound():
     # SecureRandom(안전) 파일의 setAttribute 미끼가 trustbound 오탐을 내면 안 된다.
     code = """

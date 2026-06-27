@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-27T19:45:44",
+  "generated": "2026-06-27T20:34:42",
   "llm_metrics": {
     "tp": 23,
     "fn": 32,
@@ -12,15 +12,15 @@
     "f1": 46.9
   },
   "hybrid_metrics": {
-    "tp": 45,
-    "fn": 10,
-    "fp": 8,
-    "tn": 47,
-    "recall": 81.8,
-    "fpr": 14.5,
-    "precision": 84.9,
-    "accuracy": 83.6,
-    "f1": 83.3
+    "tp": 49,
+    "fn": 6,
+    "fp": 7,
+    "tn": 48,
+    "recall": 89.1,
+    "fpr": 12.7,
+    "precision": 87.5,
+    "accuracy": 88.2,
+    "f1": 88.3
   },
   "grok_metrics": {
     "recall": 60.0,
@@ -35,7 +35,7 @@
       "label": "safe",
       "category": "cmdi",
       "llm": false,
-      "graph": "unknown",
+      "graph": "safe",
       "hybrid": false
     },
     {
@@ -59,7 +59,7 @@
       "label": "vuln",
       "category": "cmdi",
       "llm": true,
-      "graph": "unknown",
+      "graph": "vuln",
       "hybrid": true
     },
     {
@@ -275,7 +275,7 @@
       "label": "safe",
       "category": "ldapi",
       "llm": false,
-      "graph": "unknown",
+      "graph": "safe",
       "hybrid": false
     },
     {
@@ -307,8 +307,8 @@
       "label": "vuln",
       "category": "ldapi",
       "llm": false,
-      "graph": "unknown",
-      "hybrid": false
+      "graph": "vuln",
+      "hybrid": true
     },
     {
       "id": "BenchmarkTest02208",
@@ -323,7 +323,7 @@
       "label": "safe",
       "category": "ldapi",
       "llm": false,
-      "graph": "unknown",
+      "graph": "safe",
       "hybrid": false
     },
     {
@@ -331,24 +331,24 @@
       "label": "safe",
       "category": "ldapi",
       "llm": false,
-      "graph": "unknown",
-      "hybrid": false
+      "graph": "vuln",
+      "hybrid": true
     },
     {
       "id": "BenchmarkTest01831",
       "label": "vuln",
       "category": "ldapi",
       "llm": false,
-      "graph": "unknown",
-      "hybrid": false
+      "graph": "vuln",
+      "hybrid": true
     },
     {
       "id": "BenchmarkTest02572",
       "label": "safe",
       "category": "ldapi",
       "llm": true,
-      "graph": "unknown",
-      "hybrid": true
+      "graph": "safe",
+      "hybrid": false
     },
     {
       "id": "BenchmarkTest02302",
@@ -379,8 +379,8 @@
       "label": "vuln",
       "category": "pathtraver",
       "llm": false,
-      "graph": "unknown",
-      "hybrid": false
+      "graph": "vuln",
+      "hybrid": true
     },
     {
       "id": "BenchmarkTest02032",
@@ -419,7 +419,7 @@
       "label": "safe",
       "category": "pathtraver",
       "llm": false,
-      "graph": "unknown",
+      "graph": "safe",
       "hybrid": false
     },
     {
@@ -547,8 +547,8 @@
       "label": "safe",
       "category": "sqli",
       "llm": true,
-      "graph": "unknown",
-      "hybrid": true
+      "graph": "safe",
+      "hybrid": false
     },
     {
       "id": "BenchmarkTest02367",
@@ -611,7 +611,7 @@
       "label": "safe",
       "category": "trustbound",
       "llm": false,
-      "graph": "unknown",
+      "graph": "safe",
       "hybrid": false
     },
     {
@@ -795,8 +795,8 @@
       "label": "vuln",
       "category": "xpathi",
       "llm": false,
-      "graph": "unknown",
-      "hybrid": false
+      "graph": "vuln",
+      "hybrid": true
     },
     {
       "id": "BenchmarkTest00442",

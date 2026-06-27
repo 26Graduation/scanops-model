@@ -197,11 +197,11 @@ def _resolve_dosomething_taint(code: str) -> bool | None:
         return None
     ivars = _int_vars(body) or _int_vars(code)
 
-    # switch 문 분기 — 선택자를 상수로 풀어 매칭 case의 bar 평가
+    # switch 문 분기 — 선택자를 상수로 풀어 매칭 case의 bar 평가.
+    # 선택자를 못 풀면 분기 미해결 → None(LLM 위임). 순차할당 fallback으로
+    # 떨어뜨리면 case별로 엇갈린 bar에서 false 판정이 날 수 있어 막는다.
     if "switch" in body:
-        st = _switch_taint(body, ivars)
-        if st is not None:
-            return st
+        return _switch_taint(body, ivars)
 
     # if/else 문 분기 (삼항과 별개) — 조건을 constant-fold로 평가
     ib = _extract_if_bar(body)
@@ -221,8 +221,8 @@ def _resolve_dosomething_taint(code: str) -> bool | None:
             return None
         return False
 
-    # 여러 bar 할당이 오염/상수로 엇갈리고 제어흐름을 못 풀면 → unknown(LLM 위임).
-    # (마지막 할당만 보면 OWASP switch/조건 트릭에서 false-safe가 난다.)
+    # 분기가 없으면 순차 실행 → 마지막 bar 할당이 최종값(last-wins).
+    # List/Map get은 _collection_taint가 연산을 시뮬레이션해 정확히 판정한다.
     assigns = [a.strip() for a in re.findall(r"\bbar\s*=\s*(.+?);", body, re.DOTALL)]
     if not assigns:
         rm = re.search(r"return\s+(.+?);", body)
@@ -230,8 +230,6 @@ def _resolve_dosomething_taint(code: str) -> bool | None:
     if not assigns:
         return None
     taints = [_expr_is_tainted(a, body, ivars) for a in assigns]
-    if any(t is True for t in taints) and any(t is False for t in taints):
-        return None      # 분기 미해결 + 혼합 → 판정 불가
     if all(t is True for t in taints):
         return True
     if all(t is False for t in taints):
@@ -262,28 +260,48 @@ def _expr_is_tainted(expr: str, body: str, ivars: dict[str, int]) -> bool | None
     gm = re.search(r"(\w+)\.get\(\s*(\d+|\"[^\"]+\")\s*\)", expr)
     if gm:
         coll, key = gm.group(1), gm.group(2).strip('"')
-        # OWASP는 add 후 remove/set으로 순서를 바꾸는 트릭을 쓴다. 이런 변형이
-        # 있으면 단순 add 순서로는 판정 불가 → None(LLM 위임)으로 보수 처리.
-        if re.search(rf"{coll}\.(remove|set|clear)\(", body):
-            return None
+        # OWASP는 add/remove/set/clear로 순서를 바꿔 사용자입력을 숨기는 트릭을
+        # 쓴다. 연산을 소스 순서대로 시뮬레이션해 정확히 판정한다.
         return _collection_taint(coll, key, body)
     # 알 수 없음
     return None
 
 
 def _collection_taint(coll: str, key: str, body: str) -> bool | None:
-    """valuesList.add(param) 순서 / map.put(k, param) 키로 오염 여부 판정."""
-    # add 순서
-    adds = re.findall(rf"{coll}\.add\(\s*(.+?)\s*\)", body)
-    if adds and key.isdigit():
-        idx = int(key)
-        if idx < len(adds):
-            return "param" in adds[idx]
-    # put(key, value)
-    for pm in re.finditer(rf"{coll}\.put\(\s*\"([^\"]+)\"\s*,\s*(.+?)\)", body):
-        if pm.group(1) == key:
-            return "param" in pm.group(2)
-    return None
+    """List/Map 연산(add/remove/set/clear/put)을 소스 순서대로 시뮬레이션해
+    get(key)가 사용자입력(param)을 반환하는지 판정.
+    OWASP 트릭 예: add("safe")·add(param)·add("x")·remove(0)·get(0)→param(오염),
+    get(1)→"x"(안전); map.put("kB",param)·get("kA")→안전."""
+    lst: list[str] = []          # List 시뮬레이션
+    mp: dict[str, str] = {}       # Map 시뮬레이션
+    for line in body.splitlines():
+        m = re.search(rf"\b{re.escape(coll)}\.(add|remove|set|clear|put)\((.*)\)\s*;", line)
+        if not m:
+            continue
+        op, args = m.group(1), m.group(2).strip()
+        if op == "add":
+            lst.append(args)
+        elif op == "remove":
+            if re.fullmatch(r"\d+", args):
+                i = int(args)
+                if 0 <= i < len(lst):
+                    lst.pop(i)
+        elif op == "set":
+            sm = re.match(r"(\d+)\s*,\s*(.+)", args)
+            if sm:
+                i = int(sm.group(1))
+                if 0 <= i < len(lst):
+                    lst[i] = sm.group(2)
+        elif op == "clear":
+            lst = []
+        elif op == "put":
+            pm = re.match(r"\"([^\"]+)\"\s*,\s*(.+)", args)
+            if pm:
+                mp[pm.group(1)] = pm.group(2)
+    if key.isdigit():
+        i = int(key)
+        return ("param" in lst[i]) if 0 <= i < len(lst) else None
+    return ("param" in mp[key]) if key in mp else None
 
 
 def _resolve_str_value(var: str, code: str) -> str | None:
