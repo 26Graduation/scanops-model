@@ -100,8 +100,8 @@ def _detect_language(filename: str) -> Optional[str]:
     ext = Path(filename).suffix.lower()
     return _EXT_LANG.get(ext)
 
-MODEL_FT   = "qwen2.5-coder-security-v4:latest"
-MODEL_BASE = "qwen2.5-coder:1.5b"
+MODEL_FT   = os.getenv("OLLAMA_MODEL", "qwen2.5-coder-security-v11:latest")
+MODEL_BASE = os.getenv("OLLAMA_BASE_MODEL", "qwen2.5-coder:3b")
 
 
 # ── 요청/응답 모델 ─────────────────────────────────────────────────────────────
