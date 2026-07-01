@@ -1,26 +1,26 @@
 {
-  "generated": "2026-06-27T20:34:42",
+  "generated": "2026-06-30T00:49:38",
   "llm_metrics": {
-    "tp": 23,
-    "fn": 32,
-    "fp": 20,
-    "tn": 35,
-    "recall": 41.8,
-    "fpr": 36.4,
-    "precision": 53.5,
-    "accuracy": 52.7,
-    "f1": 46.9
+    "tp": 24,
+    "fn": 31,
+    "fp": 28,
+    "tn": 27,
+    "recall": 43.6,
+    "fpr": 50.9,
+    "precision": 46.2,
+    "accuracy": 46.4,
+    "f1": 44.9
   },
   "hybrid_metrics": {
     "tp": 49,
     "fn": 6,
-    "fp": 7,
-    "tn": 48,
+    "fp": 17,
+    "tn": 38,
     "recall": 89.1,
-    "fpr": 12.7,
-    "precision": 87.5,
-    "accuracy": 88.2,
-    "f1": 88.3
+    "fpr": 30.9,
+    "precision": 74.2,
+    "accuracy": 79.1,
+    "f1": 81.0
   },
   "grok_metrics": {
     "recall": 60.0,
@@ -34,7 +34,7 @@
       "id": "BenchmarkTest02610",
       "label": "safe",
       "category": "cmdi",
-      "llm": false,
+      "llm": true,
       "graph": "safe",
       "hybrid": false
     },
@@ -50,7 +50,7 @@
       "id": "BenchmarkTest01532",
       "label": "safe",
       "category": "cmdi",
-      "llm": true,
+      "llm": false,
       "graph": "safe",
       "hybrid": false
     },
@@ -74,9 +74,9 @@
       "id": "BenchmarkTest00908",
       "label": "safe",
       "category": "cmdi",
-      "llm": false,
+      "llm": true,
       "graph": "unknown",
-      "hybrid": false
+      "hybrid": true
     },
     {
       "id": "BenchmarkTest00173",
@@ -98,7 +98,7 @@
       "id": "BenchmarkTest01691",
       "label": "vuln",
       "category": "cmdi",
-      "llm": false,
+      "llm": true,
       "graph": "vuln",
       "hybrid": true
     },
@@ -106,7 +106,7 @@
       "id": "BenchmarkTest01529",
       "label": "safe",
       "category": "cmdi",
-      "llm": false,
+      "llm": true,
       "graph": "safe",
       "hybrid": false
     },
@@ -114,9 +114,9 @@
       "id": "BenchmarkTest01980",
       "label": "vuln",
       "category": "crypto",
-      "llm": true,
+      "llm": false,
       "graph": "unknown",
-      "hybrid": true
+      "hybrid": false
     },
     {
       "id": "BenchmarkTest00357",
@@ -130,7 +130,7 @@
       "id": "BenchmarkTest00856",
       "label": "vuln",
       "category": "crypto",
-      "llm": true,
+      "llm": false,
       "graph": "vuln",
       "hybrid": true
     },
@@ -138,7 +138,7 @@
       "id": "BenchmarkTest01565",
       "label": "vuln",
       "category": "crypto",
-      "llm": true,
+      "llm": false,
       "graph": "vuln",
       "hybrid": true
     },
@@ -146,7 +146,7 @@
       "id": "BenchmarkTest01148",
       "label": "vuln",
       "category": "crypto",
-      "llm": true,
+      "llm": false,
       "graph": "vuln",
       "hybrid": true
     },
@@ -154,7 +154,7 @@
       "id": "BenchmarkTest00777",
       "label": "safe",
       "category": "crypto",
-      "llm": true,
+      "llm": false,
       "graph": "safe",
       "hybrid": false
     },
@@ -162,23 +162,23 @@
       "id": "BenchmarkTest02375",
       "label": "vuln",
       "category": "crypto",
-      "llm": false,
-      "graph": "unknown",
-      "hybrid": false
-    },
-    {
-      "id": "BenchmarkTest01022",
-      "label": "safe",
-      "category": "crypto",
       "llm": true,
       "graph": "unknown",
       "hybrid": true
     },
     {
-      "id": "BenchmarkTest01151",
+      "id": "BenchmarkTest01022",
       "label": "safe",
       "category": "crypto",
       "llm": false,
+      "graph": "unknown",
+      "hybrid": false
+    },
+    {
+      "id": "BenchmarkTest01151",
+      "label": "safe",
+      "category": "crypto",
+      "llm": true,
       "graph": "safe",
       "hybrid": false
     },
@@ -186,7 +186,7 @@
       "id": "BenchmarkTest00121",
       "label": "safe",
       "category": "crypto",
-      "llm": true,
+      "llm": false,
       "graph": "safe",
       "hybrid": false
     },
@@ -202,9 +202,9 @@
       "id": "BenchmarkTest00075",
       "label": "safe",
       "category": "hash",
-      "llm": false,
+      "llm": true,
       "graph": "unknown",
-      "hybrid": false
+      "hybrid": true
     },
     {
       "id": "BenchmarkTest01911",
@@ -218,7 +218,7 @@
       "id": "BenchmarkTest00869",
       "label": "vuln",
       "category": "hash",
-      "llm": true,
+      "llm": false,
       "graph": "vuln",
       "hybrid": true
     },
@@ -226,7 +226,7 @@
       "id": "BenchmarkTest02673",
       "label": "safe",
       "category": "hash",
-      "llm": false,
+      "llm": true,
       "graph": "safe",
       "hybrid": false
     },
@@ -242,15 +242,15 @@
       "id": "BenchmarkTest01041",
       "label": "vuln",
       "category": "hash",
-      "llm": false,
+      "llm": true,
       "graph": "unknown",
-      "hybrid": false
+      "hybrid": true
     },
     {
       "id": "BenchmarkTest01039",
       "label": "safe",
       "category": "hash",
-      "llm": false,
+      "llm": true,
       "graph": "safe",
       "hybrid": false
     },
@@ -258,7 +258,7 @@
       "id": "BenchmarkTest00631",
       "label": "vuln",
       "category": "hash",
-      "llm": false,
+      "llm": true,
       "graph": "vuln",
       "hybrid": true
     },
@@ -266,15 +266,15 @@
       "id": "BenchmarkTest02678",
       "label": "safe",
       "category": "hash",
-      "llm": false,
+      "llm": true,
       "graph": "unknown",
-      "hybrid": false
+      "hybrid": true
     },
     {
       "id": "BenchmarkTest00948",
       "label": "safe",
       "category": "ldapi",
-      "llm": false,
+      "llm": true,
       "graph": "safe",
       "hybrid": false
     },
@@ -282,7 +282,7 @@
       "id": "BenchmarkTest01832",
       "label": "vuln",
       "category": "ldapi",
-      "llm": false,
+      "llm": true,
       "graph": "vuln",
       "hybrid": true
     },
@@ -290,15 +290,15 @@
       "id": "BenchmarkTest01491",
       "label": "safe",
       "category": "ldapi",
-      "llm": false,
+      "llm": true,
       "graph": "unknown",
-      "hybrid": false
+      "hybrid": true
     },
     {
       "id": "BenchmarkTest01023",
       "label": "vuln",
       "category": "ldapi",
-      "llm": false,
+      "llm": true,
       "graph": "vuln",
       "hybrid": true
     },
@@ -306,7 +306,7 @@
       "id": "BenchmarkTest01501",
       "label": "vuln",
       "category": "ldapi",
-      "llm": false,
+      "llm": true,
       "graph": "vuln",
       "hybrid": true
     },
@@ -322,7 +322,7 @@
       "id": "BenchmarkTest01327",
       "label": "safe",
       "category": "ldapi",
-      "llm": false,
+      "llm": true,
       "graph": "safe",
       "hybrid": false
     },
@@ -330,7 +330,7 @@
       "id": "BenchmarkTest01755",
       "label": "safe",
       "category": "ldapi",
-      "llm": false,
+      "llm": true,
       "graph": "vuln",
       "hybrid": true
     },
@@ -338,7 +338,7 @@
       "id": "BenchmarkTest01831",
       "label": "vuln",
       "category": "ldapi",
-      "llm": false,
+      "llm": true,
       "graph": "vuln",
       "hybrid": true
     },
@@ -346,7 +346,7 @@
       "id": "BenchmarkTest02572",
       "label": "safe",
       "category": "ldapi",
-      "llm": true,
+      "llm": false,
       "graph": "safe",
       "hybrid": false
     },
@@ -362,15 +362,15 @@
       "id": "BenchmarkTest01841",
       "label": "safe",
       "category": "pathtraver",
-      "llm": false,
+      "llm": true,
       "graph": "unknown",
-      "hybrid": false
+      "hybrid": true
     },
     {
       "id": "BenchmarkTest02560",
       "label": "vuln",
       "category": "pathtraver",
-      "llm": false,
+      "llm": true,
       "graph": "vuln",
       "hybrid": true
     },
@@ -378,7 +378,7 @@
       "id": "BenchmarkTest02555",
       "label": "vuln",
       "category": "pathtraver",
-      "llm": false,
+      "llm": true,
       "graph": "vuln",
       "hybrid": true
     },
@@ -386,7 +386,7 @@
       "id": "BenchmarkTest02032",
       "label": "vuln",
       "category": "pathtraver",
-      "llm": false,
+      "llm": true,
       "graph": "vuln",
       "hybrid": true
     },
@@ -394,7 +394,7 @@
       "id": "BenchmarkTest01036",
       "label": "safe",
       "category": "pathtraver",
-      "llm": false,
+      "llm": true,
       "graph": "safe",
       "hybrid": false
     },
@@ -402,23 +402,23 @@
       "id": "BenchmarkTest00265",
       "label": "safe",
       "category": "pathtraver",
-      "llm": false,
+      "llm": true,
       "graph": "unknown",
-      "hybrid": false
+      "hybrid": true
     },
     {
       "id": "BenchmarkTest02563",
       "label": "safe",
       "category": "pathtraver",
-      "llm": false,
+      "llm": true,
       "graph": "unknown",
-      "hybrid": false
+      "hybrid": true
     },
     {
       "id": "BenchmarkTest01331",
       "label": "safe",
       "category": "pathtraver",
-      "llm": false,
+      "llm": true,
       "graph": "safe",
       "hybrid": false
     },
@@ -426,7 +426,7 @@
       "id": "BenchmarkTest02303",
       "label": "vuln",
       "category": "pathtraver",
-      "llm": false,
+      "llm": true,
       "graph": "vuln",
       "hybrid": true
     },
@@ -458,7 +458,7 @@
       "id": "BenchmarkTest00242",
       "label": "safe",
       "category": "securecookie",
-      "llm": true,
+      "llm": false,
       "graph": "safe",
       "hybrid": false
     },
@@ -474,7 +474,7 @@
       "id": "BenchmarkTest00404",
       "label": "safe",
       "category": "securecookie",
-      "llm": true,
+      "llm": false,
       "graph": "safe",
       "hybrid": false
     },
@@ -514,15 +514,15 @@
       "id": "BenchmarkTest00845",
       "label": "vuln",
       "category": "sqli",
-      "llm": false,
+      "llm": true,
       "graph": "unknown",
-      "hybrid": false
+      "hybrid": true
     },
     {
       "id": "BenchmarkTest02364",
       "label": "vuln",
       "category": "sqli",
-      "llm": false,
+      "llm": true,
       "graph": "vuln",
       "hybrid": true
     },
@@ -538,7 +538,7 @@
       "id": "BenchmarkTest02091",
       "label": "vuln",
       "category": "sqli",
-      "llm": false,
+      "llm": true,
       "graph": "vuln",
       "hybrid": true
     },
@@ -570,23 +570,23 @@
       "id": "BenchmarkTest00930",
       "label": "safe",
       "category": "sqli",
-      "llm": false,
+      "llm": true,
       "graph": "unknown",
-      "hybrid": false
+      "hybrid": true
     },
     {
       "id": "BenchmarkTest00773",
       "label": "safe",
       "category": "sqli",
-      "llm": false,
+      "llm": true,
       "graph": "unknown",
-      "hybrid": false
+      "hybrid": true
     },
     {
       "id": "BenchmarkTest01721",
       "label": "vuln",
       "category": "sqli",
-      "llm": false,
+      "llm": true,
       "graph": "vuln",
       "hybrid": true
     },
@@ -594,7 +594,7 @@
       "id": "BenchmarkTest01548",
       "label": "vuln",
       "category": "trustbound",
-      "llm": true,
+      "llm": false,
       "graph": "vuln",
       "hybrid": true
     },
@@ -642,7 +642,7 @@
       "id": "BenchmarkTest01615",
       "label": "vuln",
       "category": "trustbound",
-      "llm": true,
+      "llm": false,
       "graph": "vuln",
       "hybrid": true
     },
@@ -650,7 +650,7 @@
       "id": "BenchmarkTest01957",
       "label": "safe",
       "category": "trustbound",
-      "llm": true,
+      "llm": false,
       "graph": "safe",
       "hybrid": false
     },
@@ -666,7 +666,7 @@
       "id": "BenchmarkTest01454",
       "label": "safe",
       "category": "trustbound",
-      "llm": true,
+      "llm": false,
       "graph": "safe",
       "hybrid": false
     },
@@ -682,7 +682,7 @@
       "id": "BenchmarkTest00506",
       "label": "safe",
       "category": "weakrand",
-      "llm": true,
+      "llm": false,
       "graph": "safe",
       "hybrid": false
     },
@@ -698,7 +698,7 @@
       "id": "BenchmarkTest01843",
       "label": "vuln",
       "category": "weakrand",
-      "llm": true,
+      "llm": false,
       "graph": "vuln",
       "hybrid": true
     },
@@ -714,7 +714,7 @@
       "id": "BenchmarkTest01999",
       "label": "vuln",
       "category": "weakrand",
-      "llm": true,
+      "llm": false,
       "graph": "vuln",
       "hybrid": true
     },
@@ -722,7 +722,7 @@
       "id": "BenchmarkTest02161",
       "label": "safe",
       "category": "weakrand",
-      "llm": true,
+      "llm": false,
       "graph": "safe",
       "hybrid": false
     },
@@ -730,7 +730,7 @@
       "id": "BenchmarkTest01276",
       "label": "vuln",
       "category": "weakrand",
-      "llm": true,
+      "llm": false,
       "graph": "vuln",
       "hybrid": true
     },
@@ -738,7 +738,7 @@
       "id": "BenchmarkTest00368",
       "label": "vuln",
       "category": "weakrand",
-      "llm": true,
+      "llm": false,
       "graph": "vuln",
       "hybrid": true
     },
@@ -754,25 +754,25 @@
       "id": "BenchmarkTest01633",
       "label": "safe",
       "category": "xpathi",
-      "llm": true,
+      "llm": false,
       "graph": "unknown",
-      "hybrid": true
+      "hybrid": false
     },
     {
       "id": "BenchmarkTest00116",
       "label": "safe",
       "category": "xpathi",
-      "llm": false,
+      "llm": true,
       "graph": "unknown",
-      "hybrid": false
+      "hybrid": true
     },
     {
       "id": "BenchmarkTest00520",
       "label": "safe",
       "category": "xpathi",
-      "llm": false,
+      "llm": true,
       "graph": "unknown",
-      "hybrid": false
+      "hybrid": true
     },
     {
       "id": "BenchmarkTest02100",
@@ -786,7 +786,7 @@
       "id": "BenchmarkTest01316",
       "label": "vuln",
       "category": "xpathi",
-      "llm": true,
+      "llm": false,
       "graph": "vuln",
       "hybrid": true
     },
@@ -802,17 +802,17 @@
       "id": "BenchmarkTest00442",
       "label": "vuln",
       "category": "xpathi",
-      "llm": true,
+      "llm": false,
       "graph": "unknown",
-      "hybrid": true
+      "hybrid": false
     },
     {
       "id": "BenchmarkTest00117",
       "label": "safe",
       "category": "xpathi",
-      "llm": false,
+      "llm": true,
       "graph": "unknown",
-      "hybrid": false
+      "hybrid": true
     },
     {
       "id": "BenchmarkTest02189",
@@ -842,9 +842,9 @@
       "id": "BenchmarkTest00382",
       "label": "vuln",
       "category": "xss",
-      "llm": true,
+      "llm": false,
       "graph": "unknown",
-      "hybrid": true
+      "hybrid": false
     },
     {
       "id": "BenchmarkTest02131",
@@ -858,9 +858,9 @@
       "id": "BenchmarkTest00156",
       "label": "vuln",
       "category": "xss",
-      "llm": true,
+      "llm": false,
       "graph": "unknown",
-      "hybrid": true
+      "hybrid": false
     },
     {
       "id": "BenchmarkTest02235",
@@ -874,7 +874,7 @@
       "id": "BenchmarkTest00716",
       "label": "safe",
       "category": "xss",
-      "llm": true,
+      "llm": false,
       "graph": "safe",
       "hybrid": false
     },
@@ -882,15 +882,15 @@
       "id": "BenchmarkTest00030",
       "label": "vuln",
       "category": "xss",
-      "llm": false,
+      "llm": true,
       "graph": "unknown",
-      "hybrid": false
+      "hybrid": true
     },
     {
       "id": "BenchmarkTest01589",
       "label": "vuln",
       "category": "xss",
-      "llm": true,
+      "llm": false,
       "graph": "vuln",
       "hybrid": true
     },
@@ -898,7 +898,7 @@
       "id": "BenchmarkTest01421",
       "label": "safe",
       "category": "xss",
-      "llm": true,
+      "llm": false,
       "graph": "safe",
       "hybrid": false
     },

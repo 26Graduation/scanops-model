@@ -9,6 +9,7 @@ RAG 기반 ScanOps의 강점을 검증하는 테스트 소스가 된다.
 """
 from __future__ import annotations
 import json
+import re
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -52,12 +53,23 @@ def fetch() -> list[dict]:
     return collected
 
 
+# 무효/반려 상태 — 무조건 제외
+EXCLUDE_STATUS = {"Rejected", "Rejected by CNA"}
+_INVALID_DESC_RE = re.compile(r"\*\*\s*(REJECT|DISPUTED|RESERVED|UNSUPPORTED)", re.I)
+
+
 def simplify(v: dict) -> dict | None:
     cve = v.get("cve", {})
     cid = cve.get("id")
     pub = cve.get("published", "")
+    # ★반려(Rejected) 상태는 수집 단계에서 제외
+    if cve.get("vulnStatus", "") in EXCLUDE_STATUS:
+        return None
     descs = cve.get("descriptions", [])
     desc = next((d["value"] for d in descs if d.get("lang") == "en"), "")
+    # placeholder(** REJECT/DISPUTED/RESERVED **) 설명문도 제외
+    if _INVALID_DESC_RE.search(desc) or "DO NOT USE THIS CANDIDATE" in desc.upper():
+        return None
     # CWE
     cwes = []
     for w in cve.get("weaknesses", []):

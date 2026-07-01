@@ -36,3 +36,6 @@ reports/charts/
 # 노트북 체크포인트
 .ipynb_checkpoints/
 .cache/
+
+# 배포 산출물(대용량 — gguf 포함 zip)
+*.zip

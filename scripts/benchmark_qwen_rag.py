@@ -219,8 +219,11 @@ def _call_finetuned(user_content: str, model: str, timeout: int = 90) -> tuple[s
         "options": {
             "temperature":    0.0,   # 결정적(재현 가능)
             "top_p":          0.8,
-            "num_predict":    400,
-            "stop":           ["<|im_end|>", "<|endoftext|>", "[EMPTY_151643]", "\n\n\n"],
+            "num_predict":    200,   # 3줄 구조화 출력(+프리앰블)엔 충분; 400→200로 추론 단축
+            # 주의: "\n\n\n" stop 금지 — v12는 답 앞에 '--- ---\n\n\n' 프리앰블을
+            # 붙이는 습관이 있어, 이 stop이 진짜 VULNERABILITY: 줄 전에 출력을 잘라버린다.
+            # 대신 아래 cleanup이 VULNERABILITY: 위치부터 추출한다.
+            "stop":           ["<|im_end|>", "<|endoftext|>", "[EMPTY_151643]"],
             "repeat_penalty": 1.3,
         },
     }

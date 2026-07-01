@@ -26,6 +26,8 @@ BASE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(BASE))
 sys.path.insert(0, str(BASE / "scripts"))
 
+import argparse
+
 from scripts.benchmark_qwen_rag import call_model, parse_response
 from scanops.core.java_graph import analyze_java
 
@@ -58,6 +60,10 @@ def metrics(rows: list[dict], key: str) -> dict:
 
 
 def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--model", default=MODEL_V11, help="Ollama 모델명 (예: qwen2.5-coder-security-v12:latest)")
+    model = ap.parse_args().model
+    print(f"OWASP 하이브리드 — 모델 {model}")
     llm_cases = json.load(open(BASE / "data" / "owasp_holdout_eval.json"))     # LLM 프롬프트
     full = {c["id"]: c for c in json.load(open(BASE / "data" / "owasp_holdout_full.json"))}  # 그래프용 전체파일
 
@@ -65,7 +71,7 @@ def main():
     for i, c in enumerate(llm_cases, 1):
         # ① LLM(v11) 판정
         try:
-            raw, _ = call_model(c["prompt"], MODEL_V11, is_finetuned=True, timeout=60)
+            raw, _ = call_model(c["prompt"], model, is_finetuned=True, timeout=60)
             vuln = parse_response(raw).get("VULNERABILITY", "—")
         except Exception:
             vuln = "—"

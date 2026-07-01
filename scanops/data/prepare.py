@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 from pathlib import Path
 
 from qdrant_client import QdrantClient
@@ -110,13 +111,34 @@ def preprocess_nvd_raw(raw_path: Path) -> list[dict]:
     return records
 
 
+# ** REJECT **, **DISPUTED**, ** RESERVED **, ** UNSUPPORTED ** placeholder 설명문
+_INVALID_DESC_RE = re.compile(r"\*\*\s*(REJECT|DISPUTED|RESERVED|UNSUPPORTED)", re.I)
+
+
+def _is_invalid_record(rec: dict) -> bool:
+    """무효/반려 CVE는 무조건 제외 — placeholder 설명문이거나 설명이 너무 짧으면 True."""
+    desc = (rec.get("description") or "").strip()
+    if len(desc) < 40:
+        return True
+    if _INVALID_DESC_RE.search(desc) or "DO NOT USE THIS CANDIDATE" in desc.upper():
+        return True
+    return False
+
+
 def load_preprocessed(path: Path) -> list[dict]:
-    """이미 전처리된 JSON을 로드한다 (리스트 또는 {data: [...]} 형식 모두 허용)."""
+    """이미 전처리된 JSON을 로드한다 (리스트 또는 {data: [...]} 형식 모두 허용).
+
+    ★전처리 피드에도 반려(REJECT)·분쟁(DISPUTED) 항목이 섞여 있을 수 있으므로
+    여기서 무효/반려를 무조건 걸러낸다(raw 경로의 EXCLUDE_STATUS 와 대칭).
+    """
     with open(path, encoding="utf-8") as f:
         raw = json.load(f)
-    if isinstance(raw, list):
-        return raw
-    return raw.get("data", raw.get("vulnerabilities", []))
+    items = raw if isinstance(raw, list) else raw.get("data", raw.get("vulnerabilities", []))
+    kept = [r for r in items if not _is_invalid_record(r)]
+    dropped = len(items) - len(kept)
+    if dropped:
+        print(f"[prepare] 무효/반려 {dropped}개 제외 → {len(kept)}개 유지")
+    return kept
 
 
 # ── Qdrant 적재 ─────────────────────────────────────────────────────────────────

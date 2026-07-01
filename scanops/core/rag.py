@@ -17,7 +17,7 @@ QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
 QDRANT_PATH = os.getenv("QDRANT_PATH", "")
 COLLECTION_NAME = os.getenv("QDRANT_COLLECTION", "cve_vulnerabilities")
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/api/generate")
-LLM_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5-coder-security-v11:latest")
+LLM_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5-coder-security-v12:latest")
 
 SYSTEM_PERSONA = """\
 You are a senior security engineer with deep CVE/CWE expertise.

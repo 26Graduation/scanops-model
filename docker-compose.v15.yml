@@ -1,0 +1,43 @@
+# ScanOps V15 배포 — Ollama(모델) + V15 앙상블 API (+ 선택 Qdrant)
+# 사용:  docker compose -f docker-compose.v15.yml up -d
+# 최초 1회 모델 등록:  아래 'model-init' 안내(README) 참고
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+      - ./deploy_v15:/models          # gguf·Modelfile·setup.sh 마운트
+    restart: unless-stopped
+
+  v15-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.v15
+    container_name: scanops-v15-api
+    depends_on:
+      - ollama
+    environment:
+      OLLAMA_URL: http://ollama:11434
+      SCANOPS_V13_MODEL: qwen2.5-coder-security-v13-7b:latest
+      SCANOPS_V14_MODEL: qwen2.5-coder-security-v14-7b:latest
+      # SCANOPS_API_KEY: <설정 시 X-API-Key 필요>
+    ports:
+      - "8100:8100"
+    restart: unless-stopped
+
+  # RAG(신규 CVE) 쓸 경우만. 메인 탐지엔 불필요.
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    restart: unless-stopped
+
+volumes:
+  ollama_data:
+  qdrant_data:
