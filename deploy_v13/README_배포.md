@@ -1,51 +1,67 @@
-# ScanOps 보안 모델 V13 — 배포 안내 (인프라 담당)
+# ScanOps V13 배포 — 모델 + 코드그래프 (RAG/Qdrant 없음)
 
-학습·GGUF 변환은 **이미 끝났습니다.** 이 폴더의 파일 2개만 서버에 올려서 `ollama create`로
-등록하면 끝입니다. (모델 학습 필요 없음.)
+V13 = **파인튜닝 7B 모델 + 코드그래프(taint) 결합.** 벤치마크의 "V13 + 그래프" 성능을
+그대로 내려면 **두 부분**이 필요합니다. **벡터DB(Qdrant)는 안 씁니다.**
 
-## 폴더 내용
+```
+[백엔드] → POST /analyze → [V13 API(:8100)] → ① Ollama 모델(v13)  ── LLM 판정
+                                             └ ② 코드그래프(taint) ── 놓친 취약 보강
+                                             → OR 결합 → 취약/안전 반환
+```
+
+> ⚠️ **모델(gguf)만 Ollama에 올리면 그래프가 빠집니다** — 그래프는 Python 코드라 모델 파일에
+> 못 들어갑니다. 아래 ②(API)를 반드시 같이 띄워야 벤치마크 성능이 나옵니다.
+> **Qdrant/벡터DB는 설치·실행하지 마세요.**
+
+## 이 폴더 내용
 | 파일 | 크기 | 설명 |
 |---|---|---|
-| `v13_7b_lora.gguf` | 39MB | 우리가 파인튜닝한 **LoRA 어댑터**(보안 특화 부분만). 베이스 모델은 아래에서 받음. |
-| `Modelfile` | — | Ollama 등록 설정. 베이스 + 어댑터를 합쳐 서빙(병합 아님, ADAPTER 방식). |
+| `v13_7b_lora.gguf` | 39MB | 파인튜닝 LoRA 어댑터 |
+| `Modelfile` | — | Ollama 등록 설정 |
+| `README_배포.md` | — | 이 문서 |
 
-## 전제조건
-- 서버에 **Ollama** 설치 (`curl -fsSL https://ollama.com/install.sh | sh`)
-- 디스크 여유 ~5GB (베이스 모델 4.7GB + 어댑터 39MB)
-- RAM ~6GB 이상 (7B Q4, CPU 서빙 가능 — GPU 불필요)
+> API 코드(`scripts/api_v13.py`, `scanops/`)는 git `main`에 있음 → 서버에서 레포 clone/pull.
 
-## 배포 3단계
+## 준비물
+- **Ollama** 설치. 디스크 ~5GB(베이스 4.7GB + 어댑터 39MB), RAM ~6GB, GPU 불필요(CPU OK).
+
+## ① 모델 등록 (Ollama)
 ```bash
-# 1) 베이스 모델 받기 (한 번만, ~4.7GB)
-ollama pull qwen2.5-coder:7b-instruct
-
-# 2) 이 폴더에서 우리 모델 등록 (베이스 + 어댑터)
-cd <이 폴더>
-ollama create qwen2.5-coder-security-v13-7b -f Modelfile
-
-# 3) 확인
-ollama list | grep security-v13
+ollama pull qwen2.5-coder:7b-instruct                       # 베이스(공개), 1회
+cd <이 폴더> && ollama create qwen2.5-coder-security-v13-7b -f Modelfile
+ollama list | grep security-v13                             # 확인
 ```
 
-## 동작 확인 (스모크 테스트)
+## ② 그래프 API 실행 (레포 루트에서)
 ```bash
-ollama run qwen2.5-coder-security-v13-7b "Analyze this Python code for security vulnerabilities:
-\`\`\`python
-q = 'SELECT * FROM users WHERE id=' + request.args.get('id')
-cursor.execute(q)
-\`\`\`
-Respond starting with VULNERABILITY:"
+git clone https://github.com/26Graduation/scanops-model.git && cd scanops-model
+pip install fastapi "uvicorn[standard]" pydantic requests httpx sentence-transformers qdrant-client
+#  ※ qdrant-client는 import용 라이브러리일 뿐 — Qdrant 서버 실행 필요 없음. V13은 벡터DB 미사용.
+uvicorn scripts.api_v13:app --host 0.0.0.0 --port 8100
 ```
-→ `VULNERABILITY: ...` (취약으로 판정) 나오면 정상. (안전한 파라미터화 쿼리를 넣으면 `VULNERABILITY: NONE`)
 
-## 백엔드 연동
-- Ollama API: `http://<서버>:11434` (기본 포트).
-- 호출 엔드포인트: `POST /api/chat` (모델명 `qwen2.5-coder-security-v13-7b`).
-- 백엔드(Spring Boot AiRouter)에서 `CUSTOM` 엔진의 `OLLAMA_URL` / 모델명을 위 값으로 설정.
-- 서빙 파라미터(temperature=0 등)는 Modelfile에 내장돼 있어 별도 설정 불필요.
+## 동작 확인
+```bash
+curl http://localhost:8100/health
+# → {"status":"ok","version":"13.0.0","system":{"rule":"LLM OR graph(taint)","rag":false}}
 
-## 참고
-- 이건 **어댑터 방식**이라 베이스 모델(`qwen2.5-coder:7b-instruct`)이 서버에 있어야 함.
-  베이스는 공개 모델이라 `ollama pull`로 받으면 됨. 우리 고유 부분은 39MB 어댑터뿐.
-- 재배포/롤백: 어댑터 파일만 교체하고 `ollama create` 다시 실행하면 됨.
-- 모델 업데이트(V14 등) 시에도 이 폴더의 `.gguf`만 새 걸로 바꿔주면 동일 절차.
+curl -X POST http://localhost:8100/analyze -H "Content-Type: application/json" -d '{
+  "code":"app.get(\"/p\",(req,res)=>res.send(\"<b>\"+req.query.n+\"</b>\"))",
+  "language":"Node.js / Express"}'
+# → {"vulnerable":true, "graph":{"verdict":"vuln","reason":"...xss sink 도달"},
+#     "votes":{"llm":true,"graph":true}, ...}   ← 그래프가 동작 중
+```
+
+## 백엔드(AiRouter) 연동
+- `CUSTOM` 엔진 → **`POST http://<서버>:8100/analyze`**, body `{code, language}`.
+- 응답 `vulnerable` + `vulnerability`/`severity`/`cvss`로 리포트. `graph.reason`은 근거 표시용.
+
+## 요약
+1. **Qdrant/벡터DB 안 씀** — 설치/실행 X.
+2. **두 부분**: ① Ollama 모델 등록 + ② 그래프 API(`api_v13`, :8100).
+3. 모델만 올리면 그래프가 빠져 성능이 낮아짐 → 반드시 ②까지.
+4. 백엔드는 `:8100/analyze`로 연결.
+
+## 성능 참고
+- 요청당 ~7초(7B 모델 1회 + 그래프는 즉시). CPU 서빙 가능.
+- 재배포/롤백: 어댑터 `.gguf`만 교체 후 `ollama create` 재실행.

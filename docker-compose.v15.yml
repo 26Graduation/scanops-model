@@ -28,16 +28,7 @@ services:
       - "8100:8100"
     restart: unless-stopped
 
-  # RAG(신규 CVE) 쓸 경우만. 메인 탐지엔 불필요.
-  qdrant:
-    image: qdrant/qdrant:latest
-    container_name: qdrant
-    ports:
-      - "6333:6333"
-    volumes:
-      - qdrant_data:/qdrant/storage
-    restart: unless-stopped
+# ※ V15는 RAG를 쓰지 않는다 → Qdrant/벡터DB 불필요. (모델 2개 + 코드그래프만)
 
 volumes:
   ollama_data:
-  qdrant_data:

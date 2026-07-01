@@ -80,6 +80,28 @@ def predict(code: str, lang: str) -> dict:
     }
 
 
+def predict_single(code: str, lang: str, model: str = V13_MODEL) -> dict:
+    """단일 모델 + 코드그래프 (R2 결합). V13 배포용.
+
+    판정 = (모델 LLM 취약) OR (그래프 taint = vuln)   # 그래프가 놓친 취약 보강
+    """
+    a = _llm_analyze(code, lang, model)
+    g = analyze_code(code, lang)
+    graph_vuln = g["verdict"] == "vuln"
+    vulnerable = a["vulnerable"] or graph_vuln
+    if not vulnerable:
+        detail = {"vulnerability": None, "severity": "NONE", "cvss": "0.0", "source": None}
+    elif a["vulnerable"]:
+        detail = {"vulnerability": a["name"], "severity": a["severity"], "cvss": a["cvss"], "source": "llm"}
+    else:
+        detail = {"vulnerability": g.get("category"), "severity": "HIGH", "cvss": "8.1", "source": "graph"}
+    return {
+        "vulnerable": vulnerable, **detail,
+        "votes": {"llm": a["vulnerable"], "graph": graph_vuln},
+        "graph": {"verdict": g["verdict"], "category": g.get("category"), "reason": g.get("reason")},
+    }
+
+
 if __name__ == "__main__":  # 간단 스모크
     demo = ("Python", "q='SELECT * FROM u WHERE id='+request.args.get('id')\ncur.execute(q)")
     import json

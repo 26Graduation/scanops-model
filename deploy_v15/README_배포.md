@@ -4,6 +4,9 @@ V15 = **v13 ∨ v14 OR 앙상블.** 두 모델 + 코드그래프를 OR로 결합
 재현율·정확도를 둘 다 높인 버전. **3벤치 평균 전 지표에서 상용 Grok 능가.** 학습·변환 끝났고,
 아래 파일만 서버에 올리면 됩니다.
 
+> ⚠️ **V15는 RAG/벡터DB(Qdrant)를 쓰지 않습니다.** 필요한 건 **Ollama 모델 2개 + API 서비스**뿐.
+> Qdrant는 설치·실행하지 마세요(예전 구조 잔재라 헷갈릴 수 있음).
+
 ## 구성 (2부분)
 1. **모델 서빙 (Ollama)** — v13·v14 어댑터를 Ollama에 등록.
 2. **앙상블 API (FastAPI)** — 두 모델을 병렬 호출 + 그래프 결합해 단일 엔드포인트 제공.
@@ -32,13 +35,15 @@ cd deploy_v15 && ./setup.sh
 # 2) 앙상블 API 실행 (레포 루트에서)
 cd ..
 pip install fastapi "uvicorn[standard]" pydantic requests httpx sentence-transformers qdrant-client
+#  ※ qdrant-client·sentence-transformers는 import 의존성(라이브러리)일 뿐,
+#    Qdrant 서버를 띄울 필요는 없음. V15는 벡터DB를 호출하지 않음.
 uvicorn scripts.api_v15:app --host 0.0.0.0 --port 8100
 ```
 
 ## 방법 B — Docker Compose
 ```bash
 # 레포 루트에서
-docker compose -f docker-compose.v15.yml up -d        # ollama + v15-api (+qdrant)
+docker compose -f docker-compose.v15.yml up -d        # ollama + v15-api (Qdrant 없음)
 # 최초 1회 모델 등록 (ollama 컨테이너 안에서)
 docker exec -it ollama sh -c "cd /models && ollama pull qwen2.5-coder:7b-instruct \
   && ollama create qwen2.5-coder-security-v13-7b -f Modelfile.v13 \
