@@ -22,8 +22,9 @@ RUNPOD_API_KEY = os.getenv("RUNPOD_API_KEY", "")
 OLLAMA_CHAT_URL = os.getenv("OLLAMA_CHAT_URL",
                             os.getenv("OLLAMA_URL", "http://localhost:11434").rstrip("/")
                             .removesuffix("/api/generate") + "/api/chat")
-# cold start(워커 기동+모델 로드)가 첫 요청에 얹힐 수 있어 로컬보다 길게.
-RUNPOD_TIMEOUT = int(os.getenv("RUNPOD_TIMEOUT", "180"))
+# cold start(워커 기동+모델 로드, 최악엔 새 호스트 이미지 pull ~4분)가 첫 요청에
+# 얹힐 수 있어 넉넉히. 웜 상태엔 어차피 수 초 내 완료라 영향 없음.
+RUNPOD_TIMEOUT = int(os.getenv("RUNPOD_TIMEOUT", "420"))
 
 
 def use_runpod() -> bool:
@@ -46,15 +47,29 @@ def _chat_ollama(model: str, messages: list[dict], options: dict, timeout: int) 
 
 
 def _chat_runpod(model: str, messages: list[dict], options: dict) -> str:
-    url = f"https://api.runpod.ai/v2/{RUNPOD_ENDPOINT_ID}/runsync"
-    r = requests.post(url, json={
+    import time
+
+    base = f"https://api.runpod.ai/v2/{RUNPOD_ENDPOINT_ID}"
+    hdrs = {"Authorization": f"Bearer {RUNPOD_API_KEY}"}
+    r = requests.post(f"{base}/runsync", json={
         "input": {"model": model, "messages": messages, "options": options},
-    }, headers={"Authorization": f"Bearer {RUNPOD_API_KEY}"}, timeout=RUNPOD_TIMEOUT)
+    }, headers=hdrs, timeout=RUNPOD_TIMEOUT)
     r.raise_for_status()
     data = r.json()
-    status = data.get("status")
-    if status != "COMPLETED":
-        raise RuntimeError(f"RunPod job {status}: {str(data)[:300]}")
+
+    # cold start 시 runsync는 ~90초 후 IN_QUEUE/IN_PROGRESS를 반환하고 job은 계속 돈다
+    # → 에러가 아니라 "아직"이므로 /status/{id} 로 완료까지 폴링 (총 RUNPOD_TIMEOUT 한도).
+    t0 = time.time()
+    while data.get("status") in ("IN_QUEUE", "IN_PROGRESS"):
+        if time.time() - t0 > RUNPOD_TIMEOUT:
+            raise RuntimeError(f"RunPod job timeout({RUNPOD_TIMEOUT}s): {data.get('id')}")
+        time.sleep(3)
+        r = requests.get(f"{base}/status/{data['id']}", headers=hdrs, timeout=30)
+        r.raise_for_status()
+        data = r.json()
+
+    if data.get("status") != "COMPLETED":
+        raise RuntimeError(f"RunPod job {data.get('status')}: {str(data)[:300]}")
     out = data.get("output") or {}
     if isinstance(out, dict) and "error" in out:
         raise RuntimeError(f"RunPod worker error: {out['error']}")
