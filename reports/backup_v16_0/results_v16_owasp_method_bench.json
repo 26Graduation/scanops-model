@@ -1,0 +1,690 @@
+{
+  "generated": "2026-07-02T17:58:05",
+  "bench": "owasp_method_bench.jsonl",
+  "n": 110,
+  "model": "qwen2.5-coder-security-v16-7b:latest",
+  "llm": {
+    "tp": 55,
+    "fn": 0,
+    "fp": 55,
+    "tn": 0,
+    "recall": 100.0,
+    "fpr": 100.0,
+    "precision": 50.0,
+    "accuracy": 50.0,
+    "f1": 66.7
+  },
+  "hybrid": {
+    "tp": 55,
+    "fn": 0,
+    "fp": 55,
+    "tn": 0,
+    "recall": 100.0,
+    "fpr": 100.0,
+    "precision": 50.0,
+    "accuracy": 50.0,
+    "f1": 66.7
+  },
+  "cases": [
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "safe",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "safe",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "safe",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "safe",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "safe",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "safe",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "safe",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "safe",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "safe",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "safe",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "safe",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "safe",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "vuln",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "safe",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "safe",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true
+    }
+  ]
+}

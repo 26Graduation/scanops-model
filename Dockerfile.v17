@@ -1,0 +1,14 @@
+# ScanOps V17 모델 API — CPU 전용 (LLM 호출은 llm_client가 RunPod로 라우팅)
+FROM python:3.11-slim
+
+WORKDIR /app
+RUN pip install --no-cache-dir fastapi "uvicorn[standard]" pydantic requests
+
+COPY scanops/ scanops/
+COPY scripts/api_v17.py scripts/benchmark_qwen_rag.py scripts/benchmark_core.py scripts/grok_client.py scripts/
+# 그래프 엔진(multi_graph)은 scanops/ 안에 포함. qdrant/sentence-transformers는
+# lazy import라 CPU 이미지에 불필요(RAG 미사용).
+
+ENV PORT=8100
+EXPOSE 8100
+CMD ["sh", "-c", "uvicorn scripts.api_v17:app --host 0.0.0.0 --port ${PORT}"]

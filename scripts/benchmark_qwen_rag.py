@@ -18,7 +18,10 @@ import time
 from pathlib import Path
 
 import requests
-from qdrant_client import QdrantClient
+try:  # RAG 전용 의존성 — V17 CPU 서빙 이미지엔 없어도 됨(search_cves만 비활성)
+    from qdrant_client import QdrantClient
+except ImportError:  # pragma: no cover
+    QdrantClient = None
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE_DIR))
@@ -228,11 +231,10 @@ def _call_finetuned(user_content: str, model: str, timeout: int = 90) -> tuple[s
         },
     }
     t0 = time.time()
-    resp = requests.post(OLLAMA_CHAT, json=payload, timeout=timeout)
+    # RUNPOD_ENDPOINT_ID 설정 시 RunPod serverless 경유 (미설정 시 로컬 Ollama — 동작 동일)
+    from scanops.core.llm_client import chat as _llm_chat
+    raw = _llm_chat(payload["model"], payload["messages"], payload["options"], timeout=timeout)
     elapsed = round(time.time() - t0, 2)
-    resp.raise_for_status()
-    data = resp.json()
-    raw = data.get("message", {}).get("content", "")
     # sentinel cleanup — 모델이 출력하는 garbage 패턴 제거
     for sentinel in ("[EMPTY_", "Human resources", "The following", "Note:", "\nVULNERABILITY_FIXED:"):
         idx = raw.find(sentinel)

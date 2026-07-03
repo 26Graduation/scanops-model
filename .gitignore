@@ -39,3 +39,4 @@ reports/charts/
 
 # 배포 산출물(대용량 — gguf 포함 zip)
 *.zip
+data/*.jsonl.*_bak

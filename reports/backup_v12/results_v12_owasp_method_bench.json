@@ -1,0 +1,811 @@
+{
+  "generated": "2026-07-01T04:30:56",
+  "bench": "owasp_method_bench.jsonl",
+  "n": 110,
+  "model": "qwen2.5-coder-security-v14-7b:latest",
+  "llm": {
+    "tp": 8,
+    "fn": 47,
+    "fp": 7,
+    "tn": 48,
+    "recall": 14.5,
+    "fpr": 12.7,
+    "precision": 53.3,
+    "accuracy": 50.9,
+    "f1": 22.9
+  },
+  "hybrid": {
+    "tp": 20,
+    "fn": 35,
+    "fp": 7,
+    "tn": 48,
+    "recall": 36.4,
+    "fpr": 12.7,
+    "precision": 74.1,
+    "accuracy": 61.8,
+    "f1": 48.8
+  },
+  "grok": {
+    "tp": 46,
+    "fn": 9,
+    "fp": 31,
+    "tn": 24,
+    "recall": 83.6,
+    "fpr": 56.4,
+    "precision": 59.7,
+    "accuracy": 63.6,
+    "f1": 69.7
+  },
+  "cases": [
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": false
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true,
+      "grok": false
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true,
+      "grok": false
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true,
+      "grok": false
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true,
+      "grok": false
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true,
+      "grok": false
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true,
+      "grok": false
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "safe",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true,
+      "grok": false
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "vuln",
+      "hybrid": true,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": false
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "vuln",
+      "hybrid": true,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true,
+      "grok": false
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "safe",
+      "hybrid": false,
+      "grok": false
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true,
+      "grok": false
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "safe",
+      "hybrid": false,
+      "grok": false
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "vuln",
+      "hybrid": true,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true,
+      "grok": false
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "safe",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "vuln",
+      "hybrid": true,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "safe",
+      "hybrid": false,
+      "grok": false
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "vuln",
+      "hybrid": true,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "safe",
+      "hybrid": false,
+      "grok": false
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "vuln",
+      "hybrid": true,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "safe",
+      "hybrid": false,
+      "grok": false
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "safe",
+      "hybrid": false,
+      "grok": false
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "safe",
+      "hybrid": false,
+      "grok": false
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "vuln",
+      "hybrid": true,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "vuln",
+      "hybrid": true,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": false
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true,
+      "grok": false
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true,
+      "grok": false
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": false
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true,
+      "grok": false
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": false
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "safe",
+      "hybrid": false,
+      "grok": false
+    },
+    {
+      "label": "safe",
+      "llm": true,
+      "graph": "unknown",
+      "hybrid": true,
+      "grok": false
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "safe",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": true,
+      "graph": "vuln",
+      "hybrid": true,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "vuln",
+      "hybrid": true,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "vuln",
+      "hybrid": true,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "safe",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "vuln",
+      "hybrid": true,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "vuln",
+      "hybrid": true,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "safe",
+      "hybrid": false,
+      "grok": false
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": false
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": false
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": false
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "safe",
+      "hybrid": false,
+      "grok": false
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "vuln",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": true
+    },
+    {
+      "label": "safe",
+      "llm": false,
+      "graph": "unknown",
+      "hybrid": false,
+      "grok": false
+    }
+  ]
+}
