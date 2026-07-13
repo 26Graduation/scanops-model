@@ -93,6 +93,7 @@ trainer = SFTTrainer(
         lr_scheduler_type="cosine",         # 후반으로 갈수록 걸음을 줄여 안정 수렴
         warmup_ratio=0.03,                  # 초반 3%는 작게 시작 (초기 발산 방지)
         per_device_train_batch_size=BATCH_PER_DEVICE,
+        per_device_eval_batch_size=BATCH_PER_DEVICE,  # 기본값 8이면 4k토큰×8에서 OOM (1차 시도 크래시 원인)
         gradient_accumulation_steps=GRAD_ACCUM,
         bf16=True,
         logging_steps=20,
