@@ -1,16 +1,16 @@
-"""ScanOps V15 — v13 ∨ v14 OR 앙상블 (재학습 없이 재현율+정확도 동시 향상)
+"""ScanOps 앙상블 판정 (V18-lite: 구조필터 + 캘리브레이터 게이팅, 재학습 0)
 ================================================================
-발견(3벤치 검증): v13(고재현율)과 v14(고정밀)를 **OR로 결합**하면 두 모델이 서로
-놓친 취약점을 메워, 각 모델 단독보다 재현율·정확도가 모두 오르고 **3벤치 평균 전 지표에서
-Grok을 능가**한다.
+과거 V15는 **OR**('하나라도 취약이면 취약')였다: 재현율은 좋으나 약한 단일신호에도 찍혀
+과탐(4벤치 FPR 37%)했다. V18-lite는 세 신호(v13·v16·graph)를 그대로 OR하지 않고
+`verify_pipeline.decide()`로 게이팅한다:
 
-  판정 = (v13_LLM 취약) OR (v14_LLM 취약) OR (그래프 taint = vuln)
+  1) 구조 veto  — 완전파일인데 실행 로직 없음(선언-only·자동생성) → 무조건 SAFE(재현율 손실 0)
+  2) 캘리브레이터 — 세 신호를 학습된 가중치로 결합→확률→임계값(약한 단일신호 과탐 억제)
+  3) CPG 게이트  — (W4 훅) 약한 단일멤버 양성에 source→sink 요구, 없으면 drop
 
-즉 "**하나라도 취약이라 하면 취약**". 그래프는 R2 규칙(놓친 취약만 보강)과 동일 효과라
-OR에 자연히 흡수된다. 비용은 모델 2회 호출(스캐너 용도엔 허용 범위).
-
-3벤치 평균(검증): V15 F1 70.0 / 재현율 71.5% / 오탐률 30.1% / 정확도 70.7%
-                 (Grok  F1 59.9 / 재현율 64.3% / 오탐률 42.4% / 정확도 60.8%)
+홀드아웃(leave-one-bench-out) 검증: 오탐률 37→~30(무Claude). 재현율은 W4 CPG로 회복 예정.
+serving은 v13/v16/graph 판정만 계산하면 decide()가 최종 판정. 가중치는
+scanops/core/calibrator_weights.json(무의존 로드).
 """
 from __future__ import annotations
 
@@ -44,15 +44,21 @@ def _llm_analyze(code: str, lang: str, model: str) -> dict:
         return {"vulnerable": False, "name": None, "severity": None, "cvss": None, "error": str(e)}
 
 
-def predict(code: str, lang: str) -> dict:
-    """V15 앙상블 판정.
+def predict(code: str, lang: str, *, assume_complete_file: bool = True,
+            cpg_gate=None) -> dict:
+    """V18-lite 앙상블 판정 (구조필터 + 캘리브레이터 게이팅, 재학습 0).
 
-    반환:
-      {vulnerable, vulnerability, severity, cvss, source,
-       votes:{v13,v14,graph}, graph:{verdict,category,reason}}
+    OR('하나라도 취약') 대신 verify_pipeline.decide()로 최종 판정한다:
+      1) 구조 veto(선언-only·생성파일 SAFE)  2) 캘리브레이터(세 신호 학습결합)
+      3) CPG 게이트(cpg_gate 넘기면, W4).
+    두 번째 멤버(V14_MODEL 슬롯)는 캘리브레이터의 'v16' 신호로 취급(운영 배포=v13∨v16).
+
+    assume_complete_file: 프로덕션 완전파일=True(구조 veto 신뢰), 벤치 조각=False.
+    반환: {vulnerable, vulnerability, severity, cvss, source, prob, decision_reason,
+           votes:{v13,v16,graph}, graph:{...}}
     """
-    # v13·v14 두 모델 호출은 독립 → 병렬 실행(레이턴시 ~절반). 그래프는 즉시(규칙기반).
     from concurrent.futures import ThreadPoolExecutor
+    from scanops.core.verify_pipeline import decide
     with ThreadPoolExecutor(max_workers=2) as ex:
         f13 = ex.submit(_llm_analyze, code, lang, V13_MODEL)
         f14 = ex.submit(_llm_analyze, code, lang, V14_MODEL)
@@ -60,22 +66,27 @@ def predict(code: str, lang: str) -> dict:
     g = analyze_code(code, lang)
     graph_vuln = g["verdict"] == "vuln"
 
-    vulnerable = a13["vulnerable"] or a14["vulnerable"] or graph_vuln
+    signals = {"v13": a13["vulnerable"], "v16": a14["vulnerable"], "graph": graph_vuln}
+    dec = decide(signals, code, lang,
+                 assume_complete_file=assume_complete_file, cpg_gate=cpg_gate)
+    vulnerable = dec.vulnerable
 
-    # 상세정보 선택: 취약이면 근거를 하나 고른다(v13 우선 → v14 → 그래프).
+    # 상세정보 선택: 취약이면 근거를 하나 고른다(v13 우선 → v16 → 그래프).
     if not vulnerable:
         detail = {"vulnerability": None, "severity": "NONE", "cvss": "0.0", "source": None}
     elif a13["vulnerable"]:
         detail = {"vulnerability": a13["name"], "severity": a13["severity"], "cvss": a13["cvss"], "source": "v13"}
     elif a14["vulnerable"]:
-        detail = {"vulnerability": a14["name"], "severity": a14["severity"], "cvss": a14["cvss"], "source": "v14"}
+        detail = {"vulnerability": a14["name"], "severity": a14["severity"], "cvss": a14["cvss"], "source": "v16"}
     else:  # graph-only
         detail = {"vulnerability": g.get("category"), "severity": "HIGH", "cvss": "8.1", "source": "graph"}
 
     return {
         "vulnerable": vulnerable,
         **detail,
-        "votes": {"v13": a13["vulnerable"], "v14": a14["vulnerable"], "graph": graph_vuln},
+        "prob": round(dec.prob, 4),
+        "decision_reason": dec.reason,
+        "votes": signals,
         "graph": {"verdict": g["verdict"], "category": g.get("category"), "reason": g.get("reason")},
     }
 
