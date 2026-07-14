@@ -1,0 +1,46 @@
+{
+  "engine": "claude-sonnet-5",
+  "dataset": "primevul",
+  "overall": {
+    "n": 360,
+    "n_vuln": 180,
+    "n_safe": 180,
+    "recall": 0.8444,
+    "fpr": 0.8222,
+    "precision": 0.5067,
+    "f1": 0.6333,
+    "parse_fail": 32
+  },
+  "by_language": {
+    "C/C++": {
+      "n": 360,
+      "n_vuln": 180,
+      "n_safe": 180,
+      "recall": 0.8444,
+      "fpr": 0.8222,
+      "precision": 0.5067,
+      "f1": 0.6333,
+      "parse_fail": 32
+    }
+  },
+  "pairwise": {
+    "n_pairs": 180,
+    "pair_correct": {
+      "n": 4,
+      "rate": 0.0222
+    },
+    "pair_vulnerable": {
+      "n": 136,
+      "rate": 0.7556
+    },
+    "pair_benign": {
+      "n": 9,
+      "rate": 0.05
+    },
+    "pair_reversed": {
+      "n": 3,
+      "rate": 0.0167
+    },
+    "pair_parse_fail": 28
+  }
+}

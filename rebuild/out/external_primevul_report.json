@@ -1,0 +1,46 @@
+{
+  "engine": "scanops-qwen3.5-9b-qlora",
+  "dataset": "primevul",
+  "overall": {
+    "n": 360,
+    "n_vuln": 180,
+    "n_safe": 180,
+    "recall": 0.1278,
+    "fpr": 0.1056,
+    "precision": 0.5476,
+    "f1": 0.2072,
+    "parse_fail": 2
+  },
+  "by_language": {
+    "C/C++": {
+      "n": 360,
+      "n_vuln": 180,
+      "n_safe": 180,
+      "recall": 0.1278,
+      "fpr": 0.1056,
+      "precision": 0.5476,
+      "f1": 0.2072,
+      "parse_fail": 2
+    }
+  },
+  "pairwise": {
+    "n_pairs": 180,
+    "pair_correct": {
+      "n": 6,
+      "rate": 0.0333
+    },
+    "pair_vulnerable": {
+      "n": 17,
+      "rate": 0.0944
+    },
+    "pair_benign": {
+      "n": 154,
+      "rate": 0.8556
+    },
+    "pair_reversed": {
+      "n": 2,
+      "rate": 0.0111
+    },
+    "pair_parse_fail": 1
+  }
+}

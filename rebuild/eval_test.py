@@ -49,22 +49,33 @@ print(f"test {len(rows)}건 채점 시작")
 
 # ── 추론 ─────────────────────────────────────────────────────────────────────
 def generate_batch(prompts: list[str]) -> list[str]:
+    # [1막: 질문지를 모델이 배운 서식으로 포장]
     texts = [
         tokenizer.apply_chat_template(
-            [{"role": "user", "content": p}],
-            tokenize=False, add_generation_prompt=True,
-            enable_thinking=False,   # 하이브리드 추론 모델 — <think> 블록 억제, 4줄 직행
+            [{"role": "user", "content": p}],           # 우리 프롬프트를 "사용자 발화"로 지정
+            tokenize=False,                             # 아직 문자열 상태로만 (토큰화는 다음 단계에서)
+            add_generation_prompt=True,                 # 끝에 "<|im_start|>assistant\n"을 붙임
+            enable_thinking=False,                      # 하이브리드 추론 모델 — <think> 블록 억제, 4줄 직행
         )
         for p in prompts
     ]
-    enc = text_tok(texts, return_tensors="pt", padding=True, truncation=True,
-                   max_length=4096).to(model.device)
-    with torch.no_grad():
+    # [2막: 문자열 → 숫자(토큰), 4개를 한 판으로 묶기]
+    enc = text_tok(texts, return_tensors="pt",  # 파이토치 텐서(GPU용 숫자 배열)로
+               padding=True,                # 4개 길이가 제각각 → 짧은 것에 패딩을 채워 같은 길이로
+               truncation=True, max_length=4096  # 혹시 너무 길면 4096토큰에서 자름
+               ).to(model.device)           # CPU 메모리 → GPU 메모리로 이동
+
+    # [3막: 생성 실행]
+    with torch.no_grad():                      # "학습 아님" 선언 — 기울기 계산 끄면 메모리/속도 이득
         out = model.generate(
-            **enc, max_new_tokens=MAX_NEW, do_sample=False, pad_token_id=_PAD,
+            **enc,
+            max_new_tokens=MAX_NEW,            # 최대 180토큰까지만
+            do_sample=False,                   # ★ 주사위 안 굴림 — 매번 가장 확률 높은 토큰 선택
+            pad_token_id=_PAD,
         )
-    gen = out[:, enc["input_ids"].shape[1]:]
-    return text_tok.batch_decode(gen, skip_special_tokens=True)
+    # [수거: 새로 생성된 부분만 잘라 문자열로 복원]
+    gen = out[:, enc["input_ids"].shape[1]:]   # 출력엔 질문+답이 다 있음 → 질문 길이만큼 앞을 잘라냄
+    return text_tok.batch_decode(gen, skip_special_tokens=True)  # 숫자 → 사람 글자로
 
 # ── 파싱: 4줄 출력 → (label, cwe, severity) ──────────────────────────────────
 def parse(text: str) -> dict:

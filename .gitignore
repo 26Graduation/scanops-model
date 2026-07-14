@@ -40,3 +40,11 @@ reports/charts/
 # 배포 산출물(대용량 — gguf 포함 zip)
 *.zip
 data/*.jsonl.*_bak
+
+# rebuild 외부 벤치마크 대용량 (빌더로 재생성 가능)
+rebuild/data/raw/
+rebuild/data/primevul_test.jsonl
+rebuild/data/cleanvul_test.jsonl
+rebuild/out/adapter/
+rebuild/out/*.id
+rebuild/out/*.log

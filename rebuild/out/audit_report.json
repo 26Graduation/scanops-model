@@ -1,0 +1,89 @@
+{
+  "judge_model": "claude-opus-4-8",
+  "seed": 42,
+  "claude": {
+    "n_fp_total": 513,
+    "n_audited": 100,
+    "valid": {
+      "n": 13,
+      "rate": 0.13
+    },
+    "invalid": {
+      "n": 78,
+      "rate": 0.78
+    },
+    "uncertain": {
+      "n": 9,
+      "rate": 0.09
+    },
+    "parse_fail": {
+      "n": 0,
+      "rate": 0.0
+    },
+    "by_language": {
+      "C/C++": {
+        "INVALID": 18,
+        "UNCERTAIN": 5,
+        "VALID": 2
+      },
+      "JS/TS": {
+        "INVALID": 15,
+        "VALID": 4,
+        "UNCERTAIN": 1
+      },
+      "Java": {
+        "INVALID": 5
+      },
+      "PHP": {
+        "INVALID": 21,
+        "UNCERTAIN": 3,
+        "VALID": 7
+      },
+      "Python": {
+        "INVALID": 19
+      }
+    }
+  },
+  "ours": {
+    "n_fp_total": 101,
+    "n_audited": 101,
+    "valid": {
+      "n": 3,
+      "rate": 0.0297
+    },
+    "invalid": {
+      "n": 92,
+      "rate": 0.9109
+    },
+    "uncertain": {
+      "n": 6,
+      "rate": 0.0594
+    },
+    "parse_fail": {
+      "n": 0,
+      "rate": 0.0
+    },
+    "by_language": {
+      "C/C++": {
+        "INVALID": 46,
+        "UNCERTAIN": 3
+      },
+      "JS/TS": {
+        "INVALID": 19,
+        "UNCERTAIN": 2,
+        "VALID": 1
+      },
+      "Java": {
+        "INVALID": 2
+      },
+      "PHP": {
+        "INVALID": 14,
+        "VALID": 2
+      },
+      "Python": {
+        "INVALID": 11,
+        "UNCERTAIN": 1
+      }
+    }
+  }
+}
