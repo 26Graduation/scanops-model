@@ -27,7 +27,8 @@ import re
 from collections import Counter
 from pathlib import Path
 
-from datasets import load_dataset
+# load_dataset은 main()에서만 필요 → 지연 import.
+# (build_dataset_v2.py가 이 파일의 completion 로직만 재사용할 때 datasets 미설치로 막히지 않도록)
 
 SEED = 42
 OUT_DIR = Path(__file__).resolve().parent / "data"
@@ -131,6 +132,8 @@ def vuln_completion(cwe_id: str, cwe_name: str, sev: str, cvss: str, reason: str
 
 # ── 메인 ─────────────────────────────────────────────────────────────────────
 def main() -> None:
+    from datasets import load_dataset  # 지연 import (모듈 상단 주석 참고)
+
     random.seed(SEED)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 

@@ -48,3 +48,7 @@ rebuild/data/cleanvul_test.jsonl
 rebuild/out/adapter/
 rebuild/out/*.id
 rebuild/out/*.log
+rebuild/data/train_v2.jsonl
+rebuild/data/val_v2.jsonl
+rebuild/data/cleanvul_v2_test.jsonl
+rebuild/data/cleanvul_heldout_raw.json

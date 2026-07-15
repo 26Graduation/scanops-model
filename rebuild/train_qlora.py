@@ -74,8 +74,10 @@ def load_split(name: str) -> Dataset:
         return {"text": tokenizer.apply_chat_template(messages, tokenize=False)}
     return Dataset.from_list(rows).map(to_text, remove_columns=["prompt", "completion", "meta"])
 
-train_ds = load_split("train")
-val_ds = load_split("val")
+# TRAIN_SPLIT/VAL_SPLIT 환경변수로 데이터셋 선택 (기본 v1, v2는 train_v2/val_v2)
+import os
+train_ds = load_split(os.environ.get("TRAIN_SPLIT", "train"))
+val_ds = load_split(os.environ.get("VAL_SPLIT", "val"))
 print(f"train {len(train_ds)} / val {len(val_ds)}")
 
 # ── 4~5. 학습 설정 ───────────────────────────────────────────────────────────
