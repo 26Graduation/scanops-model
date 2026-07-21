@@ -1,0 +1,14 @@
+# ScanOps Rebuild 모델 API — CPU 전용 (LLM 호출은 llm_client가 RunPod로 라우팅)
+# 2026-07 rebuild Qwen3.5-9B 단일 모델 (워커: runpod/Dockerfile.rebuild)
+FROM python:3.11-slim
+
+WORKDIR /app
+RUN pip install --no-cache-dir fastapi "uvicorn[standard]" pydantic requests
+
+COPY scanops/ scanops/
+COPY scripts/api_rebuild.py scripts/benchmark_qwen_rag.py scripts/benchmark_core.py scripts/grok_client.py scripts/
+# benchmark_qwen_rag는 RAG 참고 CVE(search_cves)용 lazy import 의존.
+
+ENV PORT=8100
+EXPOSE 8100
+CMD ["sh", "-c", "uvicorn scripts.api_rebuild:app --host 0.0.0.0 --port ${PORT}"]

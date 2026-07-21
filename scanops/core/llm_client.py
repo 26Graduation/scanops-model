@@ -31,6 +31,25 @@ def use_runpod() -> bool:
     return bool(RUNPOD_ENDPOINT_ID)
 
 
+# rebuild 워커는 raw completion도 받는다 — 학습 템플릿과 동일한 ChatML 래핑을
+# 호출측이 만들어 보내는 판정 경로(<think> 방지, eval_gguf.py와 동일 지점).
+LLAMA_SERVER_URL = os.getenv("LLAMA_SERVER_URL", "http://localhost:8080")
+
+
+def completion(prompt: str, options: dict, timeout: int = 300) -> str:
+    """raw completion 호출 → 응답 텍스트. RunPod 워커 또는 로컬 llama-server."""
+    if use_runpod():
+        return _runpod_call({"prompt": prompt, "options": options})
+    r = requests.post(f"{LLAMA_SERVER_URL.rstrip('/')}/completion", json={
+        "prompt": prompt,
+        "n_predict": int(options.get("num_predict", 256)),
+        "temperature": float(options.get("temperature", 0.0)),
+        "stop": options.get("stop", ["<|im_end|>"]),
+    }, timeout=timeout)
+    r.raise_for_status()
+    return r.json().get("content", "")
+
+
 def chat(model: str, messages: list[dict], options: dict, timeout: int = 90) -> str:
     """chat 호출 → 응답 content 문자열. 라우팅은 환경변수로 결정."""
     if use_runpod():
@@ -47,12 +66,16 @@ def _chat_ollama(model: str, messages: list[dict], options: dict, timeout: int) 
 
 
 def _chat_runpod(model: str, messages: list[dict], options: dict) -> str:
+    return _runpod_call({"model": model, "messages": messages, "options": options})
+
+
+def _runpod_call(input_payload: dict) -> str:
     import time
 
     base = f"https://api.runpod.ai/v2/{RUNPOD_ENDPOINT_ID}"
     hdrs = {"Authorization": f"Bearer {RUNPOD_API_KEY}"}
     r = requests.post(f"{base}/runsync", json={
-        "input": {"model": model, "messages": messages, "options": options},
+        "input": input_payload,
     }, headers=hdrs, timeout=RUNPOD_TIMEOUT)
     r.raise_for_status()
     data = r.json()
