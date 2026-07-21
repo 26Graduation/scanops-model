@@ -258,8 +258,9 @@ def _gen_meta(language: str, code: str, vuln: str, reason: str) -> dict:
     try:
         # Qwen3.5는 chat 경로에서 <think>가 먼저 나와 토큰을 소모 → 넉넉히 잡아야
         # think 이후의 실제 JSON이 잘리지 않는다 (워커가 <think> 블록은 제거해 반환).
+        # 1200으로는 한국어 메타 프롬프트에서 think가 예산을 다 먹는 경우가 실측됨 → 3000.
         raw = llm_chat("", [{"role": "user", "content": prompt}],
-                       {"temperature": 0.2, "num_predict": 1200}, timeout=120)
+                       {"temperature": 0.2, "num_predict": 3000}, timeout=180)
         m = re.search(r"\{.*\}", raw, re.S)
         if not m:
             return {}
