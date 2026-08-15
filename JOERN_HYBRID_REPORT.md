@@ -10,7 +10,7 @@
 
 ## §0 STATUS
 
-**최종 갱신: 2026-08-16 03:40 KST**
+**최종 갱신: 2026-08-16 03:32 KST**
 
 | 항목 | 상태 |
 |---|---|
@@ -170,7 +170,7 @@ curl -s -X POST "https://api.runpod.io/graphql?api_key=$RUNPOD_API_KEY" \
 $ docker pull hello-world
 error getting credentials - err: signal: terminated, out: ``
 ```
-(120초 타임아웃으로 강제 종료. 20분간 `docker pull ghcr.io/joernio/joern` 이 0바이트 진행이었던 원인.)
+(120초 타임아웃으로 강제 종료. 03:11–03:17 동안 `docker pull` 이 0바이트 진행이었던 원인.)
 
 → **결론: 이 세션에서 Docker Hub push 불가.** 빈 `DOCKER_CONFIG` 디렉토리를 쓰면 **익명 pull 은 정상**
 (hello-world 로 확인). 따라서 이미지 빌드·로컬 실행은 가능하고, 레지스트리 push 와
@@ -257,7 +257,59 @@ tune split = **676건** (vuln 338 / safe 338). 지원 언어(Java/Python/JS) 부
 
 ## §3 logprob 서빙 검증 (Phase 1-B)
 
-작성 중.
+### 3-1. 무엇을 뚫었나
+
+| 파일 | 변경 |
+|---|---|
+| `scanops/core/llm_client.py` | `completion_logprobs(prompt, n_probs)` · `tokenize(text)` 추가. `_runpod_call(payload, field)` 로 일반화 |
+| `runpod/handler_rebuild.py` | `input.logprobs` → llama-server `/completion`(n_probs) 패스스루, `input.tokenize` → `/tokenize` 패스스루 |
+| `scanops/core/logprob_score.py` (신규) | `score_from_probs()` = logP(" CWE") − logP(" NONE"), `verify_token_ids()` |
+| `scripts/api_rebuild.py` | `AnalyzeResponse.score` 추가, `_score()` 경로. 기본 off(`SCANOPS_SCORE`), SIGNAL 정책이면 자동 on |
+
+llama.cpp 응답 형식이 버전에 따라 `prob`(확률) / `logprob` 로 갈리므로 둘 다 흡수한다.
+후보 목록(n_probs) 밖이면 하한 `-30.0` 을 쓴다.
+
+### 3-2. 실측 — 배관은 동작한다
+
+로컬 `llama-server`(`/opt/homebrew/bin/llama-server`) 에 붙여 실행한 결과:
+
+```
+TOKEN_CHECK: {"ok": false, "cwe_id": 50860, "none_id": 42869,
+              "note": "불일치 (기준 CWE=49149/NONE=41451) — 자동 보정하지 않음"}
+N_PROBS_RETURNED: 40
+TOP5: [{"id":50860,"token":" CWE","logprob":-0.2393},
+       {"id":220,"token":" ","logprob":-1.6630},
+       {"id":7870,"token":" SQL","logprob":-4.2081}, ...]
+SCORE: 7.7761      ← SQL 문자열 연결 스니펫, 부호·크기 모두 기대대로
+```
+
+즉 **`n_probs` 경로·점수 계산·토큰 ID 가드 세 가지가 모두 동작한다**(실측).
+
+### 3-3. 토큰 ID 불일치 — 원인은 "다른 모델"이다 (중요)
+
+토큰 ID가 기준값과 다르게 나왔지만, **이것을 프로덕션 모델의 불일치로 읽으면 안 된다.**
+
+- 사용한 GGUF: `~/.ollama/.../qwen2.5-coder-security-v19-7b` (4.68 GB blob).
+  **rebuild 모델(Qwen3.5-9B)이 아니다.** 토크나이저가 다르므로 ID가 다른 것이 정상이다.
+- rebuild 서빙 GGUF(`/runpod-volume/serve/scanops-rebuild-9b-q4km.gguf`)는 **RunPod 네트워크
+  볼륨에만 있고 로컬에 없다** (`find . -name "*.gguf"` 결과: v13/v16/v19 LoRA GGUF 뿐,
+  그나마 322 MB 짜리 어댑터라 `llama-server` 가 모델로 로드하지 못한다 — 실측 로그 확인).
+- 실제 프로덕션 워커(`ylzf0yaerkvqli`)에는 **이번에 추가한 `n_probs` 패스스루가 배포돼 있지 않다.**
+  배포하려면 워커 이미지를 다시 빌드·push 해야 하는데, Docker credential helper 문제로
+  **push 가 불가능하다**(§1-f, §9-1).
+
+**따라서 사양서 §3의 (a)(b)(c) 처리를 그대로 적용한다:**
+(a) 불일치 사실·실제 ID(50860/42869)·원인(다른 모델로 검증)을 여기 기록했고,
+(b) `_score()` 는 `verify_token_ids().ok == False` 이면 **score=None** 을 반환하며,
+(c) Phase 3 의 `JOERN-AS-SIGNAL` 정책은 score 가 None 이면 자동으로 `JOERN-NO-BETTER` 로
+강등하고 응답에 `policy_fallback: true` 를 남긴다(`scanops/core/hybrid.py`).
+
+### 3-4. 20건 대조 검증 — **미실행 (사유 기록)**
+
+사양서가 요구한 "내부 test 20건을 서빙 경로로 채점해 `rebuild/out/v1_logprob_test.jsonl` 과
+소수 둘째 자리까지 대조"는 **하지 않았다**. 같은 모델이 아니면 점수를 비교하는 것 자체가
+의미가 없기 때문이다(다른 토크나이저·다른 가중치 → 다른 분포). 억지로 숫자를 채우면
+R4(체리피킹 금지) 위반이다. **프로덕션 모델로의 대조는 §12 결정사항으로 넘긴다.**
 
 ## §4 DELTA·TAU 선정 + precision 게이트 (Phase 2)
 
@@ -280,14 +332,14 @@ tune split = **676건** (vuln 338 / safe 338). 지원 언어(Java/Python/JS) 부
 | 시각 | 결정 | 대안 | 근거 | 되돌리는 법 |
 |---|---|---|---|---|
 | 03:12 | 브랜치를 `ablation/graph-only`(HEAD `aadce1a`)에서 분기 | `main` 에서 분기 | 벤치 입력인 `rebuild/data/cleanvul_v2_*.jsonl`, `rebuild/out/ablation_raw_*` 이 이 브랜치의 **미추적 파일**로만 존재 — main 에서 분기하면 Phase 2 입력이 없다 | `git checkout main` |
-| 03:35 | Docker credential helper 우회를 위해 빈 `DOCKER_CONFIG` 사용 | `~/.docker/config.json` 수정 | 사용자 전역 설정을 건드리지 않는다 | 환경변수만 안 쓰면 원상복구 |
-| 03:36 | 사용자가 실행 중인 컨테이너 5개는 건드리지 않는다 | 전부 정지 | 이 세션이 띄운 것이 아니고, 정지는 되돌리기 어려운 부작용 | 해당 없음 |
+| 03:21 | Docker credential helper 우회를 위해 빈 `DOCKER_CONFIG` 사용 | `~/.docker/config.json` 수정 | 사용자 전역 설정을 건드리지 않는다 | 환경변수만 안 쓰면 원상복구 |
+| 03:22 | 사용자가 실행 중인 컨테이너 5개는 건드리지 않는다 | 전부 정지 | 이 세션이 띄운 것이 아니고, 정지는 되돌리기 어려운 부작용 | 해당 없음 |
 
 ## §9 실패·미완·폴백 발동
 
 **§9-1 Docker credential helper 무응답 (폴백 발동)**
 `docker-credential-desktop` 이 응답하지 않아 인증이 필요한 모든 docker 작업이 무한 대기.
-20분간 `docker pull` 이 0바이트 진행. 빈 `DOCKER_CONFIG` 로 익명 pull 우회.
+6분간(03:11–03:17) `docker pull` 이 0바이트 진행. 빈 `DOCKER_CONFIG` 로 익명 pull 우회.
 **영향**: Docker Hub **push 불가** → RunPod endpoint 생성 생략 (사양서 2절 폴백 규칙대로
 `joern/runpod_endpoint_payload.json` 만 작성). Phase 2 벤치는 로컬 docker 로 진행.
 

@@ -38,10 +38,23 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security.api_key import APIKeyHeader
 from pydantic import BaseModel, Field
 
-from scanops.core.llm_client import chat as llm_chat, completion as llm_completion, use_runpod
+from scanops.core.llm_client import (chat as llm_chat, completion as llm_completion,
+                                     completion_logprobs, tokenize, use_runpod)
+from scanops.core import hybrid as hybrid_mod
+from scanops.core.logprob_score import PREFIX as SCORE_PREFIX, score_from_probs, verify_token_ids
 
 META_ENABLED = os.getenv("SCANOPS_META", "on").lower() != "off"
 RAG_REFS_ENABLED = bool(os.getenv("QDRANT_URL", ""))
+
+# ── 하이브리드 (Phase 3) ────────────────────────────────────────────────────
+# 정책은 Phase 2 의 사전 등록 게이트 판정을 그대로 주입한다. 기본값은 가장 보수적인
+# JOERN-NO-BETTER (= Joern 을 판정에 넣지 않음).
+HYBRID_POLICY = os.getenv("SCANOPS_HYBRID_POLICY", "JOERN-NO-BETTER")
+JOERN_URL = os.getenv("SCANOPS_JOERN_URL", "")
+# 연속 점수는 SIGNAL 정책에서만 필요하다. 매 요청 추가 호출이 붙으므로 기본 off.
+SCORE_ENABLED = os.getenv("SCANOPS_SCORE", "").lower() in ("1", "on", "true") \
+    or HYBRID_POLICY == "JOERN-AS-SIGNAL"
+_TOKEN_CHECK: dict = {"checked": False, "ok": False, "note": "미확인"}
 
 app = FastAPI(title="ScanOps Rebuild API", version="rebuild-1")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
@@ -90,6 +103,11 @@ class AnalyzeResponse(BaseModel):
     graph_evidence: list[dict] = Field(default_factory=list)
     suppressed_by_graph: bool = False
     votes: Optional[dict] = None             # {"model": bool}
+    # ── 하이브리드 (Phase 3) ────────────────────────────────────────────────
+    score: Optional[float] = None            # logP(" CWE") − logP(" NONE"). 미지원 시 None
+    source: str = "llm"                      # llm | joern | llm+joern | graph
+    evidence: Optional[list] = None          # Joern taint path 또는 graph reason
+    status: str = "DONE"                     # PARTIAL(Joern 미도착) | DONE
     elapsed: float
 
 
@@ -298,9 +316,61 @@ def _cve_refs(language: str, code: str, vuln: str) -> list[CveReference]:
         return []
 
 
+def _score(language: str, code: str) -> Optional[float]:
+    """연속 점수 — rebuild/score_logprob.py 와 동일 정의.
+
+    서빙 토크나이저의 토큰 ID가 rebuild 기준값과 다르면 **자동 보정하지 않고 None** 을
+    돌려준다 (점수 정의가 바뀌면 rebuild 의 AUC·τ 와 비교 불가 — 사양서 §3).
+    """
+    global _TOKEN_CHECK
+    if not SCORE_ENABLED:
+        return None
+    if not _TOKEN_CHECK["checked"]:
+        _TOKEN_CHECK = {**verify_token_ids(tokenize), "checked": True}
+        print(f"[score] token check: {_TOKEN_CHECK}", flush=True)
+    if not _TOKEN_CHECK.get("ok"):
+        return None
+    prompt = PROMPT_TMPL.format(language=language, code=code[:_MAX_CODE])
+    try:
+        probs = completion_logprobs(CHATML_TMPL.format(p=prompt) + SCORE_PREFIX)
+        return score_from_probs(probs)
+    except Exception:  # noqa: BLE001 — 점수는 부가 정보, 판정을 죽이지 않는다
+        return None
+
+
+def _joern(language: str, code: str, file_path: Optional[str]) -> Optional[dict]:
+    """Joern 워커 동기 조회. 미설정/실패면 None → 하이브리드는 status=PARTIAL."""
+    if not JOERN_URL:
+        return None
+    try:
+        import requests
+        r = requests.post(f"{JOERN_URL.rstrip('/')}/joern/analyze", json={
+            "job_id": f"api_{int(time.time()*1000)}",
+            "language": language,
+            "files": [{"path": file_path or "snippet", "content": code}],
+        }, timeout=int(os.getenv("SCANOPS_JOERN_TIMEOUT", "120")))
+        r.raise_for_status()
+        res = (r.json().get("results") or {})
+        v = res.get(file_path or "snippet")
+        if not v:
+            return None
+        return {"verdict": v.get("verdict", "unknown"),
+                "categories": v.get("categories", []),
+                "path": [f.get("path") for f in v.get("findings", [])]}
+    except Exception:  # noqa: BLE001
+        return None
+
+
 def _analyze_one(language: str, code: str, file_path: Optional[str]) -> AnalyzeResponse:
     t0 = time.time()
     r = _detect(language, code)
+    r["score"] = _score(language, code)
+    agg = hybrid_mod.aggregate(r, _joern(language, code, file_path), None, HYBRID_POLICY)
+    r = {**r, "detected": agg["detected"]}
+    if agg["detected"] and agg["source"] in ("joern", "graph") and r["vulnerability"] == "NONE":
+        r["vulnerability"] = agg["vulnerability"]
+        r["severity"] = agg["severity"]
+        r["reason"] = agg["reason"]
     meta, handoff, refs = {}, "", []
     if r["detected"]:
         meta = _gen_meta(language, code, r["vulnerability"], r["reason"])
@@ -320,6 +390,11 @@ def _analyze_one(language: str, code: str, file_path: Optional[str]) -> AnalyzeR
         ai_prompt=handoff,
         cve_references=refs,
         votes={"model": r["detected"]},
+        score=agg.get("score"),
+        source=agg.get("source", "llm"),
+        evidence=agg.get("evidence") if isinstance(agg.get("evidence"), list) else
+                 ([agg["evidence"]] if agg.get("evidence") else None),
+        status=agg.get("status", "DONE"),
         elapsed=round(time.time() - t0, 2),
     )
 

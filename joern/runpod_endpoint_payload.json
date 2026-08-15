@@ -1,0 +1,48 @@
+{
+  "_comment": "RunPod CPU serverless endpoint 생성 페이로드. 이 세션에서는 Docker credential helper 무응답으로 이미지 push 가 불가능해 실제 생성은 하지 않았다 (JOERN_HYBRID_REPORT.md §9-1). 이미지를 push 한 뒤 아래 GraphQL mutation 을 그대로 쓰면 된다.",
+  "_push_first": "docker buildx build --platform linux/amd64 -f joern/Dockerfile -t hansekim31/scanops-joern-worker:latest --push .",
+  "_create_template": {
+    "endpoint": "https://api.runpod.io/graphql?api_key=$RUNPOD_API_KEY",
+    "method": "POST",
+    "body": {
+      "query": "mutation { saveTemplate(input: { name: \"scanops-joern\", imageName: \"hansekim31/scanops-joern-worker:latest\", dockerArgs: \"\", containerDiskInGb: 20, volumeInGb: 0, isServerless: true, env: [{key: \"RUNPOD_MODE\", value: \"1\"}, {key: \"JOERN_XMX\", value: \"4g\"}, {key: \"JOERN_CHUNK\", value: \"25\"}, {key: \"JOERN_CASE_TIMEOUT\", value: \"90\"}, {key: \"JOERN_WORK_ROOT\", value: \"/tmp\"}] }) { id name imageName } }"
+    }
+  },
+  "_create_endpoint": {
+    "endpoint": "https://api.runpod.io/graphql?api_key=$RUNPOD_API_KEY",
+    "method": "POST",
+    "body": {
+      "query": "mutation { saveEndpoint(input: { name: \"scanops-joern\", templateId: \"<saveTemplate 이 돌려준 id>\", workersMin: 0, workersMax: 2, idleTimeout: 5, scalerType: \"QUEUE_DELAY\", scalerValue: 4, gpuIds: \"\", instanceIds: [\"cpu3c-2-4\"] }) { id name } }",
+      "_note": "instanceIds 는 CPU 인스턴스 (Joern 은 GPU 불필요 — R5 비용 규칙). cpu3c-2-4 = 2 vCPU / 4GB. JVM -Xmx4g 를 쓰려면 cpu3c-4-8 이상을 권장한다."
+    }
+  },
+  "_invoke": {
+    "endpoint": "https://api.runpod.ai/v2/<ENDPOINT_ID>/run",
+    "headers": {"Authorization": "Bearer $RUNPOD_API_KEY"},
+    "body": {
+      "input": {
+        "job_id": "scan_20260816_0001",
+        "language": "Java Spring Boot",
+        "files": [
+          {"path": "src/main/java/com/example/UserDao.java", "content": "// ...소스..."}
+        ]
+      }
+    }
+  },
+  "_response_shape": {
+    "job_id": "scan_20260816_0001",
+    "results": {
+      "src/main/java/com/example/UserDao.java": {
+        "verdict": "vuln | safe | unknown",
+        "unknown_reason": "null | unsupported_lang | parse_fail | timeout | id_unmapped",
+        "categories": ["sqli"],
+        "findings": [{"file": "...", "category": "sqli", "cwe": "CWE-89", "source": "...", "sink": "...", "line": 42, "path": ["..."]}],
+        "wrap_level": 0,
+        "elapsed": 1.23
+      }
+    },
+    "findings": "results 를 평탄화한 배열 (file 은 입력 path 그대로)",
+    "elapsed": 12.3,
+    "rss_curve": [{"chunk": "w0_c0", "n": 25, "peak_rss_mb": 1800, "elapsed": 40.1, "timed_out": false, "rc": 0}]
+  }
+}
