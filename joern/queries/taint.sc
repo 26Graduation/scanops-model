@@ -111,9 +111,8 @@ def esc(s: String): String = {
   // 노드 → 소속 파일명. Joern 버전에 따라 접근 경로가 다르므로 여러 전략을 순서대로 시도한다.
   def fileOf(n: io.shiftleft.codepropertygraph.generated.nodes.AstNode): String = {
     def last(s: String) = s.split("/").last
+    // AstNode 에는 .method 가 없다(컴파일 실측). .file 트래버설만 쓴다.
     try { val v = n.file.name.l; if (v.nonEmpty) return last(v.head) } catch { case _: Throwable => () }
-    try { val v = n.method.filename; if (v.nonEmpty) return last(v) } catch { case _: Throwable => () }
-    try { val v = n.method.filename.l; if (v.nonEmpty) return last(v.head) } catch { case _: Throwable => () }
     ""
   }
 

@@ -85,14 +85,35 @@ def _wrap(code: str, joern_lang: str) -> str:
 
 
 def _peak_rss_mb(proc: subprocess.Popen, stop: threading.Event, out: dict) -> None:
-    """자식 프로세스 트리 RSS 폴링 (컨테이너 안: /proc 사용, macOS 폴백: ps)."""
+    """프로세스 **트리** RSS 폴링.
+
+    joern 실행 파일은 얇은 셸 래퍼이고 실제 메모리는 자식 JVM 이 쓴다. 래퍼 하나만 재면
+    항상 1~2 MB 가 나와 OOM 판단이 불가능하다 → 후손 전체를 합산한다.
+    """
     peak = 0
     while not stop.is_set():
         try:
-            r = subprocess.run(["ps", "-o", "rss=", "-p", str(proc.pid)],
-                               capture_output=True, text=True, timeout=5)
-            v = int(r.stdout.strip() or 0) // 1024
-            peak = max(peak, v)
+            r = subprocess.run(["ps", "-eo", "pid=,ppid=,rss="],
+                               capture_output=True, text=True, timeout=10)
+            kids: dict[int, list[int]] = {}
+            rss: dict[int, int] = {}
+            for line in r.stdout.splitlines():
+                parts = line.split()
+                if len(parts) < 3:
+                    continue
+                pid, ppid, kb = int(parts[0]), int(parts[1]), int(parts[2])
+                kids.setdefault(ppid, []).append(pid)
+                rss[pid] = kb
+            total, stack = 0, [proc.pid]
+            seen: set[int] = set()
+            while stack:
+                p = stack.pop()
+                if p in seen:
+                    continue
+                seen.add(p)
+                total += rss.get(p, 0)
+                stack.extend(kids.get(p, []))
+            peak = max(peak, total // 1024)
         except Exception:  # noqa: BLE001
             pass
         stop.wait(2.0)
@@ -109,9 +130,13 @@ def _run_chunk(in_dir: Path, joern_lang: str, out_file: Path, timeout: int) -> d
            "--param", f"inDir={in_dir}",
            "--param", f"lang={joern_lang}",
            "--param", f"outFile={out_file}"]
-    _log(f"RUN {' '.join(cmd)}")
+    # Joern 은 **CWD 아래에 `workspace/` 를 만든다**(실측). 레포 CWD 에서 돌리면
+    # 프로젝트가 누적되고 요청끼리 충돌한다 → 청크 디렉토리의 부모(=job 전용 디렉토리)를
+    # CWD 로 준다. job 종료 시 rm -rf 되므로 workspace 도 함께 사라진다.
+    cwd = str(in_dir.parent)
+    _log(f"RUN (cwd={cwd}) {' '.join(cmd)}")
     t0 = time.time()
-    proc = subprocess.Popen(cmd, env=env, stdout=subprocess.PIPE,
+    proc = subprocess.Popen(cmd, env=env, cwd=cwd, stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT, text=True)
     rss: dict = {"peak_rss_mb": 0}
     stop = threading.Event()
