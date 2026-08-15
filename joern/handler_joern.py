@@ -318,8 +318,7 @@ def handler(job: dict) -> dict:
 
 # ── 진입점 2: 온프레미스 HTTP (FastAPI) ─────────────────────────────────────
 
-def _build_app():
-    from fastapi import FastAPI, HTTPException
+try:  # 요청 모델은 **모듈 레벨**이어야 한다.
     from pydantic import BaseModel
 
     class FileIn(BaseModel):
@@ -330,6 +329,15 @@ def _build_app():
         job_id: str
         language: str
         files: list[FileIn]
+except ImportError:  # pydantic 없이 CLI/RunPod 로만 쓸 때
+    FileIn = JoernRequest = None  # type: ignore[assignment,misc]
+
+
+def _build_app():
+    # 이 파일은 `from __future__ import annotations` 를 쓴다 → 어노테이션이 전부 문자열이 되고
+    # FastAPI 는 그것을 **모듈 전역**에서 해석한다. 모델을 이 함수 안에 두면 이름을 찾지 못해
+    # 본문 파라미터가 쿼리 파라미터로 오인되고 422 가 난다 (실측 후 교정).
+    from fastapi import FastAPI, HTTPException
 
     api = FastAPI(title="ScanOps Joern Worker", version="joern-1")
     _store: dict[str, dict] = {}
