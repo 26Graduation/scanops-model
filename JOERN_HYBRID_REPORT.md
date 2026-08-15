@@ -517,7 +517,62 @@ tune 중간(Java 125건) 시점에 카테고리 발생 분포를 봤더니 아�
 `scanops/core/hybrid.py` 는 이 값을 `rebuild/out/joern_tune_selection.json` 에서 읽는다
 (코드에 상수를 박지 않았다).
 
-### 4-3. ② report 층화 240건 — precision 게이트
+### 4-3. ② report 층화 240건 — precision 게이트 **판정: JOERN-NO-BETTER**
+
+`rebuild/out/joern_gate_sample.json` (층화 240건 = 언어별 vuln 40 / safe 40, seed 42)
+
+| 지표 | 값 |
+|---|---|
+| n | 240 |
+| joern **vuln** | **94** (≥ 20 → 표본 부족 아님) |
+| joern safe | 143 |
+| joern unknown | **3 (1.25%)** — parse_fail 3, timeout 0 |
+| **precision** | **0.5532** |
+| **부트스트랩 95% CI (2,000회)** | **[0.4468, 0.6489]** — **0.5(우연)를 포함한다** |
+| wrap_level=1 로 살아난 건수 | 30 |
+| 같은 표본의 자체 graph | vuln 4건, precision 0.75 (3/4) |
+| **판정** | **JOERN-NO-BETTER** (precision 점추정 0.5532 < 0.60) |
+
+**언어별 — 셋 다 같은 판정**
+
+| 언어 | n | joern vuln | precision | 95% CI | unknown | parse_fail | 판정 |
+|---|---|---|---|---|---|---|---|
+| Java | 80 | 38 | 0.5526 | [0.3947, 0.7105] | 0.000 | 0.0% | JOERN-NO-BETTER |
+| JavaScript | 80 | 21 | 0.5714 | [0.3333, 0.7619] | 0.0125 | 1.25% | JOERN-NO-BETTER |
+| Python | 80 | 35 | 0.5429 | [0.3714, 0.7143] | 0.025 | 2.5% | JOERN-NO-BETTER |
+
+세 언어 모두 parse_fail 이 제외 기준(30%)에 한참 못 미치므로 **전부 판정 대상에 남았다**.
+세 CI 모두 0.5 를 포함한다 = **동전 던지기와 구별되지 않는다.**
+
+### 4-4. 정책별 성능표 — **자명 기준선을 아무도 못 넘는다**
+
+`rebuild/out/joern_policy_eval_sample.json`, δ=0.5 / τ=0.4375 (tune 사전등록값)
+
+| arm | recall | FPR | precision | F1 | AUC |
+|---|---|---|---|---|---|
+| **all-vuln (자명)** | 1.0 | 1.0 | 0.5 | **0.6667** | — |
+| all-safe (자명) | 0.0 | 0.0 | 0.0 | 0.0 | — |
+| b) LLM only | 0.5333 | 0.3750 | 0.5872 | 0.5590 | **0.6157** |
+| a) LLM + 자체graph | 0.5417 | 0.3750 | 0.5909 | 0.5652 | — |
+| TRUST-JOERN | 0.7583 | 0.6083 | 0.5549 | 0.6408 | — |
+| JOERN-AS-SIGNAL | 0.6000 | 0.3917 | 0.6050 | 0.6025 | 0.6238 |
+| JOERN-NO-BETTER (= arm a) | 0.5417 | 0.3750 | 0.5909 | 0.5652 | — |
+
+**반드시 함께 읽어야 할 것 세 가지:**
+
+1. **F1 로 순위를 매기면 안 된다.** 이 벤치는 vuln:safe = 1:1 이라 "전부 취약"이라고만 해도
+   F1 = 0.6667 이 나온다. **표의 어떤 arm 도 이 자명 기준선을 F1 에서 넘지 못한다.**
+   TRUST-JOERN 이 F1 0.6408 로 가장 높아 보이는 것은 FPR 을 0.6083 까지 올려 recall 을 산 결과다
+   — 자명 기준선에 가까워졌을 뿐이다. **판별력의 지표는 AUC 다.**
+2. **AUC 로 보면 LLM 은 우연보다 낫고(0.6157 > 0.5), Joern 을 더한 효과는 부호가 뒤집힌다.**
+   - tune 468건: δ=0 (0.6497) > δ=0.5 (0.6425) → Joern 을 더하면 **나빠짐**
+   - sample 240건: LLM only (0.6157) < SIGNAL (0.6238) → Joern 을 더하면 **좋아짐**
+   두 split 에서 **방향이 반대**다. 크기도 ±0.008 수준으로, **잡음과 구별되지 않는다.**
+   전건 1,878건 결과로 CI 를 좁혀야 한다(§4-5).
+3. **자체 graph 는 같은 표본에서 4건만 판정했다** (precision 0.75 = 3/4). 표본이 작아
+   ABLATION 의 0.60 과 비교할 수 없다. 여전히 "거의 답하지 않는" 프로파일 그대로다.
+
+### 4-5. ③ 전건 1,878건 — 확장 실행
 
 측정 진행 중 — 아래에 기록한다.
 
@@ -527,7 +582,49 @@ tune 중간(Java 125건) 시점에 카테고리 발생 분포를 봤더니 아�
 
 ## §6 온프레미스 (Phase 4)
 
-작성 중.
+파일: `scanops-infra/docker-compose.onprem.yml` (브랜치 `feat/joern-hybrid`, 커밋 `515972c`)
+
+### 6-1. 구성
+
+| 서비스 | 프로파일 | 역할 |
+|---|---|---|
+| `backend` | 기본 | Spring Boot :8080 |
+| `model-api` | 기본 | `api_rebuild`. **`RUNPOD_ENDPOINT_ID=""`** → 로컬 llama-server 로 폴백 |
+| `joern-worker` | 기본 | `uvicorn joern.handler_joern:app :8200`, `-Xmx4g`, `mem_limit 8g`, `/tmp` tmpfs 4g |
+| `postgres` | 기본 | :5432 |
+| `llama-server` | `llm` | `ghcr.io/ggml-org/llama.cpp:server` + GGUF 볼륨 |
+| `llama-server-cuda` | `gpu` | CUDA 빌드, `-ngl 99` |
+| `zap` / `qdrant` | `zap` / `qdrant` | DAST / RAG 참고 CVE |
+
+### 6-2. 외부 호출 0 을 보장하는 지점
+
+- `RUNPOD_ENDPOINT_ID=""`, `RUNPOD_API_KEY=""` → `llm_client.use_runpod()` 가 False
+  (`llm_client.py`:30-31 실측) → 모든 추론이 `LLAMA_SERVER_URL=http://llama-server:8080` 로 간다.
+- `OPENAI_API_KEY` / `CLAUDE_API_KEY` / `GEMINI_API_KEY` 를 **빈 문자열로 고정**.
+  백엔드 AiRouter 가 CUSTOM(자체 모델) 경로만 쓰게 된다.
+- `GITHUB_APP_ID` / `GITHUB_APP_PRIVATE_KEY` / `GITHUB_WEBHOOK_SECRET` / `GITHUB_TOKEN` 도 빈 값.
+- **주의**: `GITHUB_OAUTH_CLIENT_ID` 는 비우면 백엔드가 부팅에 실패한다
+  ("Client id must not be empty" — `docker-compose.rebuild.yml`:38-39 주석에 기록된 기존 사실).
+  더미 값을 넣어 기동만 시킨다. 사내 IdP 연동은 §12-D3 결정사항.
+- DAST 메타 생성이 외부 LLM 으로 새는 경로는 **확인 불가** — 백엔드 AiRouter 코드를 이번에 읽지 않았다(§9).
+
+### 6-3. 실측 검증
+
+```
+$ docker compose -f docker-compose.onprem.yml config           → OK (문법·변수 치환 통과)
+$ docker compose -f docker-compose.onprem.yml -p scanops-onprem-test up -d postgres
+  Container scanops-onprem-test-postgres-1  Started
+$ docker compose ... ps  → postgres running postgres:15
+  postgres-1 | LOG:  database system is ready to accept connections
+$ docker compose ... down -v                                   → 정리 완료
+```
+
+**전체 스택 기동은 하지 않았다.** 사유:
+- `llama-server` — rebuild 9B GGUF 가 로컬에 없다(§3-3). 프로파일 `llm` 미기동.
+- `backend` / `model-api` / `joern-worker` — 이미지 빌드가 필요하고, `joern-worker` 의 베이스인
+  `ghcr.io/joernio/joern:master`(amd64)를 이 arm64 호스트에서 받지 못했다(§9-1, §2-9).
+- 따라서 **최소 사양표(RAM/VRAM/디스크)와 cold start 실측은 미완**이다(§9).
+  현재까지 나온 유일한 실측 근거는 Joern 배치의 **peak RSS 720–870 MB**(청크 25건, `-Xmx4g`)이다.
 
 ## §7 병목과 해결책
 
