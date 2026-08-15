@@ -690,9 +690,41 @@ $ docker compose ... down -v                                   → 정리 완료
 
 **§9-1 Docker credential helper 무응답 (폴백 발동)**
 `docker-credential-desktop` 이 응답하지 않아 인증이 필요한 모든 docker 작업이 무한 대기.
-6분간(03:11–03:17) `docker pull` 이 0바이트 진행. 빈 `DOCKER_CONFIG` 로 익명 pull 우회.
-**영향**: Docker Hub **push 불가** → RunPod endpoint 생성 생략 (사양서 2절 폴백 규칙대로
-`joern/runpod_endpoint_payload.json` 만 작성). Phase 2 벤치는 로컬 docker 로 진행.
+6분간(03:11–03:17) `docker pull` 이 0바이트 진행. 빈 `DOCKER_CONFIG` 로 익명 pull 우회
+(`cli-plugins` 심볼릭 링크를 같이 넣어야 `docker compose` 가 동작한다 — 실측).
+**영향**: Docker Hub **push 불가** → RunPod Joern endpoint 생성 **생략**. 폴백 규칙대로
+`joern/runpod_endpoint_payload.json` 만 작성했다.
+
+**§9-2 `ghcr.io/joernio/joern` 이미지를 받지 못함 (폴백 발동)**
+- `:latest` 태그는 **존재하지 않는다**(`docker manifest inspect` → `not found`). 올바른 태그는 `:master`.
+- `:master` 는 amd64. arm64 Mac 에서 에뮬레이션하면 JVM 이 느려 1,878건 벤치가 상한 안에 못 끝난다.
+- **대응**: 네이티브 `joern-cli-macos-arm64.zip` v4.0.604(1,760 MB, JVM 번들)로 전환(§2-9).
+- **미검증으로 남은 것**: `joern/Dockerfile` 이 실제로 빌드되는지, 컨테이너 안에서 핸들러가 도는지.
+  온프레미스 `joern-worker` 서비스도 같은 이유로 기동하지 못했다(§6-3).
+
+**§9-3 Phase 1-B 를 프로덕션 모델로 검증하지 못함 (폴백 발동)**
+rebuild 9B GGUF 가 RunPod 볼륨에만 있고 로컬에 없다. 다른 모델로 **배관만** 검증했고,
+토큰 ID 불일치는 (a)(b)(c) 처리했다(§3-3). "test 20건 점수 대조"는 **의도적으로 실행하지 않았다**
+— 다른 모델끼리 점수를 비교하면 무의미한 숫자가 나오므로(R4). §12-D2.
+
+**§9-4 백엔드 콜백 수신부 미구현 (범위 조정)**
+사양서는 "워커 완료 시 백엔드 콜백 URL 로 POST"를 요구했으나 **백엔드에 수신 엔드포인트가 없다**(§1-d).
+스키마·인증·Flyway 마이그레이션이 얽혀 이 세션 범위를 넘으므로 **폴링 계약**으로 구현했다(§2-7). §12-D3.
+
+**§9-5 온프레미스 전체 기동·최소 사양표·cold start 실측 미완**
+`docker compose config` 통과 + `postgres` 실기동·정리까지 확인했다(§6-3). 나머지는 §9-2·§9-3 때문에 불가.
+**최소 사양표(RAM/VRAM/디스크)와 cold start 수치는 이번에 측정하지 못했다** — 추정치를 적지 않았다.
+
+**§9-6 DAST 메타의 외부 LLM 경로 확인 불가**
+온프레미스에서 "DAST 메타 생성이 외부 LLM 으로 가는 경로"를 차단하라는 요구가 있었으나,
+백엔드 `AiRouter` 코드를 이번에 읽지 않았다. compose 에서 키를 빈 값으로 고정하는 것까지만 했고,
+**코드 경로 차단 여부는 확인 불가**로 남긴다.
+
+**§9-7 세션 도구 오류 (자기 기록)**
+에이전트가 만든 대기 루프 두 개가 잘못돼 약 10분을 낭비했다.
+(a) `until ! pgrep -f "curl …"` 의 패턴이 **자기 자신의 셸 명령줄에 매칭**돼 영원히 끝나지 않았고,
+(b) 별개의 busy-loop 하나가 CPU 를 97% 점유했다. 발견 즉시 종료하고 압축 해제를 직접 재실행했다.
+측정 결과에는 영향이 없다(벤치 시작 전).
 
 ## §10 재현 명령어
 
