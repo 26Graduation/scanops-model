@@ -42,6 +42,27 @@
 | joern / llama-server / uvicorn 프로세스 | **없음** |
 | 사용자 기존 컨테이너 5개 | **건드리지 않음** (§8 D-3) |
 
+**커밋 (총 24개, `feat/joern-hybrid`)** — `main` 은 양쪽 레포 모두 **무변경**
+(scanops-model `main` = `aadce1a`, scanops-infra `main` = `118d95b`).
+
+| # | 해시 | 내용 |
+|---|---|---|
+| 1 | `8dc4593` | Phase 0 토폴로지 실측 + 워커/logprob 골격 |
+| 2 | `823e779` | Phase 1-B logprob 실측 + Phase 3 하이브리드 + 온프렘 compose |
+| 5 | `a135f2d` | 워크스페이스 CWD 격리 + RSS 프로세스트리 합산 (스모크 통과) |
+| 7 | `624d741` | 규칙 v2 (탐색적) |
+| 8 | `c974262` | tune 468건 + δ=0.5 / τ=0.4375 사전 등록 확정 |
+| 10 | `4d62a2b` | 층화 240건 게이트 → JOERN-NO-BETTER |
+| 11 | `393e99e` | 정책 확정 코드 반영 |
+| 17 | `078e02c` | **버그 수정** — 언어 부분일치가 한 글자 키에 오매칭 |
+| 19 | `143d04b` | **버그 수정** — FastAPI 422 (모델을 모듈 레벨로) |
+| 22 | `85ad0fc` | **전건 1,878건 게이트 → JOERN-NO-BETTER 확정** |
+| 24 | `c4e87a5` | 규칙 v2 결과 + Phase 6 마무리 |
+
+scanops-infra: `515972c` (브랜치 `feat/joern-hybrid`).
+> 인프라 레포는 03:37에 실수로 `main` 에 커밋했다가 `git branch` + `git reset --hard HEAD~1` 로
+> 즉시 교정했다(§8, §9-7). 현재 `main` 은 원래 상태다.
+
 **건너뛴 항목과 사유**
 - Docker Hub push · RunPod Joern endpoint 등록 → credential helper 무응답으로 **불가**(§9-1).
   `joern/runpod_endpoint_payload.json` 만 산출.
