@@ -47,8 +47,11 @@ META_ENABLED = os.getenv("SCANOPS_META", "on").lower() != "off"
 RAG_REFS_ENABLED = bool(os.getenv("QDRANT_URL", ""))
 
 # ── 하이브리드 (Phase 3) ────────────────────────────────────────────────────
-# 정책은 Phase 2 의 사전 등록 게이트 판정을 그대로 주입한다. 기본값은 가장 보수적인
-# JOERN-NO-BETTER (= Joern 을 판정에 넣지 않음).
+# 정책은 Phase 2 의 사전 등록 게이트 판정을 그대로 주입한다.
+# **실측 판정 = JOERN-NO-BETTER** (CleanVul_v2 층화 240건, Java/JS/Python 세 언어 전부.
+# precision 0.5532, 95% CI [0.4468, 0.6489] — 0.5 를 포함 = 우연과 구별 불가.
+# JOERN_HYBRID_REPORT.md §4-3) → 기본값을 그대로 둔다. Joern 은 판정에 관여하지 않고
+# evidence 수집용으로만 붙는다.
 HYBRID_POLICY = os.getenv("SCANOPS_HYBRID_POLICY", "JOERN-NO-BETTER")
 JOERN_URL = os.getenv("SCANOPS_JOERN_URL", "")
 # 연속 점수는 SIGNAL 정책에서만 필요하다. 매 요청 추가 호출이 붙으므로 기본 off.

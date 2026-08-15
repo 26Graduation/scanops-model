@@ -576,9 +576,47 @@ tune 중간(Java 125건) 시점에 카테고리 발생 분포를 봤더니 아�
 
 측정 진행 중 — 아래에 기록한다.
 
-## §5 하이브리드 정책 (Phase 3)
+## §5 하이브리드 정책 확정 (Phase 3)
 
-작성 중.
+### 5-1. 확정된 정책 = `JOERN-NO-BETTER`
+
+**근거는 §4-3 하나뿐이다.** 사전 등록 판정표에 층화 240건 실측을 대입한 결과
+precision 점추정 0.5532 < 0.60 이므로 `JOERN-NO-BETTER` 다. 언어별로도 셋 다 같으므로
+언어별 policy 딕셔너리가 아니라 **단일 정책**을 쓴다.
+
+코드 반영:
+- `scripts/api_rebuild.py` — `SCANOPS_HYBRID_POLICY` 기본값 `"JOERN-NO-BETTER"`, 판정 근거를 주석에 명시
+- `scanops/core/hybrid.py` — `aggregate()` 의 `JOERN-NO-BETTER` 경로:
+  LLM detected → LLM 결과 / 아니면 자체 graph vuln 폴백 / 아니면 safe. **Joern 은 판정에 관여하지 않는다.**
+- 다만 **Joern 결과는 계속 수집한다** — `evidence`(taint path)는 사용자에게 보여줄 근거로 가치가 있고,
+  판정에 넣지 않으므로 오탐을 만들지 않는다.
+
+### 5-2. 불변 규칙이 코드에서 지켜지는지 — 단위 검증 (실측)
+
+`aggregate()` 를 정책 7종 조합으로 호출한 결과:
+
+| 케이스 | 결과 | 확인한 불변 규칙 |
+|---|---|---|
+| TRUST-JOERN, llm=safe + joern=vuln | detected=True, source=`joern` | Joern vuln 이 최종 판정 |
+| TRUST-JOERN, llm=vuln + **joern=safe** | detected=True, source=`llm` | **safe 는 어떤 판정도 덮지 않는다** |
+| TRUST-JOERN, 전부 음성 + graph=vuln | detected=True, source=`graph` | 자체 graph vuln 폴백 유지 |
+| SIGNAL, score=−2.0 + joern vuln (δ=0.5) | detected=False | 점수 가산만, 단독 확정 없음 |
+| SIGNAL, **score=None** | source=`llm`, `policy_fallback=True` | Phase 1-B 실패 시 자동 강등 |
+| NO-BETTER, joern=vuln | detected=False | Joern 무시 |
+| joern=None (미도착) | status=`PARTIAL` | 비동기 병합 |
+| 정의되지 않은 policy | `ValueError` | 사전 등록 외 값 거부 |
+
+### 5-3. 응답 필드 확장
+
+`AnalyzeResponse` 에 `score`(float\|None) · `source`(llm\|joern\|llm+joern\|graph) ·
+`evidence`(list\|None) · `status`(PARTIAL\|DONE) 를 **추가만** 했다(기존 필드 불변).
+
+**백엔드·프론트는 손대지 않았다.** 사유:
+- `ScanopsModelClient.AnalyzeResult` 는 Java `record` 라 필드 추가는 컴파일 변경을 요구한다.
+- 반면 JSON 역직렬화는 **모르는 필드를 무시**하므로 지금 상태로도 백엔드가 깨지지 않는다
+  (분석서버가 필드를 더 보내도 기존 record 로 파싱된다).
+- 즉 **분석서버만 완성하고 백엔드 변경은 §12-D3 결정사항으로 넘기는 것이 안전하다.**
+  사양서도 "백엔드/프론트 반영은 선택 사항이며 분석서버 완성이 우선"이라고 지정했다.
 
 ## §6 온프레미스 (Phase 4)
 
