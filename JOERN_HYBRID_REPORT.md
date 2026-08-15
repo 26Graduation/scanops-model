@@ -60,6 +60,10 @@
 | 24 | `c4e87a5` | 규칙 v2 결과 + Phase 6 마무리 |
 
 scanops-infra: `515972c` (브랜치 `feat/joern-hybrid`).
+
+**원격 푸시 완료** (04:22):
+- `origin/feat/joern-hybrid` — <https://github.com/26Graduation/scanops-model>
+- `origin/feat/joern-hybrid` — <https://github.com/26Graduation/scanops-infra>
 > 인프라 레포는 03:37에 실수로 `main` 에 커밋했다가 `git branch` + `git reset --hard HEAD~1` 로
 > 즉시 교정했다(§8, §9-7). 현재 `main` 은 원래 상태다.
 
