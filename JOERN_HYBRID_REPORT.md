@@ -368,6 +368,22 @@ Joern 도착 시 `status=DONE` 으로 갱신한다(`scanops/core/hybrid.py`).
 백엔드에 콜백 수신부를 새로 만들지는 **않았다** — 스키마·인증·Flyway 마이그레이션이 얽히고
 이 세션 범위를 넘는다. §12 결정사항.
 
+**실측 (uvicorn 기동 → 왕복 확인)**
+```
+POST /joern/submit           → {"job_id":"http2","status":"RUNNING"}   (즉시 반환)
+GET  /joern/result/http2  @2s → {"status":"RUNNING"}
+GET  /joern/result/http2  @완료 → status DONE
+     svc/UserDao.java -> vuln ['sqli'] wrap_level 0
+     taint path: ['String id', '"SELECT * FROM t WHERE id=" + id',
+                  'executeQuery("SELECT * FROM t WHERE id=" + id)']
+POST /joern/submit (같은 job_id) → HTTP 409
+```
+
+> **실측으로 잡은 버그 (커밋 `143d04b`)**: 요청 모델을 `_build_app()` 안에 정의했더니
+> 모든 POST 가 **422** 였다. 이 파일은 `from __future__ import annotations` 를 쓰므로
+> 어노테이션이 문자열이 되고 FastAPI 는 그것을 **모듈 전역**에서 해석하는데, 로컬 클래스는
+> 거기 없어 본문 파라미터가 쿼리 파라미터로 오인된 것이다. 모델을 모듈 레벨로 올려 해결했다.
+
 ### 2-8. 쿼리 (`queries/taint.sc`)
 
 자체 graph 11종(`multi_graph._CWE`)과 **1:1 이름 매칭**으로 만들어 arm 비교가 되게 했다:
