@@ -10,23 +10,28 @@
 
 ## §0 STATUS
 
-**최종 갱신: 2026-08-16 03:32 KST**
+**최종 갱신: 2026-08-16 03:38 KST**
 
-| 항목 | 상태 |
-|---|---|
-| Phase 0 토폴로지 실측 | ✅ 완료 (§1) |
-| Phase 1-A Joern 워커 | 🔄 코드 작성 완료, 로컬 검증 대기 (Joern 이미지 pull 중) |
-| Phase 1-B logprob 서빙 | 🔄 코드 작성 완료, 검증 대기 |
-| Phase 2 precision 게이트 | ⏳ 미착수 |
-| Phase 3 하이브리드 | ⏳ 미착수 |
-| Phase 4 온프레미스 compose | ⏳ 미착수 |
-| Phase 6 마무리 | ⏳ 미착수 |
+| 항목 | 상태 | 커밋 |
+|---|---|---|
+| Phase 0 토폴로지 실측 | ✅ 완료 (§1) | `8dc4593` |
+| Phase 1-A Joern 워커 | ✅ 코드·Dockerfile·쿼리·벤치 드라이버 작성 완료 / 🔄 로컬 실행 검증 대기 | `823e779` |
+| Phase 1-B logprob 서빙 | ✅ 구현 + **배관 실측 성공** / ⚠️ 토큰 ID 불일치 → score=None 가드 발동 (§3) | `823e779` |
+| Phase 2 precision 게이트 | 🔄 데이터 경로 검증 완료(tune 468 / report 1,878 / 층화 240), Joern 실행 대기 | — |
+| Phase 3 하이브리드 | ✅ `scanops/core/hybrid.py` + api_rebuild 배선 / ⏳ 정책값은 Phase 2 결과 대기 | `823e779` |
+| Phase 4 온프레미스 compose | ✅ 작성 + `docker compose config` 통과 / ⏳ 기동 검증 대기 | `515972c`(infra) |
+| Phase 5 문서 | 🔄 §1·§2·§3·§7·§10·§11 작성 완료 | — |
+| Phase 6 마무리 | ⏳ 미착수 | — |
 
 **RunPod 잔액**: $28.3982 (03:20 KST 실측). 이 세션 지출 상한 = min(28.40−5, 10) = **$10.00**.
-현재까지 이 세션이 유발한 RunPod 지출: **$0** (GPU 호출 없음).
+현재까지 이 세션이 유발한 RunPod 지출: **$0** (GPU 호출 0건, pods 0).
 
-**진행 중 이슈**: Docker credential helper(`desktop`)가 무한 대기 → `docker pull` 불가.
-빈 `DOCKER_CONFIG` 로 익명 pull 우회 확인(§9-1).
+**건너뛴 항목과 사유**
+- Docker Hub push · RunPod Joern endpoint 등록 → credential helper 무응답으로 **불가**(§9-1).
+  `joern/runpod_endpoint_payload.json` 만 산출.
+- Phase 1-B 의 "test 20건 점수 대조" → 프로덕션 GGUF 가 로컬에 없어 **의미 없는 비교**가 되므로 미실행(§3-4).
+
+**진행 중**: Joern arm64 네이티브 배포본(1,760 MB) 내려받는 중 → Phase 2 벤치 착수 예정.
 
 ---
 
@@ -244,16 +249,119 @@ tune split = **676건** (vuln 338 / safe 338). 지원 언어(Java/Python/JS) 부
 
 | 항목 | 값 | 출처 |
 |---|---|---|
-| 라이선스 | Apache License 2.0 | 확인 예정 — §9 참조 |
-| 지원 언어 | 확인 예정 | |
-| JVM 메모리 | 확인 예정 | |
-| workspace API | 확인 예정 | |
+| 라이선스 | **Apache License 2.0** | <https://github.com/joernio/joern> (README/LICENSE) |
+| 지원 언어 | C/C++, Java, Binary, JavaScript, Python, Kotlin (그 외 프론트엔드는 별도) | 같은 문서 |
+| JVM 요구 | **JDK 21** (다른 버전은 "might work, 미검증"). 힙 크기 요구치는 **문서에 명시 없음 — 확인 불가** | 같은 문서 |
+| 배포본 | v4.0.604. 플랫폼별 zip 에 **JVM 번들** — `joern-cli-macos-arm64.zip` 1,760 MB / `linux-x86_64` 1,821 MB | `api.github.com/repos/joernio/joern/releases/latest` 실측 |
+| 컨테이너 | `ghcr.io/joernio/joern:master` (**`:latest` 태그는 없다** — 실측: `not found`) | `docker manifest inspect` |
+| workspace API | `close(project)` / `delete(project)` / `workspace.reset` — 쿼리 스크립트에서 청크 종료 시 호출 | `joern/queries/taint.sc` |
+
+> 힙 요구치가 문서에 없어 `-Xmx4g` 는 **문서 근거가 아니라 이 호스트(RAM 16 GB)에 맞춘 우리 선택**이다.
+> 실측 RSS 곡선은 §4에 기록한다.
 
 ---
 
 ## §2 Joern 워커 설계 (Phase 1-A)
 
-작성 중.
+산출물: `joern/{Dockerfile, handler_joern.py, langmap.py, queries/taint.sc, joern_docker.sh,
+bench_joern.py, analyze_joern.py, README.md, runpod_endpoint_payload.json}`
+
+### 2-1. 하나의 엔진, 세 진입점
+
+서버리스와 온프레미스를 **같은 함수(`analyze_batch`)** 위에 올렸다. 두 벌을 만들면
+설정이 갈라지고 온프레미스가 뒤처지기 때문이다.
+
+| 진입점 | 기동 | 쓰이는 곳 |
+|---|---|---|
+| `handler(job)` | `RUNPOD_MODE=1 python3 -m joern.handler_joern` | SaaS (RunPod serverless) |
+| `app` (FastAPI) | `uvicorn joern.handler_joern:app --port 8200` | 온프레미스 (`docker-compose.onprem.yml`) |
+| `--batch` CLI | `python3 -m joern.handler_joern --batch m.json --out r.json` | Phase 2 벤치 |
+
+### 2-2. 확장자 매핑 — 백엔드 실측 문자열 기준
+
+Joern 은 **파일 확장자로 프론트엔드를 고른다.** 임시 디렉토리에 쓸 때 확장자가 없으면 강제로 붙인다
+(`langmap.ensure_ext`). 매핑 키는 §1-c 에서 실측한 백엔드 문자열과 `api_rebuild._EXT_LANG` 의
+**합집합**이다 — 두 소스가 서로 다른 문자열을 쓰기 때문이다.
+
+| language 문자열 | 확장자 | Joern frontend |
+|---|---|---|
+| `Java`, `Java Spring Boot` | `.java` | JAVASRC |
+| `Python` | `.py` | PYTHONSRC |
+| `JavaScript`, `Node.js / Express` | `.js` | JSSRC |
+| `TypeScript` | `.ts` | JSSRC |
+| `React / Next.js` | `.jsx` | JSSRC |
+| `C` / `C++` | `.c` / `.cpp` | NEWC |
+| `PHP`/`Go`/`Ruby`/`C#`/`Kotlin` | 각각 | 프론트엔드는 존재하나 **이번 라운드 미검증** |
+
+매핑에 없는 language 는 **파싱을 시도하지 않고** 즉시 `unknown_reason="unsupported_lang"` 을 돌려준다.
+`Rust`, `GitHub Actions YAML` 이 여기 해당한다 — 백엔드가 실제로 보내는 값인데 Joern 대상이 아니다.
+
+### 2-3. 스니펫 래핑 재시도
+
+CleanVul 은 함수 조각이라 클래스·import 껍데기가 없다. 2패스로 처리한다.
+
+1. `wrap_level=0` — 원문 그대로.
+2. 1패스에서 메서드가 하나도 안 잡힌 케이스만 `wrap_level=1` 로 재시도.
+   - Java: 이미 `class|interface|enum|record` 가 있으면 그대로, 없으면 `public class ScanopsSnippet { … }`
+   - JavaScript/TypeScript: `function __scanops_wrap__() { … }`
+   - **Python 은 감싸지 않는다.** 들여쓰기 언어라 껍데기를 씌우면 오히려 깨진다 → 좌측 정렬(공통 들여쓰기 제거)만 한다.
+3. 둘 다 실패 → `parse_fail`.
+
+어느 시도로 성공했는지 `wrap_level` 필드로 남긴다.
+
+### 2-4. OOM·누수 대책 (배치)
+
+- **케이스마다 JVM 을 띄우지 않는다.** 청크(기본 25건)를 디렉토리 하나에 모아 CPG 1개로 임포트한다.
+- 청크가 끝나면 `taint.sc` 안에서 `close(proj)` + `delete(proj)` 로 workspace 에서 제거한다.
+- 청크마다 자식 프로세스 peak RSS 를 2초 간격 폴링으로 기록해 `rss_curve` 로 반환한다.
+  단조 증가하면 누수로 보고 청크 크기를 줄인다(폴백: N → N/2 → N/2, 그래도 안 되면 케이스당 재기동).
+- 청크 타임아웃 = `JOERN_CASE_TIMEOUT(90s) × 청크 크기`. 초과 시 그 청크만 `timeout` 처리하고 다음으로.
+- JVM 힙 `-Xmx4g` (`JAVA_OPTS`/`_JAVA_OPTIONS`). 호스트 RAM 16 GB, 사용자 컨테이너 5개 가동 중이라
+  보수적으로 잡았다(§1-j).
+
+### 2-5. case_id ↔ 파일명 매핑
+
+`ablation_raw` 의 `case_id` 는 `cvh_0|vuln` 형식이라 **`|` 때문에 파일명으로 그대로 못 쓴다**(§1-i).
+
+- `[^A-Za-z0-9_.-]` → `_` 치환, 충돌 시 `~1`, `~2` 접미사.
+- 역변환 표를 `id_map`(파일명 → case_id)으로 결과에 함께 반환.
+- Joern 결과에 없는 case_id 는 `unknown(reason=parse_fail|timeout|id_unmapped)` 으로 채워
+  **결과 건수를 항상 입력 건수와 같게** 만든다.
+
+### 2-6. 격리
+
+요청마다 `/tmp/scanops_{job_id}/` 를 **새로** 만든다. 이미 있으면 `ValueError` 로 거부(중복 job_id).
+처리 종료(성공·실패·타임아웃 전부) 시 `finally` 에서 `rm -rf` 하고 `CLEANUP … exists_after=False`
+로그를 남긴다. 청크 디렉토리는 그 아래에만 만들어지므로 워커 하나에 요청 여러 개가 들어와도
+서로의 디렉토리를 볼 수 없다.
+
+### 2-7. 비동기 — 콜백이 아니라 폴링
+
+§1-d 실측대로 **백엔드에 콜백 수신 엔드포인트가 없다.** 그래서 사양서의 "콜백 URL POST" 대신
+`POST /joern/submit`(즉시 `RUNNING` 반환) → `GET /joern/result/{job_id}` 폴링으로 구현했다.
+LLM 과 Joern 은 서로 기다리지 않는다: LLM 결과를 먼저 `status=PARTIAL` 로 반영하고,
+Joern 도착 시 `status=DONE` 으로 갱신한다(`scanops/core/hybrid.py`).
+백엔드에 콜백 수신부를 새로 만들지는 **않았다** — 스키마·인증·Flyway 마이그레이션이 얽히고
+이 세션 범위를 넘는다. §12 결정사항.
+
+### 2-8. 쿼리 (`queries/taint.sc`)
+
+자체 graph 11종(`multi_graph._CWE`)과 **1:1 이름 매칭**으로 만들어 arm 비교가 되게 했다:
+`sqli / cmdi / xss / pathtraver / ssrf / deser / codei`(taint 흐름, `sink.reachableByFlows(source)`) +
+`crypto / hash / weakrand / secret`(존재 규칙 — 흐름이 아니라 리터럴·호출 패턴).
+source 는 **모든 메서드 파라미터**로 잡았다. CleanVul 스니펫은 함수 조각이라 입력이 파라미터로
+들어오기 때문이다.
+
+### 2-9. 실행 방식 — arm64 네이티브로 전환 (중요 변경)
+
+당초 계획은 `ghcr.io/joernio/joern` 컨테이너였으나 **로컬 벤치는 네이티브 arm64 배포본으로 돌린다.**
+
+- 이유 1: 공식 이미지는 amd64. arm64 Mac 에서 돌리면 에뮬레이션이 붙어 JVM 이 매우 느려진다 —
+  240~1,878건 벤치가 시간 상한 안에 끝나지 않는다.
+- 이유 2: `joern-cli-macos-arm64.zip`(v4.0.604, 1,760 MB)은 JVM 을 번들해 호스트 JDK(17)와 무관하다.
+  Joern 은 JDK 21 을 요구하는데 호스트에는 17만 있다(실측).
+- **Dockerfile 은 그대로 산출물로 유지한다** — 배포(서버리스·온프레미스)는 컨테이너 경로이고,
+  이번 세션에서 검증하지 못한 부분은 §9 에 적었다.
 
 ## §3 logprob 서빙 검증 (Phase 1-B)
 
@@ -325,7 +433,14 @@ R4(체리피킹 금지) 위반이다. **프로덕션 모델로의 대조는 §12
 
 ## §7 병목과 해결책
 
-작성 중.
+| 병목 | 실측/추정 | 이 세션의 대응 | 남은 위험 |
+|---|---|---|---|
+| **JVM cold start** | 추정 — Joern 은 요청마다 JVM+CPG 생성이 필요. 실측치는 §2-9 이후 측정분 참조 | 배치는 청크당 1 JVM(25건). SaaS 는 `/joern/submit` 즉시 202 + 폴링이라 사용자 대기에 얹히지 않음 | 서버리스는 워커 기동까지 더해진다. `workersMin=0` 이면 첫 요청이 느리다 |
+| **CPG 메모리·누수** | JVM `-Xmx4g`, 청크마다 peak RSS 기록 | 청크 종료 시 `close`+`delete`, RSS 단조 증가 시 청크 축소 폴백 | 대형 단일 파일(수천 줄)은 청크 크기와 무관하게 힙을 넘길 수 있다 |
+| **대형 레포 분할** | 백엔드가 레포 파일을 **50개로 상한**(`GithubScanService.java`:130) | 현재 상한 안에서는 청크 2개면 끝난다 | 상한을 올리면 언어별 분할·병렬 워커가 필요 |
+| **비동기 병합 정합성** | 백엔드에 콜백 수신부 **없음**(§1-d) | `status=PARTIAL→DONE` 2단계. `safe` 는 어떤 판정도 덮지 않으므로 늦게 온 Joern 이 이미 보고된 취약점을 **취소하지 못한다** = 사용자가 본 결과가 뒤집히지 않는다 | Joern 이 영영 안 오면 PARTIAL 로 남는다. TTL·재시도 정책 필요(§12) |
+| **비용** | 이 세션 RunPod 지출 **$0**. Joern 은 CPU 인스턴스 대상 | Phase 2 벤치를 전부 로컬에서 돌려 GPU 비용 0 | endpoint 등록 후에는 CPU 워커 시간만큼 과금 |
+| **arm64 vs amd64** | 공식 Joern 이미지는 amd64, 개발 호스트는 arm64 Mac | 로컬 벤치는 네이티브 arm64 배포본(§2-9) | **Dockerfile 빌드는 이번에 검증하지 못했다**(§9) |
 
 ## §8 결정 로그
 
@@ -334,6 +449,9 @@ R4(체리피킹 금지) 위반이다. **프로덕션 모델로의 대조는 §12
 | 03:12 | 브랜치를 `ablation/graph-only`(HEAD `aadce1a`)에서 분기 | `main` 에서 분기 | 벤치 입력인 `rebuild/data/cleanvul_v2_*.jsonl`, `rebuild/out/ablation_raw_*` 이 이 브랜치의 **미추적 파일**로만 존재 — main 에서 분기하면 Phase 2 입력이 없다 | `git checkout main` |
 | 03:21 | Docker credential helper 우회를 위해 빈 `DOCKER_CONFIG` 사용 | `~/.docker/config.json` 수정 | 사용자 전역 설정을 건드리지 않는다 | 환경변수만 안 쓰면 원상복구 |
 | 03:22 | 사용자가 실행 중인 컨테이너 5개는 건드리지 않는다 | 전부 정지 | 이 세션이 띄운 것이 아니고, 정지는 되돌리기 어려운 부작용 | 해당 없음 |
+| 03:33 | Phase 1-B 검증을 **다른 모델**(ollama qwen2.5-coder-security-v19-7b blob)로 수행 | 미검증으로 남기기 | 배관(n_probs·score·토큰가드) 동작 여부는 모델과 무관하게 확인 가능. 점수 **값** 비교는 하지 않았다 | 해당 없음 (검증 전용, 코드 영향 없음) |
+| 03:34 | Joern 을 컨테이너가 아니라 **arm64 네이티브 배포본**으로 로컬 실행 | amd64 이미지를 에뮬레이션 | 에뮬레이션 JVM 은 1,878건 벤치를 시간 상한 안에 못 끝낸다. Dockerfile 은 배포 산출물로 유지 | `JOERN_BIN=joern/joern_docker.sh` 로 되돌림 |
+| 03:37 | 인프라 레포 커밋을 main → `feat/joern-hybrid` 로 이동 | 그대로 두기 | R1 위반(main 직접 수정)을 즉시 교정. `git branch` + `git reset --hard HEAD~1` | `git checkout main` 은 원래 커밋 `118d95b` 상태 |
 
 ## §9 실패·미완·폴백 발동
 
@@ -345,12 +463,137 @@ R4(체리피킹 금지) 위반이다. **프로덕션 모델로의 대조는 §12
 
 ## §10 재현 명령어
 
-작성 중.
+```bash
+cd scanops-model
+git checkout feat/joern-hybrid
+
+# ── 0. Joern 준비 (arm64 Mac 네이티브. JVM 번들 포함, 호스트 JDK 불필요) ──
+mkdir -p .joern_dist && cd .joern_dist
+curl -L -o joern-cli.zip \
+  https://github.com/joernio/joern/releases/download/v4.0.604/joern-cli-macos-arm64.zip
+unzip -q joern-cli.zip && cd ..
+export JOERN_BIN=$PWD/.joern_dist/joern-cli/joern
+
+# 컨테이너로 돌릴 때 (amd64 호스트 권장)
+export JOERN_BIN=$PWD/joern/joern_docker.sh
+export JOERN_WORK_ROOT=/tmp JOERN_REPO_ROOT=$PWD
+
+# ── 1. Joern 워커 단독 확인 ──
+python3 - <<'EOF'
+from joern.handler_joern import analyze_batch
+print(analyze_batch("smoke", "Java", [{"path": "T.java",
+  "content": 'class T { void q(String id){ st.executeQuery("SELECT * FROM t WHERE id="+id); } }'}]))
+EOF
+
+# ── 2. Phase 2 벤치 (append·재개 가능) ──
+python3 joern/bench_joern.py tune       # → rebuild/out/joern_raw_cleanvul_v2_tune.jsonl
+python3 joern/bench_joern.py sample     # → ..._sample.jsonl  (층화 240건, seed 42)
+python3 joern/bench_joern.py report     # → ..._report.jsonl  (전건 1,878건)
+
+# ── 3. DELTA·TAU 선정(먼저) → precision 게이트(나중) ──
+python3 joern/analyze_joern.py tune            # → rebuild/out/joern_tune_selection.json
+python3 joern/analyze_joern.py gate sample     # → rebuild/out/joern_gate_sample.json
+python3 joern/analyze_joern.py gate report     # → rebuild/out/joern_gate_report.json
+
+# ── 4. logprob 서빙 확인 (로컬 llama-server 필요) ──
+llama-server -m <GGUF> -c 4096 --host 127.0.0.1 --port 8080 &
+python3 -c "
+from scanops.core.llm_client import completion_logprobs, tokenize
+from scanops.core.logprob_score import verify_token_ids, score_from_probs, PREFIX
+print(verify_token_ids(tokenize))
+print(score_from_probs(completion_logprobs('...프롬프트...' + PREFIX)))"
+
+# ── 5. 온프레미스 ──
+cd ../scanops-infra
+docker compose -f docker-compose.onprem.yml config          # 문법 검증
+docker compose -f docker-compose.onprem.yml --profile llm up -d
+```
+
+RunPod 조회(잔액·워커):
+```bash
+curl -s -X POST "https://api.runpod.io/graphql?api_key=$RUNPOD_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"query":"query { myself { clientBalance pods { id desiredStatus } endpoints { id name } } }"}'
+curl -s "https://api.runpod.ai/v2/<ENDPOINT_ID>/health" -H "Authorization: Bearer $RUNPOD_API_KEY"
+```
 
 ## §11 아키텍처
 
-작성 중.
+### 11-1. SaaS (서버리스)
+
+```mermaid
+flowchart LR
+  FE[프론트엔드<br/>Vercel] --> BE
+
+  subgraph EC2["EC2 블록A (상시)"]
+    BE[backend :8080<br/>Spring Boot] --> MA[model-api :8100<br/>api_rebuild]
+    BE --> PG[(postgres)]
+    MA --> HY[hybrid.aggregate]
+  end
+
+  subgraph RP["RunPod Serverless (온디맨드)"]
+    W1[handler_rebuild<br/>llama-server GPU]
+    W2[handler_joern<br/>Joern CPG · CPU]
+  end
+
+  MA -- "completion / n_probs" --> W1
+  MA -- "POST /joern/submit<br/>GET /joern/result/{job_id}" --> W2
+  W1 -- "content · probs" --> HY
+  W2 -- "verdict · findings" --> HY
+  HY -- "PARTIAL → DONE" --> BE
+
+  classDef pend stroke-dasharray: 5 5
+  class W2 pend
+```
+점선 = **이번 세션에서 endpoint 등록까지 가지 못한 부분**(이미지 push 불가, §9-1).
+
+### 11-2. 온프레미스 (외부 호출 0)
+
+```mermaid
+flowchart LR
+  subgraph ONPREM["docker-compose.onprem.yml — 단일 호스트"]
+    BE[backend :8080] --> MA[model-api :8100<br/>RUNPOD_* 비움]
+    BE --> PG[(postgres)]
+    MA --> LS[llama-server :8080<br/>GGUF Q4_K_M<br/>profile: llm / gpu]
+    MA --> JW[joern-worker :8200<br/>uvicorn · JVM -Xmx4g]
+    BE -.-> ZAP[zap :8090<br/>profile: zap]
+    MA -.-> QD[(qdrant)<br/>profile: qdrant]
+  end
+  X[외부 인터넷] -. 차단 .-x ONPREM
+```
+`RUNPOD_ENDPOINT_ID=""` 이면 `llm_client.use_runpod()` 가 False 가 되어 로컬 `LLAMA_SERVER_URL`
+로 폴백한다(`llm_client.py`:30-50 실측). 외부 LLM 키(OPENAI/CLAUDE/GEMINI)와 GitHub 연동 값은
+compose 에서 빈 문자열로 고정했다.
 
 ## §12 아침에 결정할 것
 
-작성 중.
+에이전트가 폴백으로 넘긴 지점마다 선택지를 적었다. **번호 순서가 곧 권고 우선순위다.**
+
+**D1. Docker credential helper 복구 (다른 모든 배포 항목의 선행 조건)**
+`docker-credential-desktop` 이 응답하지 않아 push·인증 pull 이 전부 막혔다(§1-f).
+- A) Docker Desktop 재시작 후 `docker login` 재실행 (권장 — 가장 흔한 원인)
+- B) `~/.docker/config.json` 에서 `credsStore` 를 지우고 `docker login` (평문 저장 — 보안 하락)
+결정 전까지 RunPod Joern endpoint 등록·워커 이미지 갱신이 모두 불가능하다.
+
+**D2. logprob 을 프로덕션에 실제로 태울 것인가**
+`n_probs` 패스스루는 코드에 들어갔지만 **배포되지 않았다**(워커 이미지 재빌드 필요, D1 선행).
+- A) D1 해결 후 워커 재배포 → 프로덕션 모델로 토큰 ID 재검증 → 일치하면 `JOERN-AS-SIGNAL` 사용 가능
+- B) 배포하지 않음 → SIGNAL 정책은 영구 보류, `JOERN-NO-BETTER`/`TRUST-JOERN` 만 사용
+§3-4 의 "test 20건 대조"는 A 를 택할 때 반드시 먼저 돌려야 한다.
+
+**D3. 백엔드 비동기 수신부를 만들 것인가**
+백엔드에 콜백 엔드포인트가 없어(§1-d) 현재는 분석서버가 Joern 을 **동기 호출**한다.
+- A) 현행 유지 — 구현 0, 다만 Joern cold start 가 `/analyze` 응답시간에 얹힌다
+- B) 백엔드에 `POST /api/scans/{id}/joern-result` 신설 + `status` 컬럼 추가(Flyway V4)
+  — PR 경로는 자바 DTO 가 없어 무변경이지만(§1-c), `AnalyzeResult` record 에
+  `score/source/evidence/status` 를 더하려면 백엔드 컴파일 변경이 필요하다.
+
+**D4. `workersStandby=2` 를 그대로 둘 것인가**
+두 endpoint 모두 standby 2 로 설정돼 있다(§1-e). 이 세션이 만든 것이 아니라 손대지 않았다.
+`currentSpendPerHr=$0.005` 라 지금은 미미하지만, 의도한 설정인지 확인 필요.
+
+**D5. Joern 지원 언어를 어디까지 열 것인가**
+`langmap.py` 에 PHP/Go/Ruby/C#/Kotlin 을 넣어뒀지만 **이번 라운드 미검증**이다.
+백엔드는 `Rust`, `GitHub Actions YAML` 도 보내는데 Joern 대상이 아니라 `unsupported_lang` 으로 나간다.
+- A) 검증된 Java/Python/JS 만 활성화하고 나머지는 명시적으로 닫기 (권장 — 오탐 위험 최소)
+- B) 전부 열고 실측 후 조정
