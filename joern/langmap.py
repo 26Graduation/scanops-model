@@ -10,6 +10,8 @@ api_rebuild ".java"→"Java") 합집합을 키로 둔다. 매칭은 소문자 �
 """
 from __future__ import annotations
 
+import re
+
 # language 문자열(소문자) → (파일 확장자, joern importCode language 인자)
 LANG_MAP: dict[str, tuple[str, str]] = {
     # Java
@@ -40,15 +42,25 @@ VERIFIED = {"JAVASRC", "PYTHONSRC", "JSSRC"}
 
 
 def resolve(language: str) -> tuple[str, str] | None:
-    """language 문자열 → (ext, joern_lang). 매핑 없으면 None."""
+    """language 문자열 → (ext, joern_lang). 매핑 없으면 None.
+
+    부분일치 폴백은 **단어 경계**로만 한다. 단순 `in` 으로 하면 한 글자 키가 아무 데나
+    걸린다 — 실측 사고: "GitHub Actions YAML" 의 "a**c**tions" 에 키 `"c"` 가 매칭돼
+    C 프론트엔드(NEWC)로 잘못 라우팅됐다. 그래서 3글자 미만 키는 완전일치만 허용한다.
+    """
     if not language:
         return None
     key = language.strip().lower()
     if key in LANG_MAP:
         return LANG_MAP[key]
-    # 부분일치 폴백 — 긴 키부터 (예 "Java Spring Boot 3.2")
+    # 단어 단위로 쪼갠 토큰과 대조 (구분자: 공백 · / · , · 괄호)
+    tokens = {t for t in re.split(r"[\s/,()]+", key) if t}
     for k in sorted(LANG_MAP, key=len, reverse=True):
-        if k in key:
+        if k in tokens:                      # 예 "java spring boot 3.2" → 토큰 "java"
+            return LANG_MAP[k]
+    # 3글자 이상 키에 한해 부분 문자열 폴백 (예 "typescript 5")
+    for k in sorted(LANG_MAP, key=len, reverse=True):
+        if len(k) >= 3 and k in key:
             return LANG_MAP[k]
     return None
 
