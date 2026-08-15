@@ -305,6 +305,21 @@ Joern 은 **파일 확장자로 프론트엔드를 고른다.** 임시 디렉토
 매핑에 없는 language 는 **파싱을 시도하지 않고** 즉시 `unknown_reason="unsupported_lang"` 을 돌려준다.
 `Rust`, `GitHub Actions YAML` 이 여기 해당한다 — 백엔드가 실제로 보내는 값인데 Joern 대상이 아니다.
 
+> **실측 사고와 수정 (커밋 `078e02c`)**: 초기 구현의 부분일치 폴백은 단순 `k in key` 였다.
+> 그 결과 **`"GitHub Actions YAML"` 이 C 프론트엔드(NEWC)로 라우팅**됐다 — 한 글자 키 `"c"` 가
+> `"a**c**tions"` 안에 매칭된 것이다. 실행해 보지 않았으면 못 잡았을 버그다.
+> 수정: ① 단어 토큰(공백·`/`·`,`·괄호로 분리) 완전일치를 먼저 보고, ② 부분 문자열 폴백은
+> **3글자 이상 키로 제한**. 백엔드 `EXT_TO_LANG` 의 전 문자열로 재검증했다.
+
+**방어 경로 실측**
+
+| 입력 | 결과 |
+|---|---|
+| `language="Rust"` | `unsupported_lang`, elapsed 0.0 (**Joern 기동 없음**) |
+| `language="GitHub Actions YAML"` | `unsupported_lang` (수정 후) |
+| 이미 처리 중인 `job_id` 재사용 | `ValueError: duplicate job_id` |
+| 처리 종료 후 | `CLEANUP rm -rf /tmp/scanops_… exists_after=False` |
+
 ### 2-3. 스니펫 래핑 재시도
 
 CleanVul 은 함수 조각이라 클래스·import 껍데기가 없다. 2패스로 처리한다.
