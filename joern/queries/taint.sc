@@ -108,6 +108,15 @@ def esc(s: String): String = {
   case class Finding(file: String, cat: String, cwe: String, src: String, snk: String, line: Int, path: List[String])
   var findings = List.empty[Finding]
 
+  // 노드 → 소속 파일명. Joern 버전에 따라 접근 경로가 다르므로 여러 전략을 순서대로 시도한다.
+  def fileOf(n: io.shiftleft.codepropertygraph.generated.nodes.AstNode): String = {
+    def last(s: String) = s.split("/").last
+    try { val v = n.file.name.l; if (v.nonEmpty) return last(v.head) } catch { case _: Throwable => () }
+    try { val v = n.method.filename; if (v.nonEmpty) return last(v) } catch { case _: Throwable => () }
+    try { val v = n.method.filename.l; if (v.nonEmpty) return last(v.head) } catch { case _: Throwable => () }
+    ""
+  }
+
   for (r <- rules) {
     try {
       val sinks = cpg.call.name(r.sink)
@@ -116,38 +125,35 @@ def esc(s: String): String = {
       for (f <- flows) {
         val elems = f.elements
         if (elems.nonEmpty) {
-          val last = elems.last
-          val fileName = last.method.filename.split("/").last
-          val ln = last.lineNumber.map(_.toInt).getOrElse(-1)
-          findings ::= Finding(
-            fileName, r.cat, r.cwe,
-            elems.head.code.take(160), last.code.take(160), ln,
-            elems.map(_.code.take(120)).take(12).l
-          )
+          val lastNode = elems.last
+          val fileName = fileOf(lastNode)
+          val ln = try { lastNode.lineNumber.map(_.toInt).getOrElse(-1) } catch { case _: Throwable => -1 }
+          if (fileName.nonEmpty)
+            findings ::= Finding(
+              fileName, r.cat, r.cwe,
+              elems.head.code.take(160), lastNode.code.take(160), ln,
+              elems.map(_.code.take(120)).take(12)
+            )
         }
       }
-    } catch { case _: Throwable => () }
+    } catch { case e: Throwable => System.err.println(s"[rule ${r.cat}] ${e.toString.take(200)}") }
   }
 
   // presence 규칙
   for (p <- PRESENCE_RULES) {
     try {
-      if (p.litRe.nonEmpty) {
-        for (l <- cpg.literal.code(p.litRe).l) {
-          val fileName = l.method.filename.headOption.getOrElse("").split("/").last
-          if (fileName.nonEmpty)
-            findings ::= Finding(fileName, p.cat, p.cwe, l.code.take(120), l.code.take(120),
-                                 l.lineNumber.map(_.toInt).getOrElse(-1), List(l.code.take(120)))
-        }
-      } else if (p.callRe.nonEmpty) {
-        for (c <- cpg.call.name(p.callRe).l) {
-          val fileName = c.method.filename.split("/").last
-          if (fileName.nonEmpty)
-            findings ::= Finding(fileName, p.cat, p.cwe, c.code.take(120), c.code.take(120),
-                                 c.lineNumber.map(_.toInt).getOrElse(-1), List(c.code.take(120)))
-        }
+      val nodes: List[io.shiftleft.codepropertygraph.generated.nodes.AstNode] =
+        if (p.litRe.nonEmpty) cpg.literal.code(p.litRe).l
+        else if (p.callRe.nonEmpty) cpg.call.name(p.callRe).l
+        else Nil
+      for (n <- nodes) {
+        val fileName = fileOf(n)
+        val ln = try { n.lineNumber.map(_.toInt).getOrElse(-1) } catch { case _: Throwable => -1 }
+        if (fileName.nonEmpty)
+          findings ::= Finding(fileName, p.cat, p.cwe, n.code.take(120), n.code.take(120),
+                               ln, List(n.code.take(120)))
       }
-    } catch { case _: Throwable => () }
+    } catch { case e: Throwable => System.err.println(s"[presence ${p.cat}] ${e.toString.take(200)}") }
   }
 
   // ── JSON 조립 ─────────────────────────────────────────────────────────────
