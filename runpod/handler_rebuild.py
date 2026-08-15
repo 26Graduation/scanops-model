@@ -67,6 +67,20 @@ def handler(job):
     inp = job.get("input") or {}
     options = inp.get("options") or {}
     try:
+        # ── Phase 1-B: 연속 점수(logprob) · 토큰 ID 검증 경로 ──────────────
+        # score = logP(" CWE") − logP(" NONE") 를 계산하려면 첫 생성 토큰의 후보
+        # 분포가 필요하다. llama-server 의 n_probs 를 그대로 흘린다.
+        if inp.get("logprobs"):
+            r = requests.post(f"{LLAMA}/completion", json=inp["logprobs"], timeout=280)
+            r.raise_for_status()
+            cps = r.json().get("completion_probabilities") or []
+            probs = (cps[0].get("probs") or cps[0].get("top_logprobs") or []) if cps else []
+            return {"probs": probs}
+        if inp.get("tokenize"):
+            r = requests.post(f"{LLAMA}/tokenize",
+                              json={"content": inp["tokenize"]}, timeout=60)
+            r.raise_for_status()
+            return {"tokens": r.json().get("tokens", [])}
         if inp.get("prompt"):
             r = requests.post(f"{LLAMA}/completion", json={
                 "prompt": inp["prompt"],

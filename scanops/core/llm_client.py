@@ -50,6 +50,43 @@ def completion(prompt: str, options: dict, timeout: int = 300) -> str:
     return r.json().get("content", "")
 
 
+def completion_logprobs(prompt: str, n_probs: int = 40, timeout: int = 300) -> list[dict]:
+    """첫 생성 토큰의 후보 로그확률 목록을 반환 (Phase 1-B, 연속 점수용).
+
+    llama-server /completion 의 `n_probs` 를 써서 토큰 1개만 생성하고 그 자리의
+    후보 분포를 받는다. 반환 형식은 llama.cpp 버전에 따라 `probs`(확률) 또는
+    `logprob` 키가 섞여 나오므로 호출측(score_from_probs)이 흡수한다.
+    빈 리스트면 서빙이 n_probs 를 지원하지 않는 것이다 — 점수 None 으로 처리할 것.
+    """
+    body = {"prompt": prompt, "n_predict": 1, "temperature": 0.0,
+            "n_probs": n_probs, "post_sampling_probs": False}
+    if use_runpod():
+        raw = _runpod_call({"logprobs": body}, field="probs")
+        return raw if isinstance(raw, list) else []
+    r = requests.post(f"{LLAMA_SERVER_URL.rstrip('/')}/completion", json=body, timeout=timeout)
+    r.raise_for_status()
+    return _extract_probs(r.json())
+
+
+def _extract_probs(data: dict) -> list[dict]:
+    cps = data.get("completion_probabilities") or []
+    if not cps:
+        return []
+    first = cps[0]
+    return first.get("probs") or first.get("top_logprobs") or []
+
+
+def tokenize(text: str, timeout: int = 60) -> list[int]:
+    """서빙에 실제로 물려 있는 토크나이저로 토큰 ID를 얻는다 (토큰 ID 검증용)."""
+    if use_runpod():
+        raw = _runpod_call({"tokenize": text}, field="tokens")
+        return raw if isinstance(raw, list) else []
+    r = requests.post(f"{LLAMA_SERVER_URL.rstrip('/')}/tokenize",
+                      json={"content": text}, timeout=timeout)
+    r.raise_for_status()
+    return r.json().get("tokens", [])
+
+
 def chat(model: str, messages: list[dict], options: dict, timeout: int = 90) -> str:
     """chat 호출 → 응답 content 문자열. 라우팅은 환경변수로 결정."""
     if use_runpod():
@@ -69,7 +106,7 @@ def _chat_runpod(model: str, messages: list[dict], options: dict) -> str:
     return _runpod_call({"model": model, "messages": messages, "options": options})
 
 
-def _runpod_call(input_payload: dict) -> str:
+def _runpod_call(input_payload: dict, field: str = "content"):
     import time
 
     base = f"https://api.runpod.ai/v2/{RUNPOD_ENDPOINT_ID}"
@@ -96,4 +133,4 @@ def _runpod_call(input_payload: dict) -> str:
     out = data.get("output") or {}
     if isinstance(out, dict) and "error" in out:
         raise RuntimeError(f"RunPod worker error: {out['error']}")
-    return (out or {}).get("content", "")
+    return (out or {}).get(field, "" if field == "content" else [])
