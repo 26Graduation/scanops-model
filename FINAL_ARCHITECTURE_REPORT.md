@@ -136,7 +136,65 @@ sanitizer가 **0.5000 → 0.5172** 만큼 기여했다.
 > precision 0.5172는 CleanVul의 0.5909보다도 낮다. recall은 0.8182로 훨씬 높지만
 > FPR이 0.7636이라 자명 기준선(FPR 1.0)에 가까워지는 방향이다.
 
----
+### §3-3 OWASP FPR 0.76 진단과 수정 (2026-08-17)
+
+**분할(사전 등록)**: 110건 → 진단 54 / 홀드아웃 56 (seed 42, 라벨 균형).
+카테고리는 `@WebServlet` 경로에서 추출 — 11종 각 10건(`rebuild/out/owasp_split_fix.json`).
+**홀드아웃은 패턴 수정이 끝난 뒤 1회만 열었다.**
+
+**진단셋에서 본 것** (`rebuild/out/owasp_diag_report_fix.json`):
+
+| 과탐 24건의 방어 유형 | 건수 |
+|---|---|
+| 출력 인코더 (ESAPI 등) | 17 |
+| 화이트리스트 검증 | 7 |
+| 감지된 방어 없음 | 6 |
+
+더 중요한 발견은 **어떤 규칙이 발화했는가**였다:
+
+| gold 카테고리 | 우리 규칙이 붙인 category | 과탐 건수 |
+|---|---|---|
+| securecookie | **xss** | 4 |
+| xpathi | **xss** | 4 |
+| crypto / sqli / weakrand / xss | **xss** 포함 | 각 2 |
+| hash / ldapi | **xss** | 각 1 |
+
+**과탐 24건 중 20건이 `xss` 규칙 발화다.** OWASP 테스트 서블릿이 전부
+`response.getWriter().println(...)`으로 끝나기 때문에, 실제 취약점 종류와 무관하게
+xss 흐름이 잡힌다. 그리고 safe 변형은 그 출력을 인코딩한다.
+
+**수정 (일반 의미 패턴만, `applies_to: ["xss"]` 한정)**:
+`ESAPI.encoder().encodeFor*` / `URLEncoder.encode` / `HtmlUtils.htmlEscape`.
+OWASP 특정 문자열(테스트명·변수명)은 넣지 않았다.
+인코딩은 SQLi·cmdi를 막지 못하므로 xss 외 카테고리에는 적용하지 않는다.
+
+> 주의: ESAPI 적중의 상당수는 **로깅·Base64 출력** 경로였다
+> (`.println(ESAPI.encoder().encodeForHTML(e.getMessage()))`). 그래서 전역 적용은 하지 않았다.
+
+**홀드아웃 56건 (1회, 사전 등록 기준)**
+
+| 지표 | 어제 전건 110 | **오늘 홀드아웃 56** |
+|---|---|---|
+| precision | 0.5172 | **0.5610** [0.4146, 0.7073] |
+| recall | 0.8182 | **0.8214** |
+| **FPR** | 0.7636 | **0.6429** |
+| F1 | 0.6338 | 0.6667 |
+
+혼동행렬 TP=23 FP=18 FN=5 TN=10, `safe_sanitized` 15건.
+
+### 판정 = **`NOT-IMPROVED`**
+
+사전 등록 기준은 `FPR ≤ 0.50 AND recall ≥ 0.75`.
+recall은 통과(0.8214)했으나 **FPR 0.6429로 미달**이다.
+→ 규칙대로 **패턴은 유지하고 결과를 그대로 적는다.**
+
+FPR은 0.7636 → 0.6429로 내려갔고 precision도 올랐지만, **기준선을 넘지 못했다.**
+그리고 F1 0.6667은 자명 기준선(all-vuln)과 **정확히 같다**.
+
+**CleanVul 회귀 검사** (`joern_v4fix_raw_cleanvul_v2_sample.jsonl`, 240건):
+precision 0.5909 / recall 0.2167 / FPR 0.1500 — **v4와 완전히 동일, 변화 0건.**
+추가한 인코더 패턴이 CleanVul 코드에는 등장하지 않아 악화가 없다.
+(= OWASP 특정 튜닝이 아니라는 방증)
 
 ## §4 CleanVul 벤치에 대한 발견 — 사실만
 
