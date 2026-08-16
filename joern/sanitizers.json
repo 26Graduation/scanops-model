@@ -1,0 +1,95 @@
+{
+  "_source": "시드 = scanops/core/multi_graph.py:114 SANITIZERS (자체 graph 가 쓰던 표). 여기에 언어별 항목을 추가했다. 추가분 출처는 각 항목의 _note 참조.",
+  "_semantics": "값은 Java java.util.regex 문법의 부분일치(find) 정규식. Joern 노드의 .code 텍스트에 대해 검사한다.",
+  "_role_note": "지시서 원문은 '중간 노드'만 검사하라고 했으나, 지시서가 제시한 예시(PreparedStatement.set*, parameterized execute(sql, params))가 모두 sink 쪽 신호다. 따라서 flow 의 모든 노드(source/intermediate/sink)를 검사하고 걸린 노드의 role 을 기록한다. 이 편차는 보고서 §2 에 명시한다.",
+
+  "common": {
+    "sqli": [
+      "\\.setString\\(|\\.setInt\\(|\\.setLong\\(|\\.setDouble\\(|\\.setBoolean\\(",
+      "prepareStatement\\(|PreparedStatement",
+      "AddWithValue|Parameters\\.Add",
+      "\\.execute\\([^)]*,\\s*[\\(\\[]",
+      "execute\\([\"'][^\"']*%s[\"']\\s*,",
+      "execute\\([\"'][^\"']*\\?[^\"']*[\"']\\s*,"
+    ],
+    "cmdi": [
+      "execFile\\(|execve\\(",
+      "shell\\s*=\\s*False",
+      "escapeshellarg\\(|shlex\\.quote\\(",
+      "ProcessStartInfo|ArgumentList",
+      "subprocess\\.(run|call|Popen)\\(\\s*\\["
+    ],
+    "pathtraver": [
+      "basename\\(|filepath\\.Base\\(",
+      "getCanonicalPath|getCanonicalFile",
+      "path\\.normalize|os\\.path\\.realpath|GetFullPath|filepath\\.Clean\\(",
+      "startsWith\\(|StartsWith\\(|\\.startswith\\(",
+      "secure_filename\\(",
+      "allowlist|allowedList|whitelist|ALLOWED"
+    ],
+    "ssrf": [
+      "allowlist|allowedList|whitelist|ALLOWED|ALLOW_LIST",
+      "in_array\\([^)]*allow",
+      "\\.includes\\(",
+      "urlparse\\(|parse_url\\(|new\\s+URL\\(|url\\.Parse\\("
+    ],
+    "deser": [
+      "json\\.(loads?|decode|Unmarshal)\\(",
+      "json_decode\\(",
+      "yaml\\.safe_load\\(|YAML\\.safe_load\\(",
+      "JSON\\.parse\\(",
+      "literal_eval\\("
+    ],
+    "codei": [
+      "literal_eval\\(",
+      "FILTER_VALIDATE",
+      "parseInt\\(|parseLong\\(|Number\\(|Integer\\.parse",
+      "JSON\\.parse\\("
+    ],
+    "xss": [
+      "escapeHtml|htmlspecialchars\\(|HtmlEncode\\(|Encode\\.forHtml|HTMLEscapeString",
+      "DOMPurify\\.sanitize\\(",
+      "textContent\\s*=",
+      "bleach\\.clean\\("
+    ]
+  },
+
+  "JAVASRC": {
+    "_note": "지시서 §2 예시(escapeHtml*, encodeFor*, parseInt/Long, PreparedStatement.set*, isValid*, matches() 반영",
+    "sqli": ["createQuery\\([^)]*setParameter|setParameter\\("],
+    "xss": ["encodeFor[A-Za-z]+\\(", "StringEscapeUtils"],
+    "pathtraver": ["Paths\\.get\\([^)]*\\)\\.normalize\\(", "\\.toRealPath\\("],
+    "codei": ["Integer\\.parseInt\\(|Long\\.parseLong\\(|Double\\.parseDouble\\("],
+    "_any": [
+      "Integer\\.parseInt\\(|Long\\.parseLong\\(",
+      "isValid[A-Za-z]*\\(",
+      "\\.matches\\(",
+      "Pattern\\.(compile|matches)\\("
+    ]
+  },
+
+  "PYTHONSRC": {
+    "_note": "지시서 §2 예시(html.escape, shlex.quote, int(, quote(, parameterized execute) 반영",
+    "xss": ["html\\.escape\\(|cgi\\.escape\\(|markupsafe\\.escape\\(|escape\\("],
+    "cmdi": ["shlex\\.quote\\(|pipes\\.quote\\("],
+    "pathtraver": ["werkzeug\\.utils\\.secure_filename|os\\.path\\.abspath\\("],
+    "_any": [
+      "\\bint\\(|\\bfloat\\(",
+      "quote\\(|quote_plus\\(",
+      "re\\.(match|fullmatch)\\(",
+      "\\.isdigit\\(|\\.isalnum\\("
+    ]
+  },
+
+  "JSSRC": {
+    "_note": "지시서 §2 예시(encodeURIComponent, DOMPurify.sanitize, escape(, parseInt(, textContent=) 반영",
+    "xss": ["encodeURIComponent\\(|encodeURI\\(|escapeHtml\\("],
+    "pathtraver": ["path\\.resolve\\(|path\\.basename\\("],
+    "_any": [
+      "encodeURIComponent\\(",
+      "parseInt\\(|Number\\(",
+      "validator\\.[a-zA-Z]+\\(",
+      "\\.test\\(|\\.match\\("
+    ]
+  }
+}

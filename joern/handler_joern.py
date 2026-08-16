@@ -130,6 +130,11 @@ def _run_chunk(in_dir: Path, joern_lang: str, out_file: Path, timeout: int) -> d
            "--param", f"inDir={in_dir}",
            "--param", f"lang={joern_lang}",
            "--param", f"outFile={out_file}"]
+    # v3(sanitizer-aware) 쿼리에만 있는 파라미터. v2 이하 스크립트에는 넘기지 않는다
+    # (Joern 은 미정의 --param 을 오류로 취급한다).
+    san_file = os.getenv("JOERN_SANITIZER_FILE", "")
+    if san_file and "taint_v3" in os.path.basename(SCRIPT):
+        cmd += ["--param", f"sanFile={san_file}"]
     # Joern 은 **CWD 아래에 `workspace/` 를 만든다**(실측). 레포 CWD 에서 돌리면
     # 프로젝트가 누적되고 요청끼리 충돌한다 → 청크 디렉토리의 부모(=job 전용 디렉토리)를
     # CWD 로 준다. job 종료 시 rm -rf 되므로 workspace 도 함께 사라진다.
@@ -274,10 +279,23 @@ def _pass(root: Path, cases: list[tuple[str, str]], ext: str, joern_lang: str,
                 failed.append((cid, _code_of(chunk, cid)))
                 continue
             fs = by_file.get(fname, [])
+            # v3: sanitizer 에 걸린 flow 는 제외한다. 살아남은 flow 가 하나도 없고
+            # 제외된 flow 가 있으면 safe 가 아니라 safe_sanitized 로 구분한다.
+            # v2 이하 findings 에는 "sanitized" 키가 없어 전부 live 로 취급된다(하위호환).
+            live = [x for x in fs if not x.get("sanitized")]
+            blocked = [x for x in fs if x.get("sanitized")]
+            if live:
+                verdict = "vuln"
+            elif blocked:
+                verdict = "safe_sanitized"
+            else:
+                verdict = "safe"
             ok[cid] = {
-                "verdict": "vuln" if fs else "safe",
+                "verdict": verdict,
                 "unknown_reason": None,
-                "categories": sorted({x["category"] for x in fs}),
+                "categories": sorted({x["category"] for x in live}),
+                "sanitized_categories": sorted({x["category"] for x in blocked}),
+                "sanitizer_hits": [h for x in blocked for h in (x.get("sanitizer_hits") or [])][:12],
                 "findings": fs,
                 "wrap_level": wrap_level,
                 "elapsed": round(r["elapsed"] / max(1, len(chunk)), 3),
