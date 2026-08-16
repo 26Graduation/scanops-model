@@ -469,3 +469,49 @@ python3 joern/eval_v4.py sample
 - 대응: `.env.onprem.example`의 `LLAMA_CTX` 기본값을 **8192**로 올렸다(여유 확보).
   **원인은 확정하지 못했다** — §9에 미완으로 남긴다.
 - 성공한 5건은 전부 `detected=true`였다.
+
+---
+
+## §5-5 모델 공급과 로컬 인증 (2026-08-17 추가)
+
+### 모델 공급 — 오프라인 번들이 기본
+
+| 방식 | 파일 | 망분리 환경 |
+|---|---|---|
+| **오프라인 번들 (기본)** | `models/` 에 GGUF 를 두고 `models/MODELS.sha256` 으로 검증. `scripts/verify_models.sh` | **가능** |
+| 편의 스크립트 (선택) | `scripts/fetch_model.sh` — `MODEL_URL`/`MODEL_SHA256`/`MODEL_AUTH_HEADER` 환경변수 | **쓰지 않는다** |
+
+현재 매니페스트(`models/MODELS.sha256`):
+```
+03b74727a860a56338e042c4420bb3f04b2fec5734175f4cb9fa853daf52b7e8  Qwen3.5-9B-Q4_K_M.gguf
+a35c9b086127e48bf2c01a4b14b3d21f8063cabdd09f14401654e330b735c2c7  adapter_v1_fix.gguf
+```
+검증: `./scripts/verify_models.sh models` → 두 파일 OK 확인.
+
+> **어댑터가 없으면 판정 4줄 서식이 나오지 않아 전부 미탐이 된다**(§6 어제 데모).
+> `.env.onprem` 의 `LORA_ARG=--lora /models/adapter_v1_fix.gguf` 를 비우지 않는다.
+
+### 로컬 인증 — 이미 있다, 추가 구현 불필요
+
+백엔드에 **이메일+비밀번호 로그인이 이미 구현돼 있다**:
+
+| 항목 | 위치 |
+|---|---|
+| 회원가입 | `POST /api/auth/register` (`AuthController.java`) |
+| 로그인 → JWT | `POST /api/auth/login` (`AuthController.java:56`) |
+| 비밀번호 해시 | `config/PasswordConfig.java` |
+| 경로 허용 | `SecurityConfig.java:41` — `/api/**` 가 `permitAll` |
+
+따라서 **온프레미스에서 GitHub OAuth 없이 로컬 계정으로 로그인할 수 있다.**
+`SCANOPS_ADMIN_TOKEN` 같은 별도 프로파일을 만들 필요가 없었다.
+
+### 외부 접속이 필요한 항목 (갱신)
+
+| 기능 | 외부 접속 | 온프레미스 대안 |
+|---|---|---|
+| 이메일 로그인 / JWT | **불필요** | 그대로 사용 |
+| GitHub OAuth 로그인 | **필요** (github.com) | 이메일 로그인 사용 |
+| GitHub 저장소 스캔(clone) | **필요** | model-api 직접 호출 또는 로컬 경로 |
+| LLM 추론 | 불필요 | 컨테이너 내 llama-server |
+| Joern 분석 | 불필요 | 컨테이너 내 joern-worker |
+| CVE 참고(Qdrant) | 불필요 | `qdrant` 프로파일 (판정 미관여) |
