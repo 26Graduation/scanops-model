@@ -119,9 +119,13 @@ def run_base(r: dict, variant: str = "v1") -> dict:
     import urllib.request
     prompt = build_prompt((r.get("categories") or ["unknown"])[0], r["lang"], r["path"],
                           variant=variant)
+    # Qwen3.5 는 <think> 를 먼저 낸다. max_tokens 400 이면 사고만 하다 잘려
+    # **본문이 빈 문자열**로 온다(finish_reason=length, 실측 20/20 UNPARSED).
+    # 사고를 끄면 4s/건으로 빨라지고 형식도 지킨다.
     body = json.dumps({
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.0, "max_tokens": 400,
+        "chat_template_kwargs": {"enable_thinking": False},
     }).encode()
     req = urllib.request.Request(f"{BASE_URL}/v1/chat/completions", data=body,
                                  headers={"content-type": "application/json"})
