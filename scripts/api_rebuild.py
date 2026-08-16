@@ -113,6 +113,8 @@ class AnalyzeResponse(BaseModel):
     status: str = "DONE"                     # PARTIAL(Joern 미도착) | DONE
     # Joern v4 근거(판정 미개입). advisory_only=True 로 표시된다 — REPORT_V4 §6
     joern_evidence: Optional[dict] = None
+    # 파싱 재시도 여부(운영 관측용). True 면 1회 재시도 후의 결과다.
+    parse_retried: bool = False
     elapsed: float
 
 
@@ -189,34 +191,70 @@ CHATML_TMPL = "<|im_start|>user\n{p}<|im_end|>\n<|im_start|>assistant\n"
 _MAX_CODE = 12_000
 
 
+# 4줄 서식 추출 — 응답 **어디에 있든** 잡는다.
+# 기존은 줄 시작(startswith)에만 의존해서, 모델이 서론을 붙이거나 들여쓰기하면
+# 통째로 파싱 실패했다(실측: 베이스 모델 경로에서 전부 NONE).
+_RE_VULN = re.compile(r"VULNERABILITY:\s*(.+)", re.I)
+_RE_SEV = re.compile(r"SEVERITY:\s*(.+)", re.I)
+_RE_CVSS = re.compile(r"CVSS:\s*(.+)", re.I)
+_RE_REASON = re.compile(r"REASON:\s*(.+)", re.I)
+
+# 파싱 실패 시 재시도 예산. <think> 가 200 토큰을 다 먹는 경우가 실측됐다
+# (FINAL_ARCHITECTURE_REPORT.md §6 — 베이스 모델이 사고만 하다 잘림).
+_RETRY_NPREDICT = int(os.getenv("SCANOPS_RETRY_NPREDICT", "1500"))
+# 응답이 <think> 로 시작하면 사고 모드다. 어댑터 경로는 이 서식을 내지 않으므로
+# 이 프리필은 베이스 모델 경로에서만 발동한다.
+_THINK_PREFILL = "<think>\n\n</think>\n\n"
+
+_PARSE_STATS = {"total": 0, "retried": 0, "retry_ok": 0, "fail": 0}
+
+
+def _parse4(raw: str) -> tuple[str, str, str, str]:
+    text = re.sub(r"<think>.*?(</think>|$)", " ", raw, flags=re.S)
+    def g(rx):
+        m = rx.search(text)
+        return m.group(1).strip() if m else ""
+    return g(_RE_VULN), g(_RE_SEV).upper(), g(_RE_CVSS), g(_RE_REASON)
+
+
 def _detect(language: str, code: str) -> dict:
-    """모델 1회 호출 → 4줄 파싱. eval_gguf.py parse()와 동일 규칙 + REASON."""
+    """모델 호출 → 4줄 파싱. 실패 시 **1회만** 예산을 늘려 재시도한다.
+
+    반환에 debug 필드(retried/parse_fail)를 실어 운영에서 재시도율을 볼 수 있게 한다.
+    """
     prompt = PROMPT_TMPL.format(language=language, code=code[:_MAX_CODE])
+    _PARSE_STATS["total"] += 1
+
     raw = llm_completion(CHATML_TMPL.format(p=prompt),
                          {"num_predict": 200, "temperature": 0.0,
                           "stop": ["<|im_end|>"]})
-    text = re.sub(r"<think>.*?(</think>|$)", "", raw, flags=re.S)
-    vuln = sev = cvss = reason = ""
-    for line in text.splitlines():
-        s = line.strip()
-        up = s.upper()
-        if up.startswith("VULNERABILITY:") and not vuln:
-            vuln = s.split(":", 1)[1].strip()
-        elif up.startswith("SEVERITY:") and not sev:
-            sev = s.split(":", 1)[1].strip().upper()
-        elif up.startswith("CVSS:") and not cvss:
-            cvss = s.split(":", 1)[1].strip()
-        elif up.startswith("REASON:") and not reason:
-            reason = s.split(":", 1)[1].strip()
-    if not vuln:  # 파싱 실패 → 안전 판정 (백엔드 graceful 처리와 일관)
+    vuln, sev, cvss, reason = _parse4(raw)
+    retried = False
+
+    if not vuln:
+        # 1회 재시도: 예산을 늘리고, 사고 모드로 보이면 빈 think 블록을 프리필해 억제한다.
+        retried = True
+        _PARSE_STATS["retried"] += 1
+        prefill = _THINK_PREFILL if raw.lstrip().startswith("<think>") else ""
+        raw2 = llm_completion(CHATML_TMPL.format(p=prompt) + prefill,
+                              {"num_predict": _RETRY_NPREDICT, "temperature": 0.0,
+                               "stop": ["<|im_end|>"]})
+        vuln, sev, cvss, reason = _parse4(raw2)
+        if vuln:
+            _PARSE_STATS["retry_ok"] += 1
+
+    if not vuln:  # 재시도 후에도 실패 → 안전 판정 (백엔드 graceful 처리와 일관)
+        _PARSE_STATS["fail"] += 1
+        print(f"[detect] PARSE_FAIL lang={language} retried={retried}", flush=True)
         return {"detected": False, "vulnerability": "NONE", "severity": "NONE",
-                "cvss": None, "reason": "", "parse_fail": True}
+                "cvss": None, "reason": "", "parse_fail": True, "retried": retried}
     if vuln.upper().startswith("NONE"):
         return {"detected": False, "vulnerability": "NONE", "severity": "NONE",
-                "cvss": None, "reason": ""}
+                "cvss": None, "reason": "", "retried": retried}
     return {"detected": True, "vulnerability": vuln,
             "severity": sev or "UNKNOWN", "cvss": _cvss_float(cvss),
-            "reason": "" if reason.upper() == "NONE" else reason}
+            "reason": "" if reason.upper() == "NONE" else reason,
+            "retried": retried}
 
 
 # ── 헬퍼 (api_v17.py 와 동일) ────────────────────────────────────────────────
@@ -415,6 +453,7 @@ def _analyze_one(language: str, code: str, file_path: Optional[str]) -> AnalyzeR
                  ([agg["evidence"]] if agg.get("evidence") else None),
         status=agg.get("status", "DONE"),
         joern_evidence=agg.get("joern_evidence"),
+        parse_retried=bool(r.get("retried")),
         elapsed=round(time.time() - t0, 2),
     )
 
@@ -424,6 +463,7 @@ def _analyze_one(language: str, code: str, file_path: Optional[str]) -> AnalyzeR
 @app.get("/health")
 def health():
     return {"status": "ok", "version": "rebuild-1",
+            "parse_stats": dict(_PARSE_STATS),
             "model": "scanops-rebuild-9b (Qwen3.5-9B QLoRA, CVEfixes F1 80.5)",
             "llm_backend": "runpod" if use_runpod() else "llama-local"}
 
