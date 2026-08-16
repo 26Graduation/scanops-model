@@ -706,3 +706,42 @@ precision 이 0.61/0.56 으로 나쁘지 않아 보이는 이유도 같다 — *
 
 **그리고 이 축의 우선순위가 내려갔다.** 같은 세션 CPU 트랙(D-14)이 격차의 정체를
 **쌍 안의 두 판본 유사도**로 특정했다. 학습량·lr 조정은 그 문제를 건드리지 않는다.
+
+---
+
+## D-18 — push 가 막혔다. 내 실수였고, 히스토리를 고쳤다 (사고 기록)
+
+**무슨 일.** `git push` 가 거부됐다:
+`rebuild/data/v4_files.jsonl is 1060.48 MB; this exceeds GitHub's file size limit of 100.00 MB`.
+
+**원인은 나다.** 커밋 `09035a0` 에서 `git add -A rebuild/` 를 썼다.
+그 디렉터리에 **1,060MB 원시 수집 파일**이 추적되지 않은 채 있었고, 그대로 커밋에 들어갔다.
+**`git add -A` 를 쓰기 전에 무엇이 스테이징되는지 확인하지 않았다.**
+
+**조치.**
+1. `.gitignore` 에 `rebuild/data/v4_files.jsonl` 추가.
+2. **아직 push 되지 않은 범위에만** `git filter-branch --index-filter` 로 그 파일을 제거
+   (`origin/feat/release-fixes..HEAD`, 34 커밋). 원격에 이미 있는 히스토리는 건드리지 않았다.
+3. **부작용이 하나 있었다** — filter-branch 가 마지막에 작업트리를 재체크아웃하면서
+   **디스크에서 그 1GB 파일이 지워졌다.** `refs/original` 에 남은 blob
+   (`6e49bae3891c82f869c2b7247b83a1f5d0f19230`)에서 **즉시 복원**했다.
+   현재 `rebuild/data/v4_files.jsonl` 은 **1,060MB 로 제자리에 있고**, 이제 gitignore 대상이다.
+4. push 성공: `b367309..779c578`.
+
+**검증 (재작성 후).**
+- 100MB 초과 blob: **0**
+- 커밋 수: 34 (누락 없음)
+- **사전등록 → 결과 순서 유지** (author 시각 기준, filter-branch 가 보존):
+  `b6ea0d1 04:01:20` < `ac9a712 04:12:33`, `c1ffd94 04:21:13` < `0262bd3 06:08:36`
+- 재작성으로 **커밋 해시가 바뀌었다.** 이 문서 앞부분(D-9~D-17)이 인용한 해시는
+  **재작성 전 값**이다. 내용은 같고 해시만 다르다 — 필요하면
+  `git log --format='%h %s'` 로 제목으로 찾는다.
+
+**남겨 둔 것.** `refs/original/refs/heads/feat/release-fixes` 를 지우지 않았다.
+문제가 생기면 되돌릴 수 있는 유일한 경로다. 정리하려면
+`git update-ref -d refs/original/refs/heads/feat/release-fixes && git gc --prune=now` —
+**이건 사용자가 확인한 뒤에 한다. 내가 하지 않았다.**
+
+**교훈.** `git add -A` 를 쓰지 않는다. 이번 세션에서만 이 습관으로 두 번 문제가 생길 뻔했다
+(첫 번째는 `.gitignore` 에 이미 대용량 패턴이 있어 걸러졌고, 두 번째가 이것이다).
+**앞으로는 파일을 명시해서 add 하거나, add 전에 `git status --short` 로 확인한다.**
