@@ -244,51 +244,44 @@ JOERN_HYBRID_REPORT_V3.md는 T2=0.8265를 근거로 "정보 전달은 성공했�
 
 ---
 
-## §6 데모 응답 3건 (실행 원본, 고치지 않음)
+## §6 데모 응답 3건 (프로덕션 모델, 2026-08-17 재실행)
 
-**실행 조건**: 온프레미스 스택, `docker compose -p scanops-onprem-demo --profile llm`.
-전문은 `scanops-infra/demo/response_{a,b,c}.json`, 해석은 `scanops-infra/demo/NOTES.md`.
+전문은 `scanops-infra/demo/response_{a,b,c}_fix.json`, 조건·해석은 `demo/NOTES_fix.md`.
 
-### ⚠️ 이 데모의 LLM은 프로덕션 모델이 아니다
+### 프로덕션 모델을 확보했다
 
-| | 프로덕션(SaaS) | **이 데모** |
-|---|---|---|
-| 모델 | `scanops-rebuild-9b-q4km.gguf` (Qwen3.5-9B **QLoRA**) | **베이스 `Qwen3.5-9B-Q4_K_M`** |
-| 이유 | RunPod 볼륨 | **v1 어댑터 GGUF가 로컬에 없다** (로컬은 7B LoRA뿐) |
+`rebuild/out/adapter/` → `llama.cpp/convert_lora_to_gguf.py` → `models/adapter_v1_fix.gguf` (58.2MB).
+llama-server에 `--lora`로 얹어 검증:
 
-### 결과
+| 검증 | 값 |
+|---|---|
+| 내부 test 20건 예측 일치율 (`rebuild/out/v1_logprob_test.jsonl` 대비) | **95.0% (19/20)** |
+| 4줄 서식 파싱 성공률 | **100% (20/20)** |
+| 사전 등록 채택 기준 | ≥ 90% → **통과, 경로 A 채택** |
 
-| 샘플 | detected | vulnerability | source | status | elapsed |
-|---|---|---|---|---|---|
-| (a) Java SQLi (문자열 연결→executeQuery) | **false** | NONE | llm | DONE | 77.4s |
-| (b) Python cmdi (request.args→os.system) | **false** | NONE | llm | DONE | 142.4s |
-| (c) Java 안전 (PreparedStatement.setString) | **false** | NONE | llm | DONE | 174.4s |
+SHA256 — 베이스 `03b74727a860a56338e042c4420bb3f04b2fec5734175f4cb9fa853daf52b7e8`,
+어댑터 `a35c9b086127e48bf2c01a4b14b3d21f8063cabdd09f14401654e330b735c2c7`.
 
-세 건 모두 `joern_evidence = {"joern_verdict":"unknown","advisory_only":true}`.
+### 결과 — 어제(베이스 단독)와 나란히
 
-### 미탐의 원인 — 측정으로 확인
+| 샘플 | 어제 detected | **오늘 detected** | 오늘 vulnerability | joern flow | 어제 elapsed | **오늘 elapsed** |
+|---|---|---|---|---|---|---|
+| (a) Java SQLi | false | **true** | CWE-89 | **6스텝** | 77.4s | **20.0s** |
+| (b) Python cmdi | false | **true** | CWE-78 | 0스텝(safe) | 142.4s | **21.6s** |
+| (c) Java 안전(PreparedStatement) | false | **false** | NONE | 5스텝 | 174.4s | **16.3s** |
 
-llama-server 원문 출력을 직접 받아봤다:
-```
-'<think>\nThinking Process:\n\n1.  **Analyze the Request:** ...'
-```
-베이스 모델은 `<think>`부터 낸다. `_detect`는 `n_predict=200`으로 호출하므로
-**사고에 예산이 다 쓰여 4줄 서식에 도달하지 못한다** → 파싱 실패 → `NONE`.
-파인튜닝 어댑터는 정확히 그 4줄 서식을 내도록 학습된 모델이다.
+세 건 모두 `source="llm"`, `status="DONE"`, `joern_evidence.advisory_only=true`,
+`parse_retried=false`(첫 호출에서 4줄 서식이 나왔다).
 
-> **따라서 이 미탐은 "다른 모델을 끼운 결과"이지 파이프라인 결함이 아니다.**
-> 다만 그것을 **측정으로 확인했을 뿐이고, 어댑터를 끼운 데모는 오늘 확보하지 못했다**(§9).
-> `joern_evidence`가 빈 것은 §5-3의 noexec 결함 때문이며, **수정 후 재검증에서는
-> 같은 SQLi 스니펫에 대해 `verdict=vuln`, `categories=['sqli']`, 4스텝 path가 나왔다**
-> (`demo/NOTES.md` 마지막 절).
+> **어제 미탐의 원인이 "베이스 모델을 끼웠기 때문"이라는 §6의 진단이 확인됐다.**
+> 같은 코드·같은 스택에서 어댑터만 얹으니 (a)(b)를 탐지하고 (c)는 탐지하지 않는다.
 
-### 확인된 것
+### 읽을 때 주의
 
-미탐이더라도 **응답 계약은 설계대로** 나왔다:
-`source="llm"`, `status="DONE"`, `joern_evidence.advisory_only=true`(판정 미개입),
-`evidence`·`score` 필드 존재. 백엔드 `ScanopsModelClient` 계약과 호환된다.
-
----
+- **(c)에서 Joern은 여전히 `vuln`(5스텝)**이다. `PreparedStatement.setString` 흐름인데도
+  살아남은 흐름이 있다. 정책이 `JOERN-NO-BETTER`라 **판정에 관여하지 않고** `advisory_only`로만
+  실려, 최종 `detected`는 LLM이 낸 `false`다. §3의 precision 측정을 코드로 반영한 결과다.
+- **이 3건은 데모이지 벤치가 아니다.** 성능 수치는 §3의 표를 본다.
 
 ## §7 한계와 다음 단계 (근거 순)
 
