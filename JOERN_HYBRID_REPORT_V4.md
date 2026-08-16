@@ -299,3 +299,59 @@ sanitizer 줄이 슬라이스에 등장하는 비율은 4.5%→ 기껏해야 20%
 - E 의 YES 가 여전히 0 → 슬라이스를 어떻게 구성해도 안 된다는 강한 증거.
   그러면 **"CleanVul 라벨의 절반이 sanitizer 와 무관하다"**(D-2) 가 지배적 원인이며,
   Critic 노선 자체를 접고 §12 에 그렇게 쓴다.
+
+---
+
+## §2 Joern v4 — 결함 수정 결과
+
+### 2-1. 수정 3건과 스모크 (6/6 통과)
+
+| # | 결함 | 수정 | 스모크 |
+|---|---|---|---|
+| 1 | `self`/`this`/`cls` 가 taint source | `cpg.method.parameter.nameNot("self","this","cls")` | `j_self_only`·`p_self_only` → vuln 아님 ✅ |
+| 1-b | **`srcCalls` 가 정의만 되고 안 쓰였다**(v3 실측) | `cpg.call.name(srcCalls)` 를 source 에 합집합 | 진짜 입력 getter 유지 ✅ |
+| 2 | sanitizer 가 카테고리에 갇힘 | `applies_to` 부여, 매칭 = (카테고리 ∈ applies_to) OR ('*') | `j_sqli_safe`→safe_sanitized, `j_xss_on_sqli`→vuln 유지 ✅ |
+| 3 | `new URL(` 판별력 0 | sanitizers.json 에서 제거 | — |
+
+부수 버그: 핸들러가 `"taint_v3" in basename` 으로 sanFile 전달을 결정해 **v4 에 안 넘어갔다**.
+스모크에서 `safe_sanitized` 가 0건이 되어 발견 → `_SAN_AWARE_RE` 로 교체.
+
+### 2-2. 수정은 작동했다 — 그런데 precision 은 안 움직였다
+
+| | v3 | **v4** |
+|---|---|---|
+| vuln 건수 (tune 468) | 98 | **89** |
+| precision | 0.5102 | **0.5169** |
+| **source 가 `self`/`this` 인 vuln** | **35 / 98 (35.7%)** | **0 / 89 (0%)** |
+| Java / Python / JS precision | 0.480 / 0.559 / 0.357 | 0.480 / 0.558 / **0.417** |
+
+**단위 테스트 (v3→v4 전이)**
+
+| 항목 | 건수 |
+|---|---|
+| 과탐 제거 (vuln→비vuln, gold=safe) | **7** |
+| 진탐 손실 (vuln→비vuln, gold=vuln) | **5** |
+| 신규 과탐 | 2 |
+| 신규 진탐 | 1 |
+
+진탐 손실(5) ≤ 과탐 제거(7) → 사전 규칙상 **패턴을 좁히지 않는다**.
+
+**예상과의 차이 (§8 D-1 반성)**: 나는 precision 0.5652 → **0.60 언저리**를 예상했다.
+실제는 tune 기준 0.5102 → **0.5169**. 거의 안 움직였다.
+
+**왜 그런가 — 원인을 찾았다.** `self`/`this` source 는 **완전히 사라졌다(35 → 0)**.
+메커니즘은 정확히 작동했다. 그런데 판정이 안 바뀐다. `cvh_299|safe` 를 보면:
+
+| | source | sink |
+|---|---|---|
+| v3 | `this` | `this.getClass().getResourceAsStream(appZipPath)` |
+| **v4** | `File toDir` | `new File(toDir, entry.getName())` |
+
+**흐름 하나를 빼면 같은 파일의 다른 흐름이 그 자리를 채운다.**
+verdict 는 "**살아남은 흐름이 하나라도 있으면 vuln**" — 즉 여러 흐름에 대한 **OR** 다.
+sink 정규식이 넓으면 OR 은 거의 항상 참이 된다. **precision 은 가장 좋은 흐름이 아니라
+가장 나쁜 흐름이 결정한다.**
+
+> 이건 오늘 수정한 것과 **다른 층위의 결함**이다. 근거 흐름의 품질은 실제로 좋아졌지만
+> (`this.getClass()` → 진짜 zip-slip 패턴 `new File(toDir, entry.getName())`),
+> **판정 집계 방식**이 그 개선을 흡수해버린다. → §12 에 다음 가설로 남긴다.
