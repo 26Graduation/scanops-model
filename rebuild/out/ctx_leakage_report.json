@@ -1,0 +1,130 @@
+{
+  "n": 248,
+  "A_subset_of_source": {
+    "checked_lines": 29190,
+    "lines_not_in_source": 0,
+    "files_missing": 0,
+    "verdict": "PASS"
+  },
+  "B_forbidden_strings": {
+    "counts": {
+      "date": 6
+    },
+    "asymmetric_hits": [],
+    "n_asymmetric": 0,
+    "symmetric_examples": [
+      "pv_0381a0de64a5_212834/vuln date=2008-03-14 (쌍 양쪽 동일 — 무해)",
+      "pv_0381a0de64a5_212834/vuln date=2006-12-04 (쌍 양쪽 동일 — 무해)",
+      "pv_0381a0de64a5_212834/vuln date=2008-03-14 (쌍 양쪽 동일 — 무해)",
+      "pv_0381a0de64a5_212834/safe date=2008-03-14 (쌍 양쪽 동일 — 무해)",
+      "pv_0381a0de64a5_212834/safe date=2006-12-04 (쌍 양쪽 동일 — 무해)",
+      "pv_0381a0de64a5_212834/safe date=2008-03-14 (쌍 양쪽 동일 — 무해)"
+    ],
+    "verdict": "PASS"
+  },
+  "C_label_asymmetry": {
+    "n_vuln": 124,
+    "n_safe": 124,
+    "ctx_chars_vuln": 452298,
+    "ctx_chars_safe": 461423,
+    "per_keyword": {
+      "vulnerab": {
+        "vuln_rate": 0.0,
+        "safe_rate": 0.0,
+        "diff": 0.0
+      },
+      "exploit": {
+        "vuln_rate": 0.0,
+        "safe_rate": 0.0,
+        "diff": 0.0
+      },
+      "security": {
+        "vuln_rate": 0.0403,
+        "safe_rate": 0.0403,
+        "diff": 0.0
+      },
+      "overflow": {
+        "vuln_rate": 0.0323,
+        "safe_rate": 0.0323,
+        "diff": 0.0
+      },
+      "sanitiz": {
+        "vuln_rate": 0.0,
+        "safe_rate": 0.0,
+        "diff": 0.0
+      },
+      "out-of-bounds": {
+        "vuln_rate": 0.0,
+        "safe_rate": 0.0,
+        "diff": 0.0
+      },
+      "use-after-free": {
+        "vuln_rate": 0.0,
+        "safe_rate": 0.0,
+        "diff": 0.0
+      },
+      "double free": {
+        "vuln_rate": 0.0,
+        "safe_rate": 0.0,
+        "diff": 0.0
+      },
+      "buffer over": {
+        "vuln_rate": 0.0081,
+        "safe_rate": 0.0081,
+        "diff": 0.0
+      },
+      "attacker": {
+        "vuln_rate": 0.0,
+        "safe_rate": 0.0,
+        "diff": 0.0
+      },
+      "malicious": {
+        "vuln_rate": 0.0,
+        "safe_rate": 0.0,
+        "diff": 0.0
+      },
+      "fix": {
+        "vuln_rate": 0.1371,
+        "safe_rate": 0.1371,
+        "diff": 0.0
+      },
+      "patch": {
+        "vuln_rate": 0.0242,
+        "safe_rate": 0.0242,
+        "diff": 0.0
+      },
+      "bug": {
+        "vuln_rate": 0.2419,
+        "safe_rate": 0.2419,
+        "diff": 0.0
+      },
+      "crash": {
+        "vuln_rate": 0.0,
+        "safe_rate": 0.0,
+        "diff": 0.0
+      },
+      "oob": {
+        "vuln_rate": 0.0081,
+        "safe_rate": 0.0081,
+        "diff": 0.0
+      },
+      "heap": {
+        "vuln_rate": 0.0242,
+        "safe_rate": 0.0242,
+        "diff": 0.0
+      },
+      "underflow": {
+        "vuln_rate": 0.0081,
+        "safe_rate": 0.0081,
+        "diff": 0.0
+      }
+    },
+    "max_abs_diff": {
+      "keyword": "vulnerab",
+      "vuln_rate": 0.0,
+      "safe_rate": 0.0,
+      "diff": 0.0
+    },
+    "verdict": "PASS"
+  }
+}

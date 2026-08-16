@@ -1,0 +1,46 @@
+[
+  {
+    "split": "report",
+    "n_bench": 2706,
+    "n_resumed_skip": 0,
+    "n_written": 2706,
+    "n_code_extract_fail": 0,
+    "n_llm_miss_v1": 0,
+    "n_llm_miss_v3s42": 0,
+    "verdicts": {
+      "unknown": 2549,
+      "safe": 137,
+      "vuln": 20
+    },
+    "verdicts_supported_only": {
+      "unknown": 1721,
+      "safe": 137,
+      "vuln": 20
+    },
+    "n_final_rows": 2706,
+    "n_final_unique": 2706,
+    "complete": true
+  },
+  {
+    "split": "tune",
+    "n_bench": 676,
+    "n_resumed_skip": 0,
+    "n_written": 676,
+    "n_code_extract_fail": 0,
+    "n_llm_miss_v1": 0,
+    "n_llm_miss_v3s42": 0,
+    "verdicts": {
+      "unknown": 631,
+      "safe": 40,
+      "vuln": 5
+    },
+    "verdicts_supported_only": {
+      "unknown": 423,
+      "safe": 40,
+      "vuln": 5
+    },
+    "n_final_rows": 676,
+    "n_final_unique": 676,
+    "complete": true
+  }
+]

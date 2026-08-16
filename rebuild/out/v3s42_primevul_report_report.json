@@ -1,0 +1,55 @@
+{
+  "engine": "scanops-v3s42",
+  "dataset": "primevul_report",
+  "overall": {
+    "n": 288,
+    "n_vuln": 144,
+    "n_safe": 144,
+    "recall": 0.9375,
+    "fpr": 0.8889,
+    "precision": 0.5133,
+    "f1": 0.6634,
+    "parse_fail": 2
+  },
+  "by_language": {
+    "C/C++": {
+      "n": 288,
+      "n_vuln": 144,
+      "n_safe": 144,
+      "recall": 0.9375,
+      "fpr": 0.8889,
+      "precision": 0.5133,
+      "f1": 0.6634,
+      "parse_fail": 2
+    }
+  },
+  "pairwise": {
+    "n_pairs": 144,
+    "pair_correct": {
+      "n": 8,
+      "rate": 0.0556
+    },
+    "pair_vulnerable": {
+      "n": 127,
+      "rate": 0.8819
+    },
+    "pair_benign": {
+      "n": 7,
+      "rate": 0.0486
+    },
+    "pair_reversed": {
+      "n": 1,
+      "rate": 0.0069
+    },
+    "pair_parse_fail": 1
+  },
+  "cost": {
+    "mode": "greedy",
+    "k": 1,
+    "n": 288,
+    "total_secs": 330.8,
+    "secs_per_case": 1.148,
+    "samples_per_case": 1,
+    "max_new_tokens": 180
+  }
+}

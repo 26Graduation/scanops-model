@@ -1,0 +1,75 @@
+{
+  "engine": "scanops-v3s42",
+  "dataset": "test",
+  "overall": {
+    "n": 1197,
+    "n_vuln": 552,
+    "n_safe": 645,
+    "recall": 0.8478,
+    "fpr": 0.2465,
+    "precision": 0.7464,
+    "f1": 0.7939,
+    "parse_fail": 3
+  },
+  "by_language": {
+    "C/C++": {
+      "n": 297,
+      "n_vuln": 124,
+      "n_safe": 173,
+      "recall": 0.8306,
+      "fpr": 0.3988,
+      "precision": 0.5988,
+      "f1": 0.6959,
+      "parse_fail": 1
+    },
+    "JS/TS": {
+      "n": 219,
+      "n_vuln": 106,
+      "n_safe": 113,
+      "recall": 0.8774,
+      "fpr": 0.2832,
+      "precision": 0.744,
+      "f1": 0.8052,
+      "parse_fail": 0
+    },
+    "Java": {
+      "n": 69,
+      "n_vuln": 38,
+      "n_safe": 31,
+      "recall": 0.9211,
+      "fpr": 0.0968,
+      "precision": 0.9211,
+      "f1": 0.9211,
+      "parse_fail": 0
+    },
+    "PHP": {
+      "n": 391,
+      "n_vuln": 178,
+      "n_safe": 213,
+      "recall": 0.8427,
+      "fpr": 0.1878,
+      "precision": 0.7895,
+      "f1": 0.8152,
+      "parse_fail": 0
+    },
+    "Python": {
+      "n": 221,
+      "n_vuln": 106,
+      "n_safe": 115,
+      "recall": 0.8208,
+      "fpr": 0.1304,
+      "precision": 0.8529,
+      "f1": 0.8365,
+      "parse_fail": 2
+    }
+  },
+  "cost": {
+    "mode": "greedy",
+    "k": 1,
+    "n": 1197,
+    "total_secs": 1274.7,
+    "secs_per_case": 1.065,
+    "samples_per_case": 1,
+    "max_new_tokens": 180
+  }
+}
