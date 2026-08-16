@@ -121,12 +121,37 @@ def aggregate(llm: dict, joern: dict | None, graph: dict | None, policy: str) ->
 
     # JOERN-NO-BETTER / INCONCLUSIVE — Joern 을 판정에 넣지 않는다
     if llm.get("detected"):
-        return llm_result(llm, source="llm", status="DONE")
-    if graph_vuln:
-        return vuln(source="graph", evidence=graph.get("reason"), status="DONE",
-                    score=llm.get("score"), vulnerability=graph.get("category", "DETECTED"),
-                    reason=graph.get("reason", ""))
-    return safe(source="llm", status="DONE", score=llm.get("score"))
+        r = llm_result(llm, source="llm", status="DONE")
+    elif graph_vuln:
+        r = vuln(source="graph", evidence=graph.get("reason"), status="DONE",
+                 score=llm.get("score"), vulnerability=graph.get("category", "DETECTED"),
+                 reason=graph.get("reason", ""))
+    else:
+        r = safe(source="llm", status="DONE", score=llm.get("score"))
+    return attach_joern_evidence(r, joern)
+
+
+def attach_joern_evidence(result: dict, joern: dict | None) -> dict:
+    """Joern v3 산출물을 **판정에 쓰지 않고** 근거로만 덧붙인다.
+
+    V3-FAIL (REPORT_V3 §4: precision 0.5652 < 0.70) 이므로 v3 는 판정에서 빠진다.
+    다만 taint flow 와 sanitizer 적중은 사용자에게 "왜 그렇게 봤는지" 보여주는 값이 있고,
+    판정을 건드리지 않으므로 오탐을 만들지 않는다.
+    """
+    if not joern:
+        return result
+    ev: dict = {}
+    if joern.get("path"):
+        ev["flow"] = joern["path"]
+    if joern.get("sanitizer_hits"):
+        ev["sanitizer_hits"] = joern["sanitizer_hits"]
+    if joern.get("verdict") == "safe_sanitized":
+        ev["joern_note"] = "sanitized_flow"
+    if ev:
+        ev["joern_verdict"] = joern.get("verdict")
+        ev["advisory_only"] = True   # 판정에 쓰이지 않았음을 명시
+        result["joern_evidence"] = ev
+    return result
 
 
 def policy_for(language: str, policy_map: dict | str) -> str:
