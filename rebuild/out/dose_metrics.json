@@ -1,0 +1,84 @@
+{
+  "spec": "rebuild/DOSE_RUN_SPEC.md",
+  "seed": 42,
+  "n_boot": 2000,
+  "steps_compared": [
+    450,
+    750
+  ],
+  "total_planned_steps": 1674,
+  "sanity_check": {
+    "tol": 0.005,
+    "splits": {
+      "primevul_report": {
+        "target": 0.58,
+        "observed": 0.5802,
+        "passed": true
+      },
+      "cleanvul_v2_report": {
+        "target": 0.621,
+        "observed": 0.6208,
+        "passed": true
+      },
+      "test": {
+        "target": 0.887,
+        "observed": 0.8875,
+        "passed": true
+      }
+    },
+    "passed": true
+  },
+  "splits": {
+    "primevul_report": {
+      "split": "primevul_report",
+      "n": 288,
+      "auc_step450": 0.5645,
+      "auc_step750": 0.5802,
+      "delta_auc": 0.0157,
+      "n_boot_used": 2000,
+      "ci_lo": -0.0099,
+      "ci_hi": 0.0425,
+      "n_resample_units": 144,
+      "unit": "pair_id",
+      "improves": false,
+      "linear_extrapolation_to_step_1674": 0.6286,
+      "extrap_reaches_target_0_75": false
+    },
+    "cleanvul_v2_report": {
+      "split": "cleanvul_v2_report",
+      "n": 2706,
+      "auc_step450": 0.6018,
+      "auc_step750": 0.6208,
+      "delta_auc": 0.019,
+      "n_boot_used": 2000,
+      "ci_lo": 0.0117,
+      "ci_hi": 0.0267,
+      "n_resample_units": 1353,
+      "unit": "pair_id",
+      "improves": true,
+      "linear_extrapolation_to_step_1674": 0.6793,
+      "extrap_reaches_target_0_75": false
+    },
+    "test": {
+      "split": "test",
+      "n": 1197,
+      "auc_step450": 0.874,
+      "auc_step750": 0.8875,
+      "delta_auc": 0.0135,
+      "n_boot_used": 2000,
+      "ci_lo": 0.0043,
+      "ci_hi": 0.0229,
+      "n_resample_units": 1197,
+      "unit": "item",
+      "improves": true,
+      "linear_extrapolation_to_step_1674": 0.9291,
+      "extrap_reaches_target_0_75": true
+    }
+  },
+  "external_splits": [
+    "primevul_report",
+    "cleanvul_v2_report"
+  ],
+  "n_external_improving": 1,
+  "FINAL_VERDICT": "DOSE-RESPONSE-WEAK"
+}
