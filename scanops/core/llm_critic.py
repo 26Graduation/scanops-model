@@ -41,8 +41,13 @@ def parse_verdict(raw: str) -> str:
     return m.group(1).upper()
 
 
-def build_prompt(category: str, language: str, path: list[dict]) -> str:
-    """path = [{"line":int,"code":str,"role":"source|intermediate|sink"}, ...]"""
+def build_prompt(category: str, language: str, path: list[dict], variant: str = "v1") -> str:
+    """path = [{"line":int,"code":str,"role":"source|intermediate|sink"}, ...]
+
+    variant "v1" = 사전등록 원문 프롬프트.
+    variant "v2" = UNPARSED 27.55% (전부 빈 응답) 대응으로 **1회만** 허용된 수정.
+                   형식을 앞세우고 답을 먼저 내게 한다. 폴백 규칙에 따른 단 한 번의 개정이다.
+    """
     steps = path[:MAX_PATH_LINES]
     lines = []
     for i, s in enumerate(steps, 1):
@@ -51,7 +56,7 @@ def build_prompt(category: str, language: str, path: list[dict]) -> str:
         code = (s.get("code") or "").strip()
         lines.append(f"{i}. [{role}] line {ln}: {code}")
     flow = "\n".join(lines)
-    return (
+    head = (
         "You are an expert security code auditor.\n"
         "A static analyzer found a data flow from user-controlled input to a sensitive sink.\n"
         f"Category: {category}. Language: {language}.\n"
@@ -59,17 +64,35 @@ def build_prompt(category: str, language: str, path: list[dict]) -> str:
         f"{flow}\n"
         "Question: before reaching the sink, is the data properly sanitized, validated, "
         "parameterized, or encoded for this sink type?\n"
-        'Answer exactly one line, starting with either "SANITIZED: YES" or "SANITIZED: NO", '
+    )
+    if variant == "v2":
+        return (
+            head
+            + "Do NOT think step by step. Do NOT describe the vulnerability in general.\n"
+            "Your response must BEGIN with one of these two exact strings:\n"
+            "SANITIZED: YES\n"
+            "SANITIZED: NO\n"
+            "Then at most one short sentence about THIS flow. Answer now."
+        )
+    return (
+        head
+        + 'Answer exactly one line, starting with either "SANITIZED: YES" or "SANITIZED: NO", '
         "then a short reason."
     )
 
 
 def critique(category: str, language: str, path: list[dict],
-             timeout: int = 180, num_predict: int = 600) -> dict[str, Any]:
-    """반환 {"verdict":"YES|NO|UNPARSED", "reason":str, "raw":str, "error":str|None}"""
+             timeout: int = 300, num_predict: int = 3000,
+             variant: str = "v1") -> dict[str, Any]:
+    """반환 {"verdict":"YES|NO|UNPARSED", "reason":str, "raw":str, "error":str|None}
+
+    num_predict 기본값 3000 의 근거: 600 으로 돌렸더니 27/98(27.55%)이 **빈 응답**이었다.
+    `api_rebuild.py:283` 이 같은 이유로 3000 을 쓴다 — Qwen3.5 chat 경로는 <think> 가
+    먼저 나와 예산을 다 먹으면 본문이 잘려 빈 문자열이 된다.
+    """
     if not path:
         return {"verdict": "UNPARSED", "reason": "", "raw": "", "error": "empty_path"}
-    prompt = build_prompt(category, language, path)
+    prompt = build_prompt(category, language, path, variant=variant)
 
     # cold start 시 워커가 **빈 문자열**을 돌려주는 일이 실측됐다(첫 호출 27.3s, raw="").
     # 이건 형식 실패가 아니라 기동 지연이므로 1회만 재시도한다. 재시도해도 비면 UNPARSED.

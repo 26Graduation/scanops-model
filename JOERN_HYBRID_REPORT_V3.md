@@ -212,3 +212,82 @@ sanitizer 신호로서 판별력이 없다. → §12 에 후보로 남긴다.
 **세 언어 모두 parse_fail < 30%** → 제외된 언어 없음.
 sanitizer 는 v2-vuln 의 **5.8%(6/104)** 에만 걸렸다. 즉 **v3 단독으로는 어제 문제가 해결되지
 않는다.** 가설의 무게는 전적으로 Critic(§3)에 실린다.
+
+---
+
+## §3 LLM Critic — tune 게이트 (사전등록 §3-0)
+
+### 3-1. 프롬프트 v1 (사전등록 원문) 결과
+
+`rebuild/out/critic_gate_tune.json` / 원자료 `critic_raw_cleanvul_v2_tune.jsonl`
+
+| 항목 | 값 |
+|---|---|
+| 대상 (v3 vuln ∧ path 보유) | **98** |
+| 채점된 건수 (YES+NO) | 71 |
+| **UNPARSED** | **27 (27.55%)** — 전부 `empty_response` |
+| Critic YES | **0** |
+| Critic NO | **71** |
+| **T1 정확도** | **0.4648** |
+| **T1 자명 기준선 ("항상 NO")** | **0.4648** |
+| **T1 마진** | **0.0000** (요구 +0.15) → **불통과** |
+| T2 식별자 포함률 | **0.8265** (요구 ≥0.60) → **통과** |
+| T3 | **FAIL** (쌍 29개 채점, 쌍 내부 불일치 0.0, 전체 YES율 0.0) |
+| **판정** | **`CRITIC-KILL`** |
+
+| 언어 | n | 정확도 | YES |
+|---|---|---|---|
+| Java | 19 | 0.4737 | 0 |
+| Python | 44 | 0.5000 | 0 |
+| JavaScript | 8 | 0.2500 | 0 |
+
+**Critic 이 YES 를 단 한 번도 말하지 않았다.** 그래서 T1 정확도가 자명 기준선과
+**소수점까지 똑같다** — 이 Critic 은 "항상 NO"라고 답하는 상수 함수와 구별되지 않는다.
+T3 의 0.0/0.0 도 같은 이유의 축퇴(degenerate)다.
+
+### 3-2. 그런데 T2 는 통과했다 — 이것이 오늘의 진짜 소득
+
+| | CTX-1 (같은 파일 문맥) | **오늘 (Joern 흐름 슬라이스)** |
+|---|---|---|
+| 패치 식별자 포함률 | **17.1%** | **82.65%** |
+
+CTX-1 의 실패 원인은 "**정보가 문맥에 없어서**"였다(`CTX_RESULTS.md` §6).
+오늘 Joern 슬라이스는 그 문제를 **해결했다** — 판단에 필요한 식별자가 82.65% 의 경우에
+실제로 프롬프트 안에 들어갔다. 재도전 조건 ①은 **처음으로 충족**됐다.
+
+**그럼에도 T1 마진이 0 이다.** 즉 오늘 결과는 이렇게 분리된다:
+
+> **정보 전달은 성공했고(T2 0.83), 그 정보를 쓰는 데 실패했다(T1 마진 0).**
+> 병목은 이제 **문맥이 아니라 모델**이다.
+
+이건 어젯밤·CTX-1 과는 **다른 층위의 음성 결과**다. 어제는 "Joern 신호가 라벨과 무관",
+CTX-1 은 "문맥에 정보가 없음"이었는데, 오늘은 **정보를 넣어줘도 이 모델이 못 쓴다**는 것이다.
+
+### 3-3. 왜 못 쓰는가 — 응답을 보면 드러난다
+
+NO 응답의 근거 문장은 흐름 분석이 아니라 **CVE 설명 문구**였다:
+
+```
+- The vulnerability allows attackers to write to arbitrary filesystem locations
+  via a crafted zip archive that contains entries with path traversal sequences
+- The vulnerability is due to the fact that the product allows arbitrary
+  deserialization of JSON data into a PushEvent object ...
+```
+
+주어진 흐름의 중간 노드를 살피는 대신 **판정 서식 학습(QLoRA)이 만들어낸 취약점 서술
+템플릿을 재생하고 있다.** `_gen_meta` 주석의 전제("chat 경로면 일반 지시수행이 동작한다")가
+**이 과제에서는 성립하지 않는다** — 형식은 따르지만 질문에 답하지 않는다.
+
+### 3-4. UNPARSED 27.55% 처리 (폴백 규칙 발동)
+
+27건 전부 `empty_response` 였다(1회 재시도 후에도). 형식 실패가 아니라 **생성 예산 고갈**로
+보인다 — `api_rebuild.py:283` 이 같은 이유로 `num_predict=3000` 을 쓴다("think 가 예산을
+다 먹는 경우가 실측됨").
+
+폴백 규칙("UNPARSED > 20% → 프롬프트를 **1회** 수정해 재시도")에 따라 **단 한 번** 개정했다:
+
+- `num_predict` 600 → **3000**
+- 프롬프트 v2: "Do NOT think step by step… 응답은 반드시 `SANITIZED: YES|NO` 로 **시작**"
+
+두 프롬프트를 섞으면 측정이 편향되므로 **98건 전부를 v2 로 다시** 돌린다.
+v1 결과는 위 표에 보존한다.

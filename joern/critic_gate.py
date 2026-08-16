@@ -71,13 +71,15 @@ def patch_identifiers(vuln_code: str, safe_code: str) -> set[str]:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=0, help="0=전건, N=층화 N건")
+    ap.add_argument("--variant", default="v1", help="프롬프트 변형 (v1=사전등록 원문, v2=1회 개정)")
     args = ap.parse_args()
 
+    suffix = "" if args.variant == "v1" else f"_{args.variant}"
     rows = [json.loads(l) for l in (OUT / "joern_v3_raw_cleanvul_v2_tune.jsonl").open()]
     targets = [r for r in rows if r["joern_verdict"] == "vuln" and r.get("path")]
     print(f"[gate] tune n={len(rows)} joern_v3_vuln(with path)={len(targets)}", flush=True)
     if not targets:
-        (OUT / "critic_gate_tune.json").write_text(json.dumps(
+        (OUT / f"critic_gate_tune{suffix}.json").write_text(json.dumps(
             {"verdict": "CRITIC-KILL", "reason": "대상 0건", "n_target": 0}, indent=2))
         print("[gate] CRITIC-KILL (대상 0건)")
         return 0
@@ -109,7 +111,7 @@ def main() -> int:
         for r in d.values():
             need.setdefault(r["case_id"], r)
 
-    raw_path = OUT / "critic_raw_cleanvul_v2_tune.jsonl"
+    raw_path = OUT / f"critic_raw_cleanvul_v2_tune{suffix}.jsonl"
     done: dict[str, dict] = {}
     if raw_path.exists():
         for line in raw_path.open():
@@ -125,7 +127,7 @@ def main() -> int:
     with raw_path.open("a") as fh:
         for i, r in enumerate(todo, 1):
             cat = (r.get("categories") or ["unknown"])[0]
-            res = critique(cat, r["lang"], r["path"])
+            res = critique(cat, r["lang"], r["path"], variant=args.variant)
             rec = {"case_id": r["case_id"], "pair_id": r["pair_id"], "lang": r["lang"],
                    "label": r["label"], "category": cat,
                    "critic": res["verdict"], "reason": res["reason"],
@@ -198,6 +200,7 @@ def main() -> int:
         verdict = "CRITIC-WEAK"
 
     result = {
+        "prompt_variant": args.variant,
         "verdict": verdict,
         "n_target": len(targets), "n_scored": len(scored),
         "unparsed": len(unparsed),
@@ -218,7 +221,7 @@ def main() -> int:
                          "yes": sum(1 for x in s if x["critic"] == "YES")}
     result["by_lang"] = by_lang
 
-    (OUT / "critic_gate_tune.json").write_text(json.dumps(result, indent=2, ensure_ascii=False))
+    (OUT / f"critic_gate_tune{suffix}.json").write_text(json.dumps(result, indent=2, ensure_ascii=False))
     print(json.dumps(result, indent=2, ensure_ascii=False))
     return 0
 
