@@ -548,3 +548,46 @@ Message : ERROR: relation "idx_vulns_scan" already exists
 
 **온프레미스 최초 설치에서는 문제가 없다**(빈 DB). 그러나 **이전 버전 볼륨이 남아 있으면
 부팅이 실패**하므로, README에 "업그레이드 시 마이그레이션 상태 확인 또는 볼륨 초기화"를 적었다.
+
+### §5-7 백엔드 온프레미스 기동 검증 (최신 코드, 2026-08-17)
+
+`scanops-backend@845ea09`(pull 직후)로 빌드해 **5개 서비스 전부 healthy** 확인:
+
+```
+backend        Up (healthy)   :8080
+model-api      Up (healthy)   :8100
+llama-server   Up (healthy)   (내부 8080)
+joern-worker   Up (healthy)   (내부 8200)
+postgres       Up (healthy)
+```
+
+Flyway `Successfully applied 9` migrations → `Started ScanopsApplication`.
+
+**고친 결함 2건** (기동해보지 않았으면 못 찾았다):
+
+| # | 증상 | 원인 | 수정 |
+|---|---|---|---|
+| 1 | 백엔드 이미지 빌드 실패 (`no match for platform in manifest`) | `eclipse-temurin:17-jdk-alpine` / `17-jre-alpine` 이 **amd64 전용**이다(`docker manifest inspect` 확인). arm64 호스트에서 빌드 불가 | `17-jdk-jammy` / `17-jre-jammy`(멀티아치)로 교체 |
+| 2 | 백엔드 재시작 루프 (`relation "idx_vulns_scan" already exists`) | **V1__init_schema.sql:71 과 V3__rebuild_vulnerabilities.sql:28 이 같은 인덱스를 중복 생성**한다 → **빈 DB 에서도 V3 가 반드시 실패** | V3 를 `CREATE INDEX IF NOT EXISTS` 로 멱등화 |
+
+> 2번은 "이전 볼륨이 남아서"가 아니었다. 볼륨을 완전히 지우고 다시 올려도 재현됐고,
+> 마이그레이션 파일을 직접 대조해 중복을 확인했다. 다른 인덱스에는 중복이 없다(전수 확인).
+
+**로컬 인증 — GitHub OAuth 없이 동작 확인**
+
+```bash
+POST /api/auth/signup  {"email","password","name"}  → 200, JWT 발급 (269자)
+GET  /api/auth/me      Authorization: Bearer <JWT>  → 200
+  {"id":"22eba62c-…","plan":"FREE","name":"OnPrem Admin","email":"onprem@local.test"}
+```
+(경로는 `/register`가 아니라 **`/signup`** 이다 — `AuthController.java:37`)
+
+**`POST /api/scans` 계약 확인**
+
+```bash
+POST /api/scans {"targetUrl","ownerEmail","scanMode":"GITHUB_REPO"}
+→ HTTP 402 {"error":"토큰이 부족합니다… 필요 300, 잔액 0","purchaseTokens":3000,…}
+```
+인증을 통과하고 **최신 과금 로직(토큰 차감)까지 도달**했다. 스캔 자체는
+`GITHUB_REPO` 모드라 외부 clone 이 필요해 온프레미스에서는 완결되지 않는다(§5-5 표).
+온프레미스 코드 분석은 **model-api 직접 호출**(§6 데모)이 경로다.
