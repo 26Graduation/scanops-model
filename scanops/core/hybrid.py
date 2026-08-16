@@ -131,24 +131,36 @@ def aggregate(llm: dict, joern: dict | None, graph: dict | None, policy: str) ->
     return attach_joern_evidence(r, joern)
 
 
-def attach_joern_evidence(result: dict, joern: dict | None) -> dict:
-    """Joern v3 산출물을 **판정에 쓰지 않고** 근거로만 덧붙인다.
+def attach_joern_evidence(result: dict, joern: dict | None,
+                          critic: dict | None = None) -> dict:
+    """Joern 산출물을 **판정에 쓰지 않고** 근거로만 덧붙인다.
 
-    V3-FAIL (REPORT_V3 §4: precision 0.5652 < 0.70) 이므로 v3 는 판정에서 빠진다.
-    다만 taint flow 와 sanitizer 적중은 사용자에게 "왜 그렇게 봤는지" 보여주는 값이 있고,
-    판정을 건드리지 않으므로 오탐을 만들지 않는다.
+    v3: V3-FAIL (REPORT_V3 §4, precision 0.5652 < 0.70)
+    v4: **V4-FAIL** (REPORT_V4 §4, precision 0.5909 < 0.70) — 결함 2건을 고쳤는데도 미달.
+        `self`/`this` source 는 35/98 → 0/89 으로 완전히 사라졌지만, 흐름 하나를 빼면
+        같은 파일의 다른 흐름이 자리를 채워 판정이 그대로다(REPORT_V4 §2-2).
+
+    Critic 은 어떤 정책에서도 판정에 개입하지 않는다. 이유는 성능이 아니라 **상한**이다:
+    Critic 대상의 7.1% 만 슬라이스에 sanitizer 성 토큰을 갖고 있고, gold=safe 는 5.1% 다
+    (REPORT_V4 §3-4). 완벽한 Critic 이어도 그 이상 고칠 수 없다.
     """
-    if not joern:
+    if not joern and not critic:
         return result
     ev: dict = {}
-    if joern.get("path"):
-        ev["flow"] = joern["path"]
-    if joern.get("sanitizer_hits"):
-        ev["sanitizer_hits"] = joern["sanitizer_hits"]
-    if joern.get("verdict") == "safe_sanitized":
-        ev["joern_note"] = "sanitized_flow"
-    if ev:
+    if joern:
+        if joern.get("path"):
+            ev["flow"] = joern["path"]
+        if joern.get("sanitizer_hits"):
+            ev["sanitizer_hits"] = joern["sanitizer_hits"]
+        if joern.get("verdict") == "safe_sanitized":
+            ev["joern_note"] = "sanitized_flow"
         ev["joern_verdict"] = joern.get("verdict")
+    if critic:
+        # 응답은 보여주되 판정에 쓰지 않는다는 사실을 같은 객체에 박아둔다.
+        ev["critic"] = {"verdict": critic.get("verdict"),
+                        "reason": (critic.get("reason") or "")[:300],
+                        "used_for_decision": False}
+    if ev:
         ev["advisory_only"] = True   # 판정에 쓰이지 않았음을 명시
         result["joern_evidence"] = ev
     return result
