@@ -70,11 +70,24 @@ def critique(category: str, language: str, path: list[dict],
     if not path:
         return {"verdict": "UNPARSED", "reason": "", "raw": "", "error": "empty_path"}
     prompt = build_prompt(category, language, path)
-    try:
-        raw = llm_chat("", [{"role": "user", "content": prompt}],
-                       {"temperature": 0.0, "num_predict": num_predict}, timeout=timeout)
-    except Exception as e:  # noqa: BLE001
-        return {"verdict": "UNPARSED", "reason": "", "raw": "", "error": str(e)[:200]}
+
+    # cold start 시 워커가 **빈 문자열**을 돌려주는 일이 실측됐다(첫 호출 27.3s, raw="").
+    # 이건 형식 실패가 아니라 기동 지연이므로 1회만 재시도한다. 재시도해도 비면 UNPARSED.
+    raw = ""
+    err = None
+    for attempt in (0, 1):
+        try:
+            raw = llm_chat("", [{"role": "user", "content": prompt}],
+                           {"temperature": 0.0, "num_predict": num_predict}, timeout=timeout)
+        except Exception as e:  # noqa: BLE001
+            err = str(e)[:200]
+            raw = ""
+        if strip_think(raw):
+            err = None
+            break
+    if not strip_think(raw):
+        return {"verdict": "UNPARSED", "reason": "", "raw": raw[:2000],
+                "error": err or "empty_response"}
     verdict = parse_verdict(raw)
     cleaned = strip_think(raw)
     m = _VERDICT_RE.search(cleaned)
