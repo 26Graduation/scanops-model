@@ -225,3 +225,49 @@ JOERN_HYBRID_REPORT_V3.md는 T2=0.8265를 근거로 "정보 전달은 성공했�
 | 2 | 모든 Joern 요청이 `unknown` | `tmpfs: /tmp`가 **noexec**라 Joern이 zstd 네이티브 바이너리를 실행 못 함 (`"the configured temp directory (/tmp) is mounted with noexec flag"`) | `/tmp:size=4g,exec` |
 
 두 결함 모두 **실제로 띄워보지 않았으면 발견되지 않았다.** `config` 통과만으로는 잡히지 않는다.
+
+---
+
+## §6 데모 응답 3건 (실행 원본, 고치지 않음)
+
+**실행 조건**: 온프레미스 스택, `docker compose -p scanops-onprem-demo --profile llm`.
+전문은 `scanops-infra/demo/response_{a,b,c}.json`, 해석은 `scanops-infra/demo/NOTES.md`.
+
+### ⚠️ 이 데모의 LLM은 프로덕션 모델이 아니다
+
+| | 프로덕션(SaaS) | **이 데모** |
+|---|---|---|
+| 모델 | `scanops-rebuild-9b-q4km.gguf` (Qwen3.5-9B **QLoRA**) | **베이스 `Qwen3.5-9B-Q4_K_M`** |
+| 이유 | RunPod 볼륨 | **v1 어댑터 GGUF가 로컬에 없다** (로컬은 7B LoRA뿐) |
+
+### 결과
+
+| 샘플 | detected | vulnerability | source | status | elapsed |
+|---|---|---|---|---|---|
+| (a) Java SQLi (문자열 연결→executeQuery) | **false** | NONE | llm | DONE | 77.4s |
+| (b) Python cmdi (request.args→os.system) | **false** | NONE | llm | DONE | 142.4s |
+| (c) Java 안전 (PreparedStatement.setString) | **false** | NONE | llm | DONE | 174.4s |
+
+세 건 모두 `joern_evidence = {"joern_verdict":"unknown","advisory_only":true}`.
+
+### 미탐의 원인 — 측정으로 확인
+
+llama-server 원문 출력을 직접 받아봤다:
+```
+'<think>\nThinking Process:\n\n1.  **Analyze the Request:** ...'
+```
+베이스 모델은 `<think>`부터 낸다. `_detect`는 `n_predict=200`으로 호출하므로
+**사고에 예산이 다 쓰여 4줄 서식에 도달하지 못한다** → 파싱 실패 → `NONE`.
+파인튜닝 어댑터는 정확히 그 4줄 서식을 내도록 학습된 모델이다.
+
+> **따라서 이 미탐은 "다른 모델을 끼운 결과"이지 파이프라인 결함이 아니다.**
+> 다만 그것을 **측정으로 확인했을 뿐이고, 어댑터를 끼운 데모는 오늘 확보하지 못했다**(§9).
+> `joern_evidence`가 빈 것은 §5-3의 noexec 결함 때문이며, **수정 후 재검증에서는
+> 같은 SQLi 스니펫에 대해 `verdict=vuln`, `categories=['sqli']`, 4스텝 path가 나왔다**
+> (`demo/NOTES.md` 마지막 절).
+
+### 확인된 것
+
+미탐이더라도 **응답 계약은 설계대로** 나왔다:
+`source="llm"`, `status="DONE"`, `joern_evidence.advisory_only=true`(판정 미개입),
+`evidence`·`score` 필드 존재. 백엔드 `ScanopsModelClient` 계약과 호환된다.
