@@ -119,3 +119,68 @@ sanitizer가 **0.5000 → 0.5172** 만큼 기여했다.
 > **가설 미지지**: "taint 계열만 보면 Joern이 낫다"는 기대가 있었으나,
 > precision 0.5172는 CleanVul의 0.5909보다도 낮다. recall은 0.8182로 훨씬 높지만
 > FPR이 0.7636이라 자명 기준선(FPR 1.0)에 가까워지는 방향이다.
+
+---
+
+## §4 CleanVul 벤치에 대한 발견 — 사실만
+
+### §4-1 측정한 숫자 (Critic 대상 98건 / safe 측 48건, tune split)
+
+| 측정 | 값 | 뜻 |
+|---|---|---|
+| sanitizer 성 패치의 **그 줄이 Joern 슬라이스에 등장** | **1/21 (4.8%)** | union으로 넓혀도 동일 |
+| safe 측 패치가 **sanitizer 호출 추가가 아님** | **26/48 (54.2%)** | sink 교체·리팩터링·시그니처 축소 등 |
+| 쌍의 vuln/safe 슬라이스가 **글자까지 동일** | **16/42 (38%)** | 같은 입력에 다른 답을 요구한 셈 |
+| Critic이 고칠 수 있는 상한 (슬라이스에 sanitizer 토큰 존재 ∧ gold=safe) | **5/98 (5.1%)** | 완벽한 Critic이어도 이 이상 불가 |
+
+출처: JOERN_HYBRID_REPORT_V4.md §3-2·§3-4.
+
+### §4-2 대표 사례 `cvh_124`
+
+패치는 **한 줄**이었다:
+```diff
++            body = StringEscapeUtils.escapeHtml4andJS(body);
+```
+그런데 sink는 `mapper.readValue(body, PushEvent.class)` — **Jackson 역직렬화**다.
+HTML 이스케이프는 역직렬화를 안전하게 만들지 않는다.
+
+**세 모델이 독립적으로 같은 답(NO)을 냈고, 그중 둘은 이유까지 댔다**:
+- 베이스 Qwen3.5-9B: "the `escapeHtml4andJS` function only sanitizes HTML/JS characters
+  but does not validate or deserialize the JSON structure"
+- 외부 Claude Haiku 4.5: 같은 취지
+- v1 어댑터: NO (근거는 카테고리 문구 재생)
+
+### §4-3 CleanVul이 무엇을 라벨링한 데이터인가 (Q1)
+
+공식 출처: **arXiv:2411.17274**, *"CleanVul: Automatic Function-Level Vulnerability Detection
+in Code Commits Using LLM Heuristics"* (초록 원문 확인, <https://arxiv.org/abs/2411.17274>).
+
+초록에서 확인된 사실(인용):
+> "the automatic and indiscriminate labeling of **all changes in vulnerability-fixing commits (VFCs)**
+> as vulnerability-related… not all changes in a commit aimed at fixing vulnerabilities pertain to
+> security threats; many are routine updates like bug fixes or test improvements"
+
+> "the first methodology that uses the Large Language Model (LLM) with a heuristic enhancement to
+> **automatically identify vulnerability-fixing changes from VFCs**, achieving an F1-score of 0.82"
+
+> "CleanVul, a high-quality dataset comprising 8,198 functions… demonstrating **Correctness (90.6%)**"
+
+**따라서**: CleanVul의 라벨은 "**이 변경이 취약점을 고치는 변경인가**"를 LLM 휴리스틱(VulSifter,
+그 과제에서 F1 0.82)으로 판정한 결과다. "**이 sink가 이제 안전한가**"를 정적 분석으로 판정한 것이 아니다.
+
+**이 벤치가 무엇을 재는지**:
+CleanVul은 **함수 단위 취약점 존재 여부**를 재기에는 적합하다(Correctness 90.6%).
+그러나 **"이 데이터흐름이 sanitize 되었는가"를 묻는 질문**에는 부분적으로만 맞는다 —
+취약점 수정은 sanitizer 추가만이 아니라 **sink 교체·구조 변경**으로도 이뤄지고,
+우리 측정에서 그런 유형이 54.2%였기 때문이다.
+
+> **라벨이 틀렸다는 주장이 아니다.** 우리가 던진 질문("SANITIZED YES/NO")이
+> 라벨이 담은 의미의 **일부만** 덮는다는 뜻이다.
+> 이것이 §2 #5·#7·#8·#9에서 네 번 연속 YES 0건이 나온 구조적 이유다.
+
+### §4-4 자기 정정
+
+JOERN_HYBRID_REPORT_V3.md는 T2=0.8265를 근거로 "정보 전달은 성공했다"고 적었다.
+**이 문장은 2026-08-17에 철회됐다.** T2는 "바뀐 줄의 **식별자**가 슬라이스 텍스트에 있는가"를
+셌는데, `self`·`kwargs`·`results` 같은 흔한 이름이면 자동 통과한다.
+**판단 근거(sanitizer 호출 자체)로 다시 재면 4.8%다**(§4-1).
