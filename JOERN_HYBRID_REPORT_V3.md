@@ -443,3 +443,84 @@ FPR 도 함께 올린**(0.375 → 0.467) 결과다.
 | 22:5x | UNPARSED 27.55% → 프롬프트 **1회** 개정 후 전건 재측정 | UNPARSED 만 재시도 | 두 프롬프트를 섞으면 T1 이 편향된다 | v1 결과는 §3-1 에 보존 |
 | 22:5x | `V3-FAIL` 이므로 hybrid **판정 로직 불변**, evidence 만 추가 | policy 에 JOERN-V3-CRITIC 추가 | 사전등록 §3-0 | `attach_joern_evidence` 호출 제거 |
 | 22:59 | Dockerfile 을 microdnf 로 수정 | apt-get 유지 | 베이스가 AlmaLinux 9 (실측) | git revert |
+
+---
+
+## §9 실패 · 미완 · 폴백 발동
+
+| # | 항목 | 상태 | 사유 / 처리 |
+|---|---|---|---|
+| 9-1 | **path 보유율 0%** (어젯밤 산출물) | ✅ 해결 | 폴백 발동 → Phase 1 에서 드라이버 수정. v3 는 100% |
+| 9-2 | **v1 쿼리로 45초 오실행** | ✅ 해결 | `JOERN_SCRIPT` 를 import 뒤에 세팅해 늦었다. 중단·폐기·재실행 + 활성 스크립트 가드 추가 |
+| 9-3 | **오염된 sample 240건** | ✅ 폐기 | 위 중단 때 래퍼 셸이 다음 단계로 넘어가 v1 쿼리로 sample 을 완주. path 원소가 문자열인 것으로 판별해 삭제 |
+| 9-4 | **JS 102/102 parse_fail** | ✅ 해결 | v3 결함이 아니라 로컬 joern 설치에 astgen 바이너리 부재. 심볼릭 링크로 복구(§7 제거법) |
+| 9-5 | **sample 중복 append (535행)** | ✅ 해결 | 죽은 줄 알았던 체인이 살아 있었다. case_id 240 은 정확했고 dedupe |
+| 9-6 | **Critic UNPARSED 27.55%** | ✅ 폴백 | 전부 empty_response. 프롬프트 **1회** 개정(num_predict 3000) 후 전건 재측정 |
+| 9-7 | **Docker 빌드 실패 (exit 127)** | ✅ 해결 | 베이스가 AlmaLinux 9 라 apt-get 이 없다 → microdnf 로 수정 후 재빌드 |
+| 9-8 | `git add -A` 로 585파일 오커밋 | ✅ 되돌림 | `reset --soft` 후 의도한 파일만 재커밋. 이후 targeted add 만 사용 |
+| 9-9 | **프롬프트 v2 전건 재측정** | ⚠️ 진행 중 | 17.5s/건 × 98 ≈ 29분. 완료분은 `critic_gate_tune_v2.json` 에. **v1 판정(CRITIC-KILL)이 공식 판정** |
+| 9-10 | report 전건(1,878) v3 실행 | ❌ 미실행 | 사전등록 `V3-FAIL` 이므로 **의도적으로** 확장하지 않음 |
+| 9-11 | Critic 을 report 에 적용 | ❌ 미적용 | `CRITIC-KILL` 이므로 사전등록대로 미적용 |
+| 9-12 | 백엔드/프론트 필드 반영 | ❌ 미실행 | 선택 사항. 분석서버 응답은 **추가만** 하므로 기존 소비자 무영향 |
+
+---
+
+## §10 재현 명령어
+
+```bash
+cd scanops-model && git checkout feat/joern-hybrid-v2
+
+# Phase 1 — v3 배치 (sanitizer-aware). JS 를 쓰려면 astgen 링크가 필요하다(§7)
+python3 joern/bench_joern_v3.py tune
+python3 joern/bench_joern_v3.py sample
+
+# Phase 2 — Critic tune 게이트 (사전등록 프롬프트)
+python3 joern/critic_gate.py
+# 프롬프트 1회 개정본
+python3 joern/critic_gate.py --variant v2
+
+# Phase 3 — 파이프라인 벤치
+python3 joern/eval_v3.py sample
+
+# sanitizer 표 확인
+python3 joern/sanitizer_spec.py JAVASRC
+```
+
+---
+
+## §11 아키텍처 — 2-Stage 검증 흐름
+
+```mermaid
+flowchart TD
+  A[코드 스니펫] --> B[Joern v3 CPG]
+  B --> C{taint flow<br/>source→sink}
+  C -- 흐름 없음 --> S1[safe]
+  C -- 흐름 있음 --> D{sanitizer 패턴<br/>flow 노드 + 상위 AST 3단계}
+  D -- 전부 차단 --> S2[safe_sanitized]
+  D -- 살아남음 --> E["vuln + path{line,code,role}"]
+  E --> F[LLM Critic<br/>흐름 슬라이스만 제시]
+  F --> G{SANITIZED?}
+  G -- YES --> H[safe 로 강등]
+  G -- NO --> I[vuln 확정]
+  G -- UNPARSED --> J[vuln 유지, confidence low]
+
+  style F stroke-dasharray: 5 5
+  style G stroke-dasharray: 5 5
+  style H stroke-dasharray: 5 5
+```
+
+> **점선 구간(Critic)은 오늘 측정 결과 `CRITIC-KILL` 로 채택되지 않았다.**
+> 현재 파이프라인은 실선까지만 돌고, `E` 의 path 와 `S2` 의 sanitizer_hits 는
+> **판정이 아니라 근거(`advisory_only`)** 로만 응답에 실린다.
+
+```mermaid
+flowchart LR
+  subgraph 실제채택[현재 채택된 경로 - JOERN-NO-BETTER]
+    L[LLM v1] -->|detected| V[vuln]
+    L -->|미탐| G2[자체 graph]
+    G2 -->|vuln| V
+    G2 -->|그외| SF[safe]
+    JV[Joern v3] -.근거만.-> V
+    JV -.근거만.-> SF
+  end
+```
