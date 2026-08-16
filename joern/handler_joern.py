@@ -32,6 +32,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from joern.langmap import ensure_ext, resolve  # noqa: E402
 
 JOERN_BIN = os.getenv("JOERN_BIN", "joern")
+# sanitizer 표(sanFile)를 받는 쿼리 버전. v3 이상은 전부 지원한다.
+# (실측 사고: "taint_v3" 문자열 비교로 두었더니 taint_v4 에 sanFile 이 안 넘어가
+#  sanitizer 가 통째로 죽었다 — 스모크에서 safe_sanitized 가 0건이 되어 발견.)
+_SAN_AWARE_RE = re.compile(r"taint_v(\d+)\.sc$")
+
 SCRIPT = os.getenv("JOERN_SCRIPT", str(Path(__file__).resolve().parent / "queries" / "taint.sc"))
 WORK_ROOT = Path(os.getenv("JOERN_WORK_ROOT", "/tmp"))
 CHUNK_SIZE = int(os.getenv("JOERN_CHUNK", "25"))
@@ -133,7 +138,7 @@ def _run_chunk(in_dir: Path, joern_lang: str, out_file: Path, timeout: int) -> d
     # v3(sanitizer-aware) 쿼리에만 있는 파라미터. v2 이하 스크립트에는 넘기지 않는다
     # (Joern 은 미정의 --param 을 오류로 취급한다).
     san_file = os.getenv("JOERN_SANITIZER_FILE", "")
-    if san_file and "taint_v3" in os.path.basename(SCRIPT):
+    if san_file and _SAN_AWARE_RE.search(os.path.basename(SCRIPT)):
         cmd += ["--param", f"sanFile={san_file}"]
     # Joern 은 **CWD 아래에 `workspace/` 를 만든다**(실측). 레포 CWD 에서 돌리면
     # 프로젝트가 누적되고 요청끼리 충돌한다 → 청크 디렉토리의 부모(=job 전용 디렉토리)를

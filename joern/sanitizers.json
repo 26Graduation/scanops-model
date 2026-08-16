@@ -2,94 +2,404 @@
   "_source": "시드 = scanops/core/multi_graph.py:114 SANITIZERS (자체 graph 가 쓰던 표). 여기에 언어별 항목을 추가했다. 추가분 출처는 각 항목의 _note 참조.",
   "_semantics": "값은 Java java.util.regex 문법의 부분일치(find) 정규식. Joern 노드의 .code 텍스트에 대해 검사한다.",
   "_role_note": "지시서 원문은 '중간 노드'만 검사하라고 했으나, 지시서가 제시한 예시(PreparedStatement.set*, parameterized execute(sql, params))가 모두 sink 쪽 신호다. 따라서 flow 의 모든 노드(source/intermediate/sink)를 검사하고 걸린 노드의 role 을 기록한다. 이 편차는 보고서 §2 에 명시한다.",
-
+  "_applies_to_note": "각 패턴에 applies_to 를 달았다. 매칭 조건 = (finding 카테고리가 applies_to 에 있음) OR (applies_to 에 '*'). sink 타입과 무관한 sanitizer 를 전역 적용하면 의미가 붕괴한다(§8 D-1).",
+  "_v4_dropped": "판별력 0 으로 제거: new URL(/urlparse(/parse_url( — 쌍의 양쪽에 모두 등장(어제 §2-5). URL 파싱은 검증이 아니다.",
   "common": {
     "sqli": [
-      "\\.setString\\(|\\.setInt\\(|\\.setLong\\(|\\.setDouble\\(|\\.setBoolean\\(",
-      "prepareStatement\\(|PreparedStatement",
-      "AddWithValue|Parameters\\.Add",
-      "\\.execute\\([^)]*,\\s*[\\(\\[]",
-      "execute\\([\"'][^\"']*%s[\"']\\s*,",
-      "execute\\([\"'][^\"']*\\?[^\"']*[\"']\\s*,"
+      {
+        "re": "\\.setString\\(|\\.setInt\\(|\\.setLong\\(|\\.setDouble\\(|\\.setBoolean\\(",
+        "applies_to": [
+          "sqli"
+        ]
+      },
+      {
+        "re": "prepareStatement\\(|PreparedStatement",
+        "applies_to": [
+          "sqli"
+        ]
+      },
+      {
+        "re": "AddWithValue|Parameters\\.Add",
+        "applies_to": [
+          "sqli"
+        ]
+      },
+      {
+        "re": "\\.execute\\([^)]*,\\s*[\\(\\[]",
+        "applies_to": [
+          "sqli"
+        ]
+      },
+      {
+        "re": "execute\\([\"'][^\"']*%s[\"']\\s*,",
+        "applies_to": [
+          "sqli"
+        ]
+      },
+      {
+        "re": "execute\\([\"'][^\"']*\\?[^\"']*[\"']\\s*,",
+        "applies_to": [
+          "sqli"
+        ]
+      }
     ],
     "cmdi": [
-      "execFile\\(|execve\\(",
-      "shell\\s*=\\s*False",
-      "escapeshellarg\\(|shlex\\.quote\\(",
-      "ProcessStartInfo|ArgumentList",
-      "subprocess\\.(run|call|Popen)\\(\\s*\\["
+      {
+        "re": "execFile\\(|execve\\(",
+        "applies_to": [
+          "cmdi"
+        ]
+      },
+      {
+        "re": "shell\\s*=\\s*False",
+        "applies_to": [
+          "cmdi"
+        ]
+      },
+      {
+        "re": "escapeshellarg\\(|shlex\\.quote\\(",
+        "applies_to": [
+          "cmdi"
+        ]
+      },
+      {
+        "re": "ProcessStartInfo|ArgumentList",
+        "applies_to": [
+          "cmdi"
+        ]
+      },
+      {
+        "re": "subprocess\\.(run|call|Popen)\\(\\s*\\[",
+        "applies_to": [
+          "cmdi"
+        ]
+      }
     ],
     "pathtraver": [
-      "basename\\(|filepath\\.Base\\(",
-      "getCanonicalPath|getCanonicalFile",
-      "path\\.normalize|os\\.path\\.realpath|GetFullPath|filepath\\.Clean\\(",
-      "startsWith\\(|StartsWith\\(|\\.startswith\\(",
-      "secure_filename\\(",
-      "allowlist|allowedList|whitelist|ALLOWED"
+      {
+        "re": "basename\\(|filepath\\.Base\\(",
+        "applies_to": [
+          "pathtraver"
+        ]
+      },
+      {
+        "re": "getCanonicalPath|getCanonicalFile",
+        "applies_to": [
+          "pathtraver"
+        ]
+      },
+      {
+        "re": "path\\.normalize|os\\.path\\.realpath|GetFullPath|filepath\\.Clean\\(",
+        "applies_to": [
+          "pathtraver"
+        ]
+      },
+      {
+        "re": "startsWith\\(|StartsWith\\(|\\.startswith\\(",
+        "applies_to": [
+          "pathtraver"
+        ]
+      },
+      {
+        "re": "secure_filename\\(",
+        "applies_to": [
+          "pathtraver"
+        ]
+      },
+      {
+        "re": "allowlist|allowedList|whitelist|ALLOWED",
+        "applies_to": [
+          "pathtraver"
+        ]
+      }
     ],
     "ssrf": [
-      "allowlist|allowedList|whitelist|ALLOWED|ALLOW_LIST",
-      "in_array\\([^)]*allow",
-      "\\.includes\\(",
-      "urlparse\\(|parse_url\\(|new\\s+URL\\(|url\\.Parse\\("
+      {
+        "re": "allowlist|allowedList|whitelist|ALLOWED|ALLOW_LIST",
+        "applies_to": [
+          "ssrf"
+        ]
+      },
+      {
+        "re": "in_array\\([^)]*allow",
+        "applies_to": [
+          "ssrf"
+        ]
+      },
+      {
+        "re": "\\.includes\\(",
+        "applies_to": [
+          "ssrf"
+        ]
+      }
     ],
     "deser": [
-      "json\\.(loads?|decode|Unmarshal)\\(",
-      "json_decode\\(",
-      "yaml\\.safe_load\\(|YAML\\.safe_load\\(",
-      "JSON\\.parse\\(",
-      "literal_eval\\("
+      {
+        "re": "json\\.(loads?|decode|Unmarshal)\\(",
+        "applies_to": [
+          "deser"
+        ]
+      },
+      {
+        "re": "json_decode\\(",
+        "applies_to": [
+          "deser"
+        ]
+      },
+      {
+        "re": "yaml\\.safe_load\\(|YAML\\.safe_load\\(",
+        "applies_to": [
+          "deser"
+        ]
+      },
+      {
+        "re": "JSON\\.parse\\(",
+        "applies_to": [
+          "deser"
+        ]
+      },
+      {
+        "re": "literal_eval\\(",
+        "applies_to": [
+          "deser"
+        ]
+      }
     ],
     "codei": [
-      "literal_eval\\(",
-      "FILTER_VALIDATE",
-      "parseInt\\(|parseLong\\(|Number\\(|Integer\\.parse",
-      "JSON\\.parse\\("
+      {
+        "re": "literal_eval\\(",
+        "applies_to": [
+          "codei"
+        ]
+      },
+      {
+        "re": "FILTER_VALIDATE",
+        "applies_to": [
+          "codei"
+        ]
+      },
+      {
+        "re": "parseInt\\(|parseLong\\(|Number\\(|Integer\\.parse",
+        "applies_to": [
+          "codei"
+        ]
+      },
+      {
+        "re": "JSON\\.parse\\(",
+        "applies_to": [
+          "codei"
+        ]
+      }
     ],
     "xss": [
-      "escapeHtml|htmlspecialchars\\(|HtmlEncode\\(|Encode\\.forHtml|HTMLEscapeString",
-      "DOMPurify\\.sanitize\\(",
-      "textContent\\s*=",
-      "bleach\\.clean\\("
+      {
+        "re": "escapeHtml|htmlspecialchars\\(|HtmlEncode\\(|Encode\\.forHtml|HTMLEscapeString",
+        "applies_to": [
+          "xss"
+        ]
+      },
+      {
+        "re": "DOMPurify\\.sanitize\\(",
+        "applies_to": [
+          "xss"
+        ]
+      },
+      {
+        "re": "textContent\\s*=",
+        "applies_to": [
+          "xss"
+        ]
+      },
+      {
+        "re": "bleach\\.clean\\(",
+        "applies_to": [
+          "xss"
+        ]
+      }
     ]
   },
-
   "JAVASRC": {
     "_note": "지시서 §2 예시(escapeHtml*, encodeFor*, parseInt/Long, PreparedStatement.set*, isValid*, matches() 반영",
-    "sqli": ["createQuery\\([^)]*setParameter|setParameter\\("],
-    "xss": ["encodeFor[A-Za-z]+\\(", "StringEscapeUtils"],
-    "pathtraver": ["Paths\\.get\\([^)]*\\)\\.normalize\\(", "\\.toRealPath\\("],
-    "codei": ["Integer\\.parseInt\\(|Long\\.parseLong\\(|Double\\.parseDouble\\("],
+    "sqli": [
+      {
+        "re": "createQuery\\([^)]*setParameter|setParameter\\(",
+        "applies_to": [
+          "sqli"
+        ]
+      }
+    ],
+    "xss": [
+      {
+        "re": "encodeFor[A-Za-z]+\\(",
+        "applies_to": [
+          "xss"
+        ]
+      },
+      {
+        "re": "StringEscapeUtils",
+        "applies_to": [
+          "xss"
+        ]
+      }
+    ],
+    "pathtraver": [
+      {
+        "re": "Paths\\.get\\([^)]*\\)\\.normalize\\(",
+        "applies_to": [
+          "pathtraver"
+        ]
+      },
+      {
+        "re": "\\.toRealPath\\(",
+        "applies_to": [
+          "pathtraver"
+        ]
+      }
+    ],
+    "codei": [
+      {
+        "re": "Integer\\.parseInt\\(|Long\\.parseLong\\(|Double\\.parseDouble\\(",
+        "applies_to": [
+          "codei"
+        ]
+      }
+    ],
     "_any": [
-      "Integer\\.parseInt\\(|Long\\.parseLong\\(",
-      "isValid[A-Za-z]*\\(",
-      "\\.matches\\(",
-      "Pattern\\.(compile|matches)\\("
+      {
+        "re": "Integer\\.parseInt\\(|Long\\.parseLong\\(",
+        "applies_to": [
+          "codei",
+          "sqli",
+          "pathtraver",
+          "ssrf"
+        ]
+      },
+      {
+        "re": "isValid[A-Za-z]*\\(",
+        "applies_to": [
+          "*"
+        ]
+      },
+      {
+        "re": "\\.matches\\(",
+        "applies_to": [
+          "*"
+        ]
+      },
+      {
+        "re": "Pattern\\.(compile|matches)\\(",
+        "applies_to": [
+          "*"
+        ]
+      }
     ]
   },
-
   "PYTHONSRC": {
     "_note": "지시서 §2 예시(html.escape, shlex.quote, int(, quote(, parameterized execute) 반영",
-    "xss": ["html\\.escape\\(|cgi\\.escape\\(|markupsafe\\.escape\\(|escape\\("],
-    "cmdi": ["shlex\\.quote\\(|pipes\\.quote\\("],
-    "pathtraver": ["werkzeug\\.utils\\.secure_filename|os\\.path\\.abspath\\("],
+    "xss": [
+      {
+        "re": "html\\.escape\\(|cgi\\.escape\\(|markupsafe\\.escape\\(|escape\\(",
+        "applies_to": [
+          "xss"
+        ]
+      }
+    ],
+    "cmdi": [
+      {
+        "re": "shlex\\.quote\\(|pipes\\.quote\\(",
+        "applies_to": [
+          "cmdi"
+        ]
+      }
+    ],
+    "pathtraver": [
+      {
+        "re": "werkzeug\\.utils\\.secure_filename|os\\.path\\.abspath\\(",
+        "applies_to": [
+          "pathtraver"
+        ]
+      }
+    ],
     "_any": [
-      "\\bint\\(|\\bfloat\\(",
-      "quote\\(|quote_plus\\(",
-      "re\\.(match|fullmatch)\\(",
-      "\\.isdigit\\(|\\.isalnum\\("
+      {
+        "re": "\\bint\\(|\\bfloat\\(",
+        "applies_to": [
+          "codei",
+          "sqli",
+          "pathtraver",
+          "ssrf"
+        ]
+      },
+      {
+        "re": "quote\\(|quote_plus\\(",
+        "applies_to": [
+          "cmdi",
+          "pathtraver",
+          "ssrf"
+        ]
+      },
+      {
+        "re": "re\\.(match|fullmatch)\\(",
+        "applies_to": [
+          "*"
+        ]
+      },
+      {
+        "re": "\\.isdigit\\(|\\.isalnum\\(",
+        "applies_to": [
+          "*"
+        ]
+      }
     ]
   },
-
   "JSSRC": {
     "_note": "지시서 §2 예시(encodeURIComponent, DOMPurify.sanitize, escape(, parseInt(, textContent=) 반영",
-    "xss": ["encodeURIComponent\\(|encodeURI\\(|escapeHtml\\("],
-    "pathtraver": ["path\\.resolve\\(|path\\.basename\\("],
+    "xss": [
+      {
+        "re": "encodeURIComponent\\(|encodeURI\\(|escapeHtml\\(",
+        "applies_to": [
+          "xss"
+        ]
+      }
+    ],
+    "pathtraver": [
+      {
+        "re": "path\\.resolve\\(|path\\.basename\\(",
+        "applies_to": [
+          "pathtraver"
+        ]
+      }
+    ],
     "_any": [
-      "encodeURIComponent\\(",
-      "parseInt\\(|Number\\(",
-      "validator\\.[a-zA-Z]+\\(",
-      "\\.test\\(|\\.match\\("
+      {
+        "re": "encodeURIComponent\\(",
+        "applies_to": [
+          "xss",
+          "ssrf",
+          "pathtraver"
+        ]
+      },
+      {
+        "re": "parseInt\\(|Number\\(",
+        "applies_to": [
+          "codei",
+          "sqli",
+          "pathtraver",
+          "ssrf"
+        ]
+      },
+      {
+        "re": "validator\\.[a-zA-Z]+\\(",
+        "applies_to": [
+          "*"
+        ]
+      },
+      {
+        "re": "\\.test\\(|\\.match\\(",
+        "applies_to": [
+          "*"
+        ]
+      }
     ]
   }
 }

@@ -15,10 +15,14 @@ def load_spec(path: Path | None = None) -> dict:
     return json.loads((path or SPEC_PATH).read_text())
 
 
-def patterns_for(lang: str, spec: dict | None = None) -> dict[str, list[str]]:
-    """joern_lang(JAVASRC 등) → {category: [regex, ...]}"""
+def patterns_for(lang: str, spec: dict | None = None) -> dict[str, list[dict]]:
+    """joern_lang(JAVASRC 등) → {block_category: [{"re":..., "applies_to":[...]}, ...]}
+
+    v4: 값이 문자열이 아니라 dict 다. 매칭은 block_category 가 아니라
+    applies_to 로 한다(§8 D-1).
+    """
     spec = spec or load_spec()
-    out: dict[str, list[str]] = {}
+    out: dict[str, list[dict]] = {}
     for block_name in ("common", lang):
         block = spec.get(block_name) or {}
         for cat, pats in block.items():
@@ -31,9 +35,18 @@ def patterns_for(lang: str, spec: dict | None = None) -> dict[str, list[str]]:
 
 
 def write_san_file(lang: str, dest: Path, spec: dict | None = None) -> int:
-    """sanFile 을 dest 에 쓰고 줄 수를 반환."""
+    """sanFile 을 dest 에 쓰고 줄 수를 반환.
+
+    v4 형식: "<블록카테고리>\t<applies_to,콤마구분>\t<regex>"
+    """
     pats = patterns_for(lang, spec)
-    lines = [f"{cat}\t{p}" for cat, ps in sorted(pats.items()) for p in ps]
+    lines = []
+    for cat, ps in sorted(pats.items()):
+        for p in ps:
+            if isinstance(p, str):        # 구형식 안전장치
+                p = {"re": p, "applies_to": [cat]}
+            ap = ",".join(p.get("applies_to") or ["*"])
+            lines.append(f"{cat}\t{ap}\t{p['re']}")
     dest.write_text("\n".join(lines) + "\n")
     return len(lines)
 
