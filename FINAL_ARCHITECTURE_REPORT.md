@@ -436,3 +436,36 @@ python3 joern/eval_v4.py sample
 | v4 + 전략 A/D/E | `JOERN_HYBRID_REPORT_V4.md` | §8 (D-0 ~ D-5) |
 | CTX-1 문맥주입 | `rebuild/out/CTX_RESULTS.md` | §6·§7 |
 | ABLATION | `rebuild/out/ABLATION_RESULTS.md` | §0·§8 |
+
+---
+
+## §5-4 사양 실측 (2026-08-17, 프로덕션 모델 = 베이스 + LoRA)
+
+### 지연
+
+| 측정 | n | 평균 | 표준편차 | 범위 |
+|---|---|---|---|---|
+| 데모 샘플(짧은 스니펫 136~312자) | 3 | **19.3s** | 2.8s | 16.3 ~ 21.6s |
+| 내부 test(실제 CVE 함수 365~7,005자) | 5 | **88.3s** | 42.9s | 55.5 ~ 163.1s |
+
+> **CPU: 위 값(실측, Apple M3 / Docker Desktop, Metal 가속 불가 — 컨테이너에서 GPU 미사용).**
+> **GPU: 미실측** (Linux + CUDA 환경이 필요하다. compose에 `gpu` 프로파일은 있으나 검증하지 못했다.)
+
+### 메모리 피크 (docker stats, 유휴~분석 중)
+
+| 서비스 | 피크 |
+|---|---|
+| llama-server (9B Q4_K_M + LoRA) | **5.58 GiB** |
+| model-api | 41.6 MiB |
+| joern-worker | 25.0 MiB |
+
+### 측정 중 발생한 문제 (미해결)
+
+내부 test 10건 중 **5건이 HTTP 502**로 실패했고, 그 사이 `llama-server`가 **1회 재시작**했다
+(`RestartCount=1`, `OOMKilled=false`, `ExitCode=0`).
+
+- 컨텍스트 초과가 원인일 것으로 추정했으나 **단정할 수 없다** — 해당 test 코드의 최대 길이가
+  7,005자(≈1,751토큰)로 `LLAMA_CTX=4096` 안에 들어간다.
+- 대응: `.env.onprem.example`의 `LLAMA_CTX` 기본값을 **8192**로 올렸다(여유 확보).
+  **원인은 확정하지 못했다** — §9에 미완으로 남긴다.
+- 성공한 5건은 전부 `detected=true`였다.
