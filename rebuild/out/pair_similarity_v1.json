@@ -1,0 +1,133 @@
+{
+  "tag": "v1",
+  "note": "유사도 = difflib.SequenceMatcher(취약본, 패치본).ratio()",
+  "WARNING": "예측 대조다. 두 입력이 비슷하면 두 출력도 비슷해지는 부분이 항등에 가깝다는 점을 감안해 읽는다.",
+  "per_split": {
+    "내부test (CVE 묶음)": {
+      "n_pairs": 472,
+      "sim_median": 0.3941,
+      "ratio_sim_lt_0.3": 0.4237,
+      "ratio_sim_ge_0.8": 0.1377,
+      "sim_median_correct": 0.3628,
+      "sim_median_wrong": 0.6177,
+      "rank_acc": 0.9068
+    },
+    "CleanVul": {
+      "n_pairs": 1353,
+      "sim_median": 0.9235,
+      "ratio_sim_lt_0.3": 0.0658,
+      "ratio_sim_ge_0.8": 0.7339,
+      "sim_median_correct": 0.9077,
+      "sim_median_wrong": 0.9448,
+      "rank_acc": 0.5558
+    },
+    "PrimeVul": {
+      "n_pairs": 144,
+      "sim_median": 0.9791,
+      "ratio_sim_lt_0.3": 0.0069,
+      "ratio_sim_ge_0.8": 0.8819,
+      "sim_median_correct": 0.9637,
+      "sim_median_wrong": 0.9849,
+      "rank_acc": 0.4931
+    }
+  },
+  "by_similarity_bin": {
+    "0.00-0.30": {
+      "내부test (CVE 묶음)": {
+        "rank_acc": 0.955,
+        "n": 200
+      },
+      "CleanVul": {
+        "rank_acc": 0.573,
+        "n": 89
+      },
+      "PrimeVul": {
+        "rank_acc": 1.0,
+        "n": 1
+      }
+    },
+    "0.30-0.60": {
+      "내부test (CVE 묶음)": {
+        "rank_acc": 0.9173,
+        "n": 133
+      },
+      "CleanVul": {
+        "rank_acc": 0.6231,
+        "n": 130
+      },
+      "PrimeVul": {
+        "rank_acc": 0.4,
+        "n": 5
+      }
+    },
+    "0.60-0.85": {
+      "내부test (CVE 묶음)": {
+        "rank_acc": 0.8587,
+        "n": 92
+      },
+      "CleanVul": {
+        "rank_acc": 0.6216,
+        "n": 222
+      },
+      "PrimeVul": {
+        "rank_acc": 0.6923,
+        "n": 13
+      }
+    },
+    "0.85-0.95": {
+      "내부test (CVE 묶음)": {
+        "rank_acc": 0.75,
+        "n": 36
+      },
+      "CleanVul": {
+        "rank_acc": 0.6034,
+        "n": 348
+      },
+      "PrimeVul": {
+        "rank_acc": 0.7037,
+        "n": 27
+      }
+    },
+    "0.95-1.01": {
+      "내부test (CVE 묶음)": {
+        "rank_acc": 0.8182,
+        "n": 11
+      },
+      "CleanVul": {
+        "rank_acc": 0.4823,
+        "n": 564
+      },
+      "PrimeVul": {
+        "rank_acc": 0.4082,
+        "n": 98
+      }
+    }
+  },
+  "pooled_by_bin": {
+    "0.00-0.30": {
+      "rank_acc": 0.8379,
+      "n": 290,
+      "tie_rate": 0.031
+    },
+    "0.30-0.60": {
+      "rank_acc": 0.7649,
+      "n": 268,
+      "tie_rate": 0.0299
+    },
+    "0.60-0.85": {
+      "rank_acc": 0.6911,
+      "n": 327,
+      "tie_rate": 0.1009
+    },
+    "0.85-0.95": {
+      "rank_acc": 0.6229,
+      "n": 411,
+      "tie_rate": 0.1168
+    },
+    "0.95-1.01": {
+      "rank_acc": 0.477,
+      "n": 673,
+      "tie_rate": 0.2957
+    }
+  }
+}

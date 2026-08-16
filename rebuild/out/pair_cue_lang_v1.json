@@ -1,0 +1,155 @@
+{
+  "tag": "v1",
+  "WARNING": "격차 요인 대조일 뿐 인과가 아니다.",
+  "C1_language": {
+    "내부test": {
+      "all": {
+        "rank_acc": 0.9068,
+        "n": 472
+      },
+      "cpp_only": {
+        "rank_acc": 0.8019,
+        "n": 106,
+        "diff_lines_median": 18.0
+      }
+    },
+    "CleanVul": {
+      "all": {
+        "rank_acc": 0.5558,
+        "n": 1353
+      },
+      "cpp_only": {
+        "rank_acc": 0.5121,
+        "n": 414,
+        "diff_lines_median": 6.0
+      }
+    },
+    "PrimeVul": {
+      "all": {
+        "rank_acc": 0.4931,
+        "n": 144
+      },
+      "cpp_only": {
+        "rank_acc": 0.4931,
+        "n": 144,
+        "diff_lines_median": 4.0
+      }
+    }
+  },
+  "C2_length": {
+    "0-500": {
+      "내부test": {
+        "rank_acc": 0.9028,
+        "n": 319
+      },
+      "CleanVul": {
+        "rank_acc": 0.5923,
+        "n": 439
+      },
+      "PrimeVul": {
+        "rank_acc": 0.8333,
+        "n": 18
+      }
+    },
+    "501-1500": {
+      "내부test": {
+        "rank_acc": 0.9271,
+        "n": 96
+      },
+      "CleanVul": {
+        "rank_acc": 0.5677,
+        "n": 465
+      },
+      "PrimeVul": {
+        "rank_acc": 0.4286,
+        "n": 49
+      }
+    },
+    "1501-4000": {
+      "내부test": {
+        "rank_acc": 0.913,
+        "n": 46
+      },
+      "CleanVul": {
+        "rank_acc": 0.5505,
+        "n": 287
+      },
+      "PrimeVul": {
+        "rank_acc": 0.4667,
+        "n": 45
+      }
+    },
+    "4001-inf": {
+      "내부test": {
+        "rank_acc": 0.8182,
+        "n": 11
+      },
+      "CleanVul": {
+        "rank_acc": 0.4321,
+        "n": 162
+      },
+      "PrimeVul": {
+        "rank_acc": 0.4375,
+        "n": 32
+      }
+    }
+  },
+  "C1xC2": {
+    "0-500": {
+      "내부test": {
+        "rank_acc": 0.7927,
+        "n": 82
+      },
+      "CleanVul": {
+        "rank_acc": 0.4938,
+        "n": 81
+      },
+      "PrimeVul": {
+        "rank_acc": 0.8333,
+        "n": 18
+      }
+    },
+    "501-1500": {
+      "내부test": {
+        "rank_acc": 0.75,
+        "n": 12
+      },
+      "CleanVul": {
+        "rank_acc": 0.554,
+        "n": 139
+      },
+      "PrimeVul": {
+        "rank_acc": 0.4286,
+        "n": 49
+      }
+    },
+    "1501-4000": {
+      "내부test": {
+        "rank_acc": 0.9,
+        "n": 10
+      },
+      "CleanVul": {
+        "rank_acc": 0.5254,
+        "n": 118
+      },
+      "PrimeVul": {
+        "rank_acc": 0.4667,
+        "n": 45
+      }
+    },
+    "4001-inf": {
+      "내부test": {
+        "rank_acc": 1.0,
+        "n": 2
+      },
+      "CleanVul": {
+        "rank_acc": 0.4342,
+        "n": 76
+      },
+      "PrimeVul": {
+        "rank_acc": 0.4375,
+        "n": 32
+      }
+    }
+  }
+}
