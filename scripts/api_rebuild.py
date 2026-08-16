@@ -111,6 +111,8 @@ class AnalyzeResponse(BaseModel):
     source: str = "llm"                      # llm | joern | llm+joern | graph
     evidence: Optional[list] = None          # Joern taint path 또는 graph reason
     status: str = "DONE"                     # PARTIAL(Joern 미도착) | DONE
+    # Joern v4 근거(판정 미개입). advisory_only=True 로 표시된다 — REPORT_V4 §6
+    joern_evidence: Optional[dict] = None
     elapsed: float
 
 
@@ -357,9 +359,22 @@ def _joern(language: str, code: str, file_path: Optional[str]) -> Optional[dict]
         v = res.get(file_path or "snippet")
         if not v:
             return None
+        # findings 각각이 path 리스트를 갖는다 → 평탄화해야 evidence.flow 가
+        # [{line,code,role}, ...] 형태가 된다(중첩 리스트로 나가던 것을 교정).
+        steps: list = []
+        seen: set = set()
+        for f in v.get("findings", []):
+            for st in (f.get("path") or []):
+                key = (st.get("line"), (st.get("code") or "").strip()) \
+                    if isinstance(st, dict) else (None, str(st))
+                if key in seen:
+                    continue
+                seen.add(key)
+                steps.append(st)
         return {"verdict": v.get("verdict", "unknown"),
                 "categories": v.get("categories", []),
-                "path": [f.get("path") for f in v.get("findings", [])]}
+                "sanitizer_hits": v.get("sanitizer_hits", []),
+                "path": steps}
     except Exception:  # noqa: BLE001
         return None
 
@@ -368,7 +383,8 @@ def _analyze_one(language: str, code: str, file_path: Optional[str]) -> AnalyzeR
     t0 = time.time()
     r = _detect(language, code)
     r["score"] = _score(language, code)
-    agg = hybrid_mod.aggregate(r, _joern(language, code, file_path), None, HYBRID_POLICY)
+    joern = _joern(language, code, file_path)
+    agg = hybrid_mod.aggregate(r, joern, None, HYBRID_POLICY)
     r = {**r, "detected": agg["detected"]}
     if agg["detected"] and agg["source"] in ("joern", "graph") and r["vulnerability"] == "NONE":
         r["vulnerability"] = agg["vulnerability"]
@@ -398,6 +414,7 @@ def _analyze_one(language: str, code: str, file_path: Optional[str]) -> AnalyzeR
         evidence=agg.get("evidence") if isinstance(agg.get("evidence"), list) else
                  ([agg["evidence"]] if agg.get("evidence") else None),
         status=agg.get("status", "DONE"),
+        joern_evidence=agg.get("joern_evidence"),
         elapsed=round(time.time() - t0, 2),
     )
 
