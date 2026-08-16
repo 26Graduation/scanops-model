@@ -547,3 +547,101 @@ v3 → v4 로 precision 은 0.5652 → 0.5909, FPR 은 0.1667 → 0.1500 으로 
 
 > 오늘 세션의 총 지출은 **$0.036 수준**이다. 가장 비싼 자원은 돈이 아니라 **시간**이었고,
 > 가장 값싼 실험(외부 20건, $0.008)이 가장 큰 정보를 줬다.
+
+### 5-5. §2-2 에서 세운 "OR 집계" 가설 — **싸게 검증했고, 지지되지 않았다**
+
+§2-2 에서 "verdict 가 흐름들에 대한 OR 이라 흐름이 많을수록 precision 이 떨어질 것"이라고
+추정했다. 흐름 수(n_flows)별로 갈라 보았다:
+
+| n_flows | 건수 | vuln 판정 | precision |
+|---|---|---|---|
+| 1 | 38 | 26 | 0.5385 |
+| 2–3 | 22 | 22 | 0.5000 |
+| 4–7 | 22 | 22 | **0.5909** |
+| 8+ | 16 | 16 | **0.4375** |
+
+**단조 경향이 없다.** 8+ 가 가장 낮긴 하지만(0.4375) 4–7 이 가장 높아(0.5909) 상쇄된다.
+→ **내 가설은 이 데이터로 지지되지 않는다.** 흐름 수를 줄이는 방향(예: 상위 1개만 채택)이
+precision 을 올릴 것이라는 근거가 없다.
+
+> 다만 이 검사는 **약하다**: 표본이 98건이고 전부 v3-vuln 이라 편향돼 있다.
+> "기각"이 아니라 "**지지되지 않음**"으로 적는다. §12 에서 우선순위를 낮춘다.
+
+---
+
+## §6 hybrid.py 변경과 evidence
+
+`V4-FAIL` + `CRITIC-KILL` 이므로 **판정 로직은 바꾸지 않았다.**
+`attach_joern_evidence(result, joern, critic)` 로 근거만 노출하고,
+Critic 응답에는 `used_for_decision: false` 를 박아 판정에 안 쓰였음을 명시한다.
+
+**불변 규칙 단위검증 9/9 통과** — joern/graph 의 `safe`·`safe_sanitized` 가 LLM `detected` 를
+덮지 않고, `JOERN-NO-BETTER` 에서 joern `vuln` 이 판정을 바꾸지 않으며, graph `vuln` 폴백은 유지된다.
+
+```json
+{
+  "detected": true, "source": "llm", "status": "DONE",
+  "joern_evidence": {
+    "flow": [{"line": 3, "code": "ps.setString(1,n)", "role": "intermediate"}],
+    "sanitizer_hits": [{"pattern": "setString", "code": "ps.setString(1,n)",
+                        "role": "intermediate", "line": 3}],
+    "joern_note": "sanitized_flow",
+    "joern_verdict": "safe_sanitized",
+    "critic": {"verdict": "NO", "reason": "no sanitizer in flow",
+               "used_for_decision": false},
+    "advisory_only": true
+  }
+}
+```
+
+---
+
+## §10 재현 명령어
+
+```bash
+cd scanops-model && git checkout feat/joern-hybrid-v3
+
+# Phase 1 — Joern v4 (self/this 제외 + applies_to)
+python3 joern/bench_joern_v4.py tune
+python3 joern/bench_joern_v4.py sample
+python3 joern/sanitizer_spec.py JAVASRC          # 패턴표 확인
+
+# Phase 2 — 전략 (같은 98건 모집단)
+python3 joern/dump_slices_v4.py                  # union 슬라이스 생성
+python3 joern/critic_strategies.py A_external      --limit 20
+python3 joern/critic_strategies.py E_union_external --limit 20
+# 전략 D (로컬 베이스, GPU 비용 0)
+llama-server -m models/Qwen3.5-9B-Q4_K_M.gguf --port 8099 -c 4096 -ngl 99 --jinja &
+python3 joern/critic_strategies.py D_base --limit 20
+
+# Phase 3 — 파이프라인 벤치
+python3 joern/eval_v4.py sample
+```
+
+---
+
+## §11 아키텍처 — 오늘 밝혀진 것
+
+```mermaid
+flowchart TD
+  A[vuln/safe 쌍] --> B[Joern v4 CPG]
+  B --> C{taint flow}
+  C --> D["슬라이스 {line,code,role}"]
+  D --> E[LLM Critic<br/>SANITIZED YES/NO?]
+  E --> F(("YES 0건<br/>모든 모델"))
+
+  subgraph 원인[측정된 원인 - §3-2]
+    G["sanitizer 줄이 슬라이스에<br/>등장 = 4.8%"]
+    H["패치의 54.2%가<br/>애초에 sanitizer 아님"]
+    I["쌍의 38%는 두 슬라이스가<br/>글자까지 동일"]
+  end
+  D -.-> G
+  A -.-> H
+  D -.-> I
+  G --> F
+  H --> F
+  I --> F
+
+  style F stroke-width:3px
+  style 원인 stroke-dasharray: 5 5
+```
