@@ -1,0 +1,61 @@
+{
+  "tag": "v1",
+  "note": "길이 기준선 = score(-len(code)) 의 AUC. AUC 의 자명 기준선을 0.5 대신 이 값으로 읽는다.",
+  "splits": {
+    "test": {
+      "label": "내부 test",
+      "n": 1197,
+      "auc_model": 0.9052,
+      "auc_length_only": 0.647,
+      "margin_over_length": 0.2582,
+      "rho_score_length": -0.3763,
+      "rho_gold_length": -0.1885,
+      "median_len_vuln": 273.5,
+      "median_len_safe": 667
+    },
+    "cleanvul_v2_report": {
+      "label": "CleanVul_v2 report",
+      "n": 2706,
+      "auc_model": 0.6165,
+      "auc_length_only": 0.5195,
+      "margin_over_length": 0.097,
+      "rho_score_length": -0.2246,
+      "rho_gold_length": -0.0727,
+      "median_len_vuln": 897,
+      "median_len_safe": 990
+    },
+    "primevul_report": {
+      "label": "PrimeVul report",
+      "n": 288,
+      "auc_model": 0.5618,
+      "auc_length_only": 0.5177,
+      "margin_over_length": 0.0441,
+      "rho_score_length": 0.0566,
+      "rho_gold_length": 0.0099,
+      "median_len_vuln": 1597.0,
+      "median_len_safe": 1673.5
+    },
+    "cvefixes157": {
+      "label": "CVEfixes 157",
+      "n": 157,
+      "auc_model": 0.8732,
+      "auc_length_only": 0.5662,
+      "margin_over_length": 0.307,
+      "rho_score_length": -0.3209,
+      "rho_gold_length": -0.1179,
+      "median_len_vuln": 285.5,
+      "median_len_safe": 374
+    },
+    "cybernative154": {
+      "label": "CyberNative 154",
+      "n": 154,
+      "auc_model": 0.9126,
+      "auc_length_only": 0.6425,
+      "margin_over_length": 0.2701,
+      "rho_score_length": -0.2276,
+      "rho_gold_length": -0.2557,
+      "median_len_vuln": 324,
+      "median_len_safe": 466
+    }
+  }
+}
