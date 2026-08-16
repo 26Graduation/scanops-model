@@ -1,0 +1,268 @@
+{
+  "WARNING": "사후 참고 계산이다. τ 선정·게이트 판정에 쓰지 않는다 (사양 §8-4·§8-6).",
+  "tag": "v1",
+  "precision_target": 0.7,
+  "recall_floor": 0.1,
+  "splits": {
+    "test": {
+      "label": "내부 test",
+      "n": 1197,
+      "auc": 0.9052,
+      "youden_j_max_from_auc": 0.8104,
+      "auc_precision_envelope": [
+        {
+          "recall": 0.9,
+          "fpr_min": 0.0896,
+          "precision_max": 0.9095
+        },
+        {
+          "recall": 0.75,
+          "fpr_min": 0.0,
+          "precision_max": 1.0
+        },
+        {
+          "recall": 0.5,
+          "fpr_min": 0.0,
+          "precision_max": 1.0
+        },
+        {
+          "recall": 0.3,
+          "fpr_min": 0.0,
+          "precision_max": 1.0
+        },
+        {
+          "recall": 0.2,
+          "fpr_min": 0.0,
+          "precision_max": 1.0
+        },
+        {
+          "recall": 0.1,
+          "fpr_min": 0.0,
+          "precision_max": 1.0
+        }
+      ],
+      "measured_max_precision_at_recall_at_least": {
+        "0.75": 0.8525,
+        "0.5": 0.9049,
+        "0.3": 0.9421,
+        "0.1": 1.0
+      },
+      "measured_taus_with_precision>=0.7_and_recall>=0.1": 37,
+      "measured_best_recall_among_them": 0.9348,
+      "measured_taus_with_recall>=0.75_and_fpr<=0.15": 3,
+      "greedy_vs_logprob_argmax": {
+        "n": 1197,
+        "agree": 1183,
+        "rate": 0.9883
+      }
+    },
+    "cleanvul_v2_report": {
+      "label": "CleanVul_v2 report",
+      "n": 2706,
+      "auc": 0.6165,
+      "youden_j_max_from_auc": 0.233,
+      "auc_precision_envelope": [
+        {
+          "recall": 0.9,
+          "fpr_min": 0.667,
+          "precision_max": 0.5743
+        },
+        {
+          "recall": 0.75,
+          "fpr_min": 0.517,
+          "precision_max": 0.5919
+        },
+        {
+          "recall": 0.5,
+          "fpr_min": 0.267,
+          "precision_max": 0.6519
+        },
+        {
+          "recall": 0.3,
+          "fpr_min": 0.067,
+          "precision_max": 0.8174
+        },
+        {
+          "recall": 0.2,
+          "fpr_min": 0.0,
+          "precision_max": 1.0
+        },
+        {
+          "recall": 0.1,
+          "fpr_min": 0.0,
+          "precision_max": 1.0
+        }
+      ],
+      "measured_max_precision_at_recall_at_least": {
+        "0.75": 0.5557,
+        "0.5": 0.5959,
+        "0.3": 0.6308,
+        "0.1": 0.6465
+      },
+      "measured_taus_with_precision>=0.7_and_recall>=0.1": 0,
+      "measured_best_recall_among_them": null,
+      "measured_taus_with_recall>=0.75_and_fpr<=0.15": 0,
+      "greedy_vs_logprob_argmax": {
+        "n": 2706,
+        "agree": 2614,
+        "rate": 0.966
+      }
+    },
+    "primevul_report": {
+      "label": "PrimeVul report",
+      "n": 288,
+      "auc": 0.5618,
+      "youden_j_max_from_auc": 0.1236,
+      "auc_precision_envelope": [
+        {
+          "recall": 0.9,
+          "fpr_min": 0.7764,
+          "precision_max": 0.5369
+        },
+        {
+          "recall": 0.75,
+          "fpr_min": 0.6264,
+          "precision_max": 0.5449
+        },
+        {
+          "recall": 0.5,
+          "fpr_min": 0.3764,
+          "precision_max": 0.5705
+        },
+        {
+          "recall": 0.3,
+          "fpr_min": 0.1764,
+          "precision_max": 0.6297
+        },
+        {
+          "recall": 0.2,
+          "fpr_min": 0.0764,
+          "precision_max": 0.7236
+        },
+        {
+          "recall": 0.1,
+          "fpr_min": 0.0,
+          "precision_max": 1.0
+        }
+      ],
+      "measured_max_precision_at_recall_at_least": {
+        "0.75": 0.533,
+        "0.5": 0.5432,
+        "0.3": 0.5641,
+        "0.1": 0.5641
+      },
+      "measured_taus_with_precision>=0.7_and_recall>=0.1": 0,
+      "measured_best_recall_among_them": null,
+      "measured_taus_with_recall>=0.75_and_fpr<=0.15": 0,
+      "greedy_vs_logprob_argmax": {
+        "n": 288,
+        "agree": 274,
+        "rate": 0.9514
+      }
+    },
+    "cvefixes157": {
+      "label": "CVEfixes 157",
+      "n": 157,
+      "auc": 0.8732,
+      "youden_j_max_from_auc": 0.7464,
+      "auc_precision_envelope": [
+        {
+          "recall": 0.9,
+          "fpr_min": 0.1536,
+          "precision_max": 0.8542
+        },
+        {
+          "recall": 0.75,
+          "fpr_min": 0.0036,
+          "precision_max": 0.9952
+        },
+        {
+          "recall": 0.5,
+          "fpr_min": 0.0,
+          "precision_max": 1.0
+        },
+        {
+          "recall": 0.3,
+          "fpr_min": 0.0,
+          "precision_max": 1.0
+        },
+        {
+          "recall": 0.2,
+          "fpr_min": 0.0,
+          "precision_max": 1.0
+        },
+        {
+          "recall": 0.1,
+          "fpr_min": 0.0,
+          "precision_max": 1.0
+        }
+      ],
+      "measured_max_precision_at_recall_at_least": {
+        "0.75": 0.8472,
+        "0.5": 0.8929,
+        "0.3": 0.9143,
+        "0.1": 1.0
+      },
+      "measured_taus_with_precision>=0.7_and_recall>=0.1": 26,
+      "measured_best_recall_among_them": 0.925,
+      "measured_taus_with_recall>=0.75_and_fpr<=0.15": 1,
+      "greedy_vs_logprob_argmax": {
+        "n": 157,
+        "agree": 155,
+        "rate": 0.9873
+      }
+    },
+    "cybernative154": {
+      "label": "CyberNative 154",
+      "n": 154,
+      "auc": 0.9126,
+      "youden_j_max_from_auc": 0.8252,
+      "auc_precision_envelope": [
+        {
+          "recall": 0.9,
+          "fpr_min": 0.0748,
+          "precision_max": 0.9233
+        },
+        {
+          "recall": 0.75,
+          "fpr_min": 0.0,
+          "precision_max": 1.0
+        },
+        {
+          "recall": 0.5,
+          "fpr_min": 0.0,
+          "precision_max": 1.0
+        },
+        {
+          "recall": 0.3,
+          "fpr_min": 0.0,
+          "precision_max": 1.0
+        },
+        {
+          "recall": 0.2,
+          "fpr_min": 0.0,
+          "precision_max": 1.0
+        },
+        {
+          "recall": 0.1,
+          "fpr_min": 0.0,
+          "precision_max": 1.0
+        }
+      ],
+      "measured_max_precision_at_recall_at_least": {
+        "0.75": 0.8824,
+        "0.5": 0.9444,
+        "0.3": 0.9643,
+        "0.1": 1.0
+      },
+      "measured_taus_with_precision>=0.7_and_recall>=0.1": 47,
+      "measured_best_recall_among_them": 0.9481,
+      "measured_taus_with_recall>=0.75_and_fpr<=0.15": 3,
+      "greedy_vs_logprob_argmax": {
+        "n": 154,
+        "agree": 152,
+        "rate": 0.987
+      }
+    }
+  }
+}
