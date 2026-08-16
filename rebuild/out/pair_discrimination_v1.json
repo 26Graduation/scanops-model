@@ -10,7 +10,25 @@
       "paired_item_ratio": 0.7886,
       "within_pair_rank_acc": 0.9068,
       "within_pair_tie_rate": 0.0275,
-      "n_pairs_scored": 472
+      "n_pairs_scored": 472,
+      "pairwise_at_tau0": {
+        "P-C": {
+          "n": 304,
+          "ratio": 0.6441
+        },
+        "P-V": {
+          "n": 82,
+          "ratio": 0.1737
+        },
+        "P-B": {
+          "n": 80,
+          "ratio": 0.1695
+        },
+        "P-R": {
+          "n": 6,
+          "ratio": 0.0127
+        }
+      }
     },
     "cleanvul_v2_report": {
       "auc": 0.6165,
@@ -21,7 +39,25 @@
       "paired_item_ratio": 1.0,
       "within_pair_rank_acc": 0.5558,
       "within_pair_tie_rate": 0.1774,
-      "n_pairs_scored": 1353
+      "n_pairs_scored": 1353,
+      "pairwise_at_tau0": {
+        "P-C": {
+          "n": 259,
+          "ratio": 0.1914
+        },
+        "P-V": {
+          "n": 341,
+          "ratio": 0.252
+        },
+        "P-B": {
+          "n": 715,
+          "ratio": 0.5285
+        },
+        "P-R": {
+          "n": 38,
+          "ratio": 0.0281
+        }
+      }
     },
     "primevul_report": {
       "auc": 0.5618,
@@ -32,7 +68,25 @@
       "paired_item_ratio": 1.0,
       "within_pair_rank_acc": 0.4931,
       "within_pair_tie_rate": 0.3056,
-      "n_pairs_scored": 144
+      "n_pairs_scored": 144,
+      "pairwise_at_tau0": {
+        "P-C": {
+          "n": 7,
+          "ratio": 0.0486
+        },
+        "P-V": {
+          "n": 23,
+          "ratio": 0.1597
+        },
+        "P-B": {
+          "n": 113,
+          "ratio": 0.7847
+        },
+        "P-R": {
+          "n": 1,
+          "ratio": 0.0069
+        }
+      }
     },
     "cvefixes157": {
       "auc": 0.8732,

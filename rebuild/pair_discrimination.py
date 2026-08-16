@@ -8,6 +8,8 @@
   1. 각 split 의 **쌍 구성** — 완전쌍(같은 pair_id 에 vuln·safe 둘 다) 개수
   2. **쌍 내 순위 정확도** = P(score[vuln] > score[safe]) — 우연 수준 0.5
   3. **동점률** = 두 판본에 **완전히 같은 점수**를 준 비율 (= 구분 자체를 못 한 쌍)
+  3b. **쌍 4분류 @ τ=0 (현 배포 운영점)** — PrimeVul 논문 프로토콜
+      P-C 둘 다 정답 / P-V 둘 다 "취약"(과잉) / P-B 둘 다 "안전"(과소) / P-R 정반대
   4. 학습셋이 이미 쌍으로 돼 있는지 — "쌍 데이터를 더 넣자"는 레버가 성립하는지 검정
 
 비용 $0 — 기존 logprob 산출물과 데이터 파일만 읽는다.
@@ -24,7 +26,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
-from sweep_threshold import auc  # noqa: E402
+from sweep_threshold import apply_tau, auc  # noqa: E402
 
 TAG = sys.argv[1] if len(sys.argv) > 1 else "v1"
 EVAL = ["test", "cleanvul_v2_report", "primevul_report", "cvefixes157", "cybernative154"]
@@ -90,9 +92,28 @@ def main() -> None:
             e["within_pair_rank_acc"] = round(win / len(full), 4)   # 우연 = 0.5
             e["within_pair_tie_rate"] = round(tie / len(full), 4)   # 같은 점수 = 구분 불가
             e["n_pairs_scored"] = len(full)
+            # 쌍 4분류 @ τ=0 (현 배포 운영점) — 실패가 과잉인지 과소인지 가른다
+            pred = apply_tau(recs, 0.0)
+            gp = defaultdict(dict)
+            for r, pr in zip(recs, pred):
+                k = pair_key(r["meta"])
+                if k:
+                    gp[k].setdefault(r["meta"]["label"], []).append(pr["label"])
+            cnt, npair = Counter(), 0
+            for v2 in gp.values():
+                if len(v2.get("vuln", [])) != 1 or len(v2.get("safe", [])) != 1:
+                    continue
+                npair += 1
+                a, b = v2["vuln"][0], v2["safe"][0]
+                cnt["P-C" if (a == "vuln" and b == "safe") else
+                    "P-V" if (a == "vuln" and b == "vuln") else
+                    "P-B" if (a == "safe" and b == "safe") else "P-R"] += 1
+            e["pairwise_at_tau0"] = {k2: {"n": cnt[k2], "ratio": round(cnt[k2] / npair, 4)}
+                                     for k2 in ("P-C", "P-V", "P-B", "P-R")} if npair else None
         out["eval"][sp] = e
         print(f"[{sp:20s}] AUC={e['auc']}  1:1쌍={ps['n_exact_1to1_pairs']:5d}/{ps['n_items']:5d}"
               + (f"  쌍내순위={e['within_pair_rank_acc']}  동점률={e['within_pair_tie_rate']}"
+                 + "  4분류@τ0 " + " ".join(f"{k2}={v2['ratio']}" for k2, v2 in e["pairwise_at_tau0"].items())
                  if full else "  (쌍 구성 아님)"))
 
     for sp in TRAIN:
