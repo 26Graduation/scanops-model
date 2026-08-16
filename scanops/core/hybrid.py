@@ -27,10 +27,16 @@ _SELECTION = Path(__file__).resolve().parents[2] / "rebuild" / "out" / "joern_tu
 
 
 def _load_tuned() -> tuple[float | None, float | None]:
-    d = os.getenv("SCANOPS_HYBRID_DELTA")
-    t = os.getenv("SCANOPS_HYBRID_TAU")
-    if d is not None and t is not None:
-        return float(d), float(t)
+    # compose 는 미설정 변수를 **빈 문자열**로 넘긴다(`SCANOPS_HYBRID_DELTA: ${...:-}`).
+    # `is not None` 만 보면 ""를 값으로 받아 float("") 로 죽는다 —
+    # 온프레미스 기동 시 model-api 가 재시작 루프에 빠져 실측으로 발견(2026-08-17).
+    d = (os.getenv("SCANOPS_HYBRID_DELTA") or "").strip()
+    t = (os.getenv("SCANOPS_HYBRID_TAU") or "").strip()
+    if d and t:
+        try:
+            return float(d), float(t)
+        except ValueError:
+            pass   # 잘못된 값이면 아래 선정 파일 → None 순으로 폴백
     try:
         sel = json.loads(_SELECTION.read_text())
         tau_block = sel.get("TAU_fpr35") or sel.get("TAU_f1max") or {}
