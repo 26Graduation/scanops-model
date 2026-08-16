@@ -39,10 +39,31 @@ SEED = 42
 BASE_URL = os.getenv("BASE_LLM_URL", "http://127.0.0.1:8099")
 
 
-def load_targets() -> list[dict]:
-    """어제 Critic 대상과 동일한 98건 (v3 vuln ∧ path 보유)."""
+def load_targets(source: str = "v3") -> list[dict]:
+    """어제 Critic 대상과 동일한 98건 (v3 vuln ∧ path 보유).
+
+    source="union" 이면 같은 case_id 에 대해 **모든 흐름의 합집합** 슬라이스를 쓴다(전략 E).
+    """
     rows = [json.loads(l) for l in (OUT / "joern_v3_raw_cleanvul_v2_tune.jsonl").open()]
-    return [r for r in rows if r["joern_verdict"] == "vuln" and r.get("path")]
+    base = [r for r in rows if r["joern_verdict"] == "vuln" and r.get("path")]
+    if source != "union":
+        return base
+    want = {r["case_id"] for r in base}
+    uni = {}
+    for l in (OUT / "slices_union_v4.jsonl").open():
+        o = json.loads(l)
+        if o["case_id"] in want and o.get("path"):
+            uni[o["case_id"]] = o
+    # 어제와 같은 순서·집합을 유지하되 path 만 union 으로 교체
+    out = []
+    for r in base:
+        u = uni.get(r["case_id"])
+        if u is None:
+            continue
+        out.append({**r, "path": u["path"],
+                    "categories": u.get("categories") or r.get("categories"),
+                    "n_flows": u.get("n_flows")})
+    return out
 
 
 def paired_sample(targets: list[dict], n_pairs: int) -> list[dict]:
@@ -168,7 +189,8 @@ def metrics(recs: list[dict], all_targets: list[dict]) -> dict:
     return m
 
 
-RUNNERS = {"A_external": run_external, "D_base": run_base}
+RUNNERS = {"A_external": run_external, "D_base": run_base,
+           "E_union_external": run_external, "E_union_base": run_base}
 
 
 def main() -> int:
@@ -178,7 +200,7 @@ def main() -> int:
     ap.add_argument("--variant", default="v1")
     args = ap.parse_args()
 
-    targets = load_targets()
+    targets = load_targets("union" if args.strategy.startswith("E_") else "v3")
     if args.limit:
         targets = paired_sample(targets, args.limit // 2)
     print(f"[{args.strategy}] 대상 {len(targets)}건", flush=True)
@@ -199,7 +221,7 @@ def main() -> int:
     with raw_path.open("a") as fh:
         todo = [r for r in targets if r["case_id"] not in done]
         for i, r in enumerate(todo, 1):
-            res = fn(r) if args.strategy != "D_base" else fn(r, args.variant)
+            res = fn(r, args.variant) if args.strategy.endswith("_base") else fn(r)
             for k in usage_tot:
                 usage_tot[k] += (res.get("usage") or {}).get(k, 0)
             rec = {"case_id": r["case_id"], "pair_id": r["pair_id"], "lang": r["lang"],
