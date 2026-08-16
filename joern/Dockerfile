@@ -34,7 +34,7 @@ RUN pip install --no-cache-dir runpod fastapi "uvicorn[standard]" pydantic reque
 
 WORKDIR /app
 COPY joern/ /app/joern/
-ENV JOERN_SCRIPT=/app/joern/queries/taint_v3.sc \
+ENV JOERN_SCRIPT=/app/joern/queries/taint_v4.sc \
     JOERN_SANITIZER_FILE=/app/joern/_san_active.txt \
     PYTHONPATH=/app
 
