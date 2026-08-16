@@ -215,6 +215,27 @@
         "applies_to": [
           "xss"
         ]
+      },
+      {
+        "re": "ESAPI\\s*\\.\\s*encoder\\(\\)\\s*\\.\\s*encodeFor[A-Za-z]+",
+        "applies_to": [
+          "xss"
+        ],
+        "_why": "ESAPI Encoder.encodeForHTML/JavaScript/CSS/URL — 출력 컨텍스트 인코딩(XSS 표준 방어)"
+      },
+      {
+        "re": "URLEncoder\\.encode\\s*\\(",
+        "applies_to": [
+          "xss"
+        ],
+        "_why": "java.net.URLEncoder.encode — URL 컨텍스트 인코딩"
+      },
+      {
+        "re": "HtmlUtils\\.htmlEscape\\s*\\(",
+        "applies_to": [
+          "xss"
+        ],
+        "_why": "org.springframework.web.util.HtmlUtils.htmlEscape"
       }
     ]
   },
@@ -401,5 +422,6 @@
         ]
       }
     ]
-  }
+  },
+  "_v4fix_note": "2026-08-17 추가: 출력 sink 앞의 표준 인코딩 API 3종을 xss sanitizer 로. OWASP 진단셋 과탐 24건 중 20건이 xss 규칙 발화였고(테스트 서블릿이 전부 response.getWriter() 로 끝난다), safe 변형은 그 출력을 인코딩한다. applies_to 는 xss 로만 한정 — 인코딩은 SQLi/cmdi 를 막지 못한다."
 }
