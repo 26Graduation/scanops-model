@@ -291,3 +291,63 @@ NO 응답의 근거 문장은 흐름 분석이 아니라 **CVE 설명 문구**�
 
 두 프롬프트를 섞으면 측정이 편향되므로 **98건 전부를 v2 로 다시** 돌린다.
 v1 결과는 위 표에 보존한다.
+
+---
+
+## §4 Phase 3 — v3 파이프라인 벤치 (층화 240건)
+
+`rebuild/out/joern_v3_eval_sample.json`. verdict 분포: safe 188 / vuln 46 / safe_sanitized 3 / unknown 3.
+
+| arm | precision | 95% CI | recall | FPR | F1 |
+|---|---|---|---|---|---|
+| **all-vuln (자명)** | 0.5000 | [0.4333, 0.5625] | 1.0000 | 1.0000 | **0.6667** |
+| all-safe (자명) | 0.0000 | — | 0.0000 | 0.0000 | 0.0000 |
+| b) LLM only | 0.5872 | [0.4954, 0.6789] | 0.5333 | 0.3750 | 0.5590 |
+| a) LLM + 자체graph (어젯밤 채택) | 0.5909 | [0.5091, 0.6909] | 0.5417 | 0.3750 | 0.5652 |
+| **j) Joern v3 단독** | **0.5652** | **[0.4130, 0.6957]** | 0.2167 | 0.1667 | 0.3133 |
+| c) Joern v3 + Critic | 0.5789 | [0.4962, 0.6541] | 0.6417 | 0.4667 | 0.6087 |
+
+### 판정 = **`V3-FAIL`**
+
+사전등록 기준(§3-0)은 `precision 점추정 ≥ 0.70`. 실측 **0.5652** 로 **미달**이다.
+CI 상한(0.6957)도 0.70 에 닿지 않는다. → **전건 1,878건 확장은 하지 않는다.**
+
+**precision 만 보지 말라는 지시대로** recall 도 함께 본다: Joern v3 단독은 recall 이
+**0.2167** 에 불과하다(어젯밤 채택 arm 0.5417). 즉 v3 는 "적게 잡고 그나마도 반은 틀린다".
+그리고 **여전히 어떤 arm 도 자명 기준선 F1 0.6667 을 넘지 못한다** — 어젯밤과 같다.
+
+### 4-1. Joern v3 오판 5건 (vuln 이라 했는데 gold=safe, 총 20건 중)
+
+| case | 언어 | cat | 흐름에서 관찰된 것 | **원인 분류** |
+|---|---|---|---|---|
+| `cvh_1217\|safe` | JS | **deser** | `"<div data-id='" + escapeHtml(device.Id) + ...` | **sanitizer 미인식(카테고리 불일치)** |
+| `cvh_1120\|safe` | Python | ssrf | source = `self` | **source 과광의** |
+| `cvh_1369\|safe` | Python | ssrf | source = `args`, `*args` | **source 과광의** |
+| `cvh_1374\|safe` | Python | ssrf | `fileinput`, `[info_filename]` | sink 규칙 과광의 |
+| `cvh_1376\|safe` | Python | ssrf | source = `self` | **source 과광의** |
+
+두 가지 구체적 결함이 드러났다 — 둘 다 **고칠 수 있는 것**이다:
+
+1. **`self` / `this` 가 taint source 로 들어간다.** source 정의가 `cpg.method.parameter` 라
+   Python 의 `self`, Java 의 암묵 `this` 까지 오염원이 된다. `self` 는 사용자 입력이 아니다.
+2. **sanitizer 표가 카테고리에 갇혀 있다.** `cvh_1217` 은 흐름에 `escapeHtml(...)` 이
+   **버젓이 있는데** 카테고리가 `deser` 로 잡혀서 `xss` 전용인 `escapeHtml` 패턴을 못 봤다.
+   → `_any` 로 승격하거나 카테고리 교차 조회가 필요하다.
+
+### 4-2. Critic 오판 5건 (NO 라 했는데 gold=safe, 총 38건 중)
+
+| case | 언어 | 흐름 안에 있던 것 | Critic 근거(발췌) |
+|---|---|---|---|
+| **`cvh_124\|safe`** | Java | **`escapeHtml4andJS(body)`** | "…allows arbitrary deserialization of JSON data into a PushEvent object" |
+| `cvh_299\|safe` | Java | source=`this`, `getResourceAsStream` | "…write to arbitrary filesystem locations via a crafted zip archive" |
+| `cvh_351\|safe` | Java | `zipFilePath` → `fis` → `zis` | "…read arbitrary files from the system via a crafted ZIP archive" |
+| `cvh_353\|safe` | Java | `File input` | "…read arbitrary files from the system via a crafted ZIP archive" |
+| `cvh_480\|safe` | Java | `jarFile.getName().replace(".jar","")` | "…does not properly validate or sanitize the filename" |
+
+**`cvh_124` 하나로 오늘의 결론이 요약된다.** 흐름 슬라이스에 `escapeHtml4andJS(body)` 가
+**그대로 들어 있었는데** Critic 은 그걸 보지 않고 "역직렬화 취약점" CVE 설명을 읊었다.
+`cvh_351`·`cvh_353` 은 서로 다른 코드인데 **문장이 완전히 동일**하다 — 흐름을 읽고 답한 게
+아니라 카테고리(`pathtraver`)에 대응하는 **암기된 문구를 출력**하고 있다.
+
+**원인 분류: 문맥 부족 아님(§3-2 T2=0.83). sanitizer 미인식도 아님(코드에 보임).
+→ 모델이 주어진 문맥을 판단에 쓰지 않는다.**
