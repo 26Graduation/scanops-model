@@ -515,3 +515,36 @@ a35c9b086127e48bf2c01a4b14b3d21f8063cabdd09f14401654e330b735c2c7  adapter_v1_fix
 | LLM 추론 | 불필요 | 컨테이너 내 llama-server |
 | Joern 분석 | 불필요 | 컨테이너 내 joern-worker |
 | CVE 참고(Qdrant) | 불필요 | `qdrant` 프로파일 (판정 미관여) |
+
+---
+
+## §5-6 백엔드·프론트 원격 동기화 (2026-08-17, 세션 중 요청)
+
+세션 도중 "백/프론트 지금 깃에 있는 걸 받아 확인하라"는 요청이 있어 두 레포를 원격과 맞췄다.
+
+| 레포 | 이전 | **이후** | 들어온 내용 |
+|---|---|---|---|
+| `scanops-backend` | `787ae66` | **`845ea09`** (3커밋) | 토큰/DAST 구독형 과금(hold-commit-release, 팀 공유 풀), 토큰 계산 방식 수정, 스캔 줄 차감 |
+| `scanops-frontend` | `2708f5a` | **`5e70960`** (1커밋) | 토큰/DAST 구독 백엔드 연동 — 마이페이지 잔액·체크아웃·DAST 충전 |
+
+### 동기화 중 처리한 것
+
+1. **백엔드**: 내 `Dockerfile` 수정(temurin jammy)을 stash 후 fast-forward, 복원. 충돌 없음.
+2. **프론트**: 미커밋 7파일이 있어 유실 위험이 있었다. 확인 결과
+   **작업트리 내용이 `origin/main`과 완전히 일치**(diff 0파일)했다 —
+   그 미커밋 변경은 **원격 커밋의 내용이 이미 반영된 상태**였다. 유실 없음.
+3. **stale 락 2개 제거**: `.git/index.lock`, `.git/HEAD.lock` 둘 다 **8월 4일자 0바이트**였고
+   실행 중인 git 프로세스가 없었다. 이것이 이전 pull이 중간에 멈춘 원인으로 보인다.
+
+### 백엔드 기동 중 발견한 결함 (Flyway)
+
+기존 DB 볼륨이 남은 상태에서 최신 백엔드를 올리면 마이그레이션이 실패한다:
+
+```
+Migration of schema "public" to version "3 - rebuild ..." failed
+Message : ERROR: relation "idx_vulns_scan" already exists
+→ BeanCreationException: flywayInitializer → 컨테이너 재시작 루프
+```
+
+**온프레미스 최초 설치에서는 문제가 없다**(빈 DB). 그러나 **이전 버전 볼륨이 남아 있으면
+부팅이 실패**하므로, README에 "업그레이드 시 마이그레이션 상태 확인 또는 볼륨 초기화"를 적었다.
