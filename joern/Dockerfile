@@ -21,9 +21,12 @@ ENV JOERN_XMX=4g \
     PYTHONUNBUFFERED=1
 
 USER root
-RUN apt-get update \
- && apt-get install -y --no-install-recommends python3 python3-pip python3-venv \
- && rm -rf /var/lib/apt/lists/*
+# 베이스(ghcr.io/joernio/joern:master)는 **AlmaLinux 9** 다 — Debian 이 아니다(실측).
+# apt-get 은 없고 microdnf 를 쓴다. python3 는 이미 들어 있어 pip 만 확보하면 된다.
+#   docker run --rm --entrypoint sh ghcr.io/joernio/joern:master -c 'cat /etc/os-release'
+#   → NAME="AlmaLinux" VERSION="9.8"
+RUN microdnf install -y python3 python3-pip \
+ && microdnf clean all
 
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:${PATH}"
@@ -31,7 +34,8 @@ RUN pip install --no-cache-dir runpod fastapi "uvicorn[standard]" pydantic reque
 
 WORKDIR /app
 COPY joern/ /app/joern/
-ENV JOERN_SCRIPT=/app/joern/queries/taint.sc \
+ENV JOERN_SCRIPT=/app/joern/queries/taint_v3.sc \
+    JOERN_SANITIZER_FILE=/app/joern/_san_active.txt \
     PYTHONPATH=/app
 
 # 서버리스: RUNPOD_MODE=1 → runpod.serverless.start
