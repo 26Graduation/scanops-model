@@ -437,6 +437,27 @@ python3 joern/bench_owasp_final.py                  # OWASP taint 110건
 python3 joern/bench_joern_v4.py sample              # CleanVul 240건
 python3 joern/eval_v4.py sample
 ./joern/setup_local.sh status                       # 로컬 macOS astgen 링크
+
+# ── 2026-08-17 세션: 운영점·쌍 분석 (전부 CPU·$0, 기존 out/*.jsonl 만 읽는다) ──
+python3 rebuild/oppoint_analyze.py          # PRECISION-UNREACHABLE (사양 §1~§7)
+python3 rebuild/oppoint_op.py v1 val        # OP-0/A/B/C × 5벤치, OP-INSUFFICIENT (사양 §8)
+python3 rebuild/oppoint_envelope.py v1      # AUC 포락선 + 곡선 전수 (사후 참고)
+python3 rebuild/lang_breakdown.py v1        # 언어별 AUC
+python3 rebuild/pair_discrimination.py v1   # 쌍 구성 + 쌍 내 순위 정확도
+python3 rebuild/pair_cue_analysis.py v1     # 패치 크기·어휘 변화 대조
+python3 rebuild/pair_cue_joint.py v1        # 위 둘 동시 통제 + 토큰 목록 민감도
+python3 rebuild/pair_cue_lang.py v1         # 언어·코드 길이 통제
+python3 rebuild/pair_similarity.py v1       # 쌍 내 유사도 (핵심 — §3-4)
+python3 rebuild/length_baseline.py v1       # 길이 기준선 + 길이 층화 AUC
+python3 rebuild/build_legacy_bench.py       # CVEfixes157/CyberNative154 재구성 + 누수검사
+
+# 서빙 경로 점수 대조 (llama-server 가 8080 에 떠 있어야 한다)
+./llama.cpp/build/bin/llama-server -m models/Qwen3.5-9B-Q4_K_M.gguf \
+  --lora models/adapter_v1_fix.gguf -c 8192 --port 8080 -ngl 99 &
+python3 rebuild/verify_serving_score.py 20
+
+# v4 판정 (v4 채점 산출물이 있을 때)
+python3 rebuild/v4_judge.py v4s42
 ```
 
 ---
