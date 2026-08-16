@@ -1,0 +1,158 @@
+{
+  "tag": "v1",
+  "WARNING": "사후 참고. 예측 대조이며 인과가 아니다.",
+  "joint_cells": {
+    "diff0-5_guardN": {
+      "내부test": {
+        "rank_acc": 0.7679,
+        "n": 56
+      },
+      "CleanVul": {
+        "rank_acc": 0.5,
+        "n": 714
+      },
+      "PrimeVul": {
+        "rank_acc": 0.4177,
+        "n": 79
+      }
+    },
+    "diff0-5_guardY": {
+      "내부test": {
+        "rank_acc": 1.0,
+        "n": 5
+      },
+      "CleanVul": {
+        "rank_acc": 0.631,
+        "n": 84
+      },
+      "PrimeVul": {
+        "rank_acc": 0.1429,
+        "n": 7
+      }
+    },
+    "diff6-20_guardN": {
+      "내부test": {
+        "rank_acc": 0.8444,
+        "n": 90
+      },
+      "CleanVul": {
+        "rank_acc": 0.5782,
+        "n": 358
+      },
+      "PrimeVul": {
+        "rank_acc": 0.6667,
+        "n": 42
+      }
+    },
+    "diff6-20_guardY": {
+      "내부test": {
+        "rank_acc": 0.9545,
+        "n": 44
+      },
+      "CleanVul": {
+        "rank_acc": 0.7568,
+        "n": 74
+      },
+      "PrimeVul": {
+        "rank_acc": 1.0,
+        "n": 1
+      }
+    },
+    "diff21-inf_guardN": {
+      "내부test": {
+        "rank_acc": 0.901,
+        "n": 101
+      },
+      "CleanVul": {
+        "rank_acc": 0.5698,
+        "n": 86
+      },
+      "PrimeVul": {
+        "rank_acc": 0.4545,
+        "n": 11
+      }
+    },
+    "diff21-inf_guardY": {
+      "내부test": {
+        "rank_acc": 0.9716,
+        "n": 176
+      },
+      "CleanVul": {
+        "rank_acc": 0.8108,
+        "n": 37
+      },
+      "PrimeVul": {
+        "rank_acc": 0.75,
+        "n": 4
+      }
+    }
+  },
+  "token_list_sensitivity": {
+    "내부test": {
+      "wide": {
+        "guard_added": {
+          "rank_acc": 0.9689,
+          "n": 225
+        },
+        "no_guard": {
+          "rank_acc": 0.8502,
+          "n": 247
+        }
+      },
+      "narrow": {
+        "guard_added": {
+          "rank_acc": 0.9867,
+          "n": 75
+        },
+        "no_guard": {
+          "rank_acc": 0.8917,
+          "n": 397
+        }
+      }
+    },
+    "CleanVul": {
+      "wide": {
+        "guard_added": {
+          "rank_acc": 0.7128,
+          "n": 195
+        },
+        "no_guard": {
+          "rank_acc": 0.5294,
+          "n": 1158
+        }
+      },
+      "narrow": {
+        "guard_added": {
+          "rank_acc": 0.5833,
+          "n": 24
+        },
+        "no_guard": {
+          "rank_acc": 0.5553,
+          "n": 1329
+        }
+      }
+    },
+    "PrimeVul": {
+      "wide": {
+        "guard_added": {
+          "rank_acc": 0.4167,
+          "n": 12
+        },
+        "no_guard": {
+          "rank_acc": 0.5,
+          "n": 132
+        }
+      },
+      "narrow": {
+        "guard_added": {
+          "rank_acc": 0.5,
+          "n": 2
+        },
+        "no_guard": {
+          "rank_acc": 0.493,
+          "n": 142
+        }
+      }
+    }
+  }
+}
