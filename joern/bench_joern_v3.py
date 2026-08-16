@@ -26,17 +26,23 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from joern.bench_joern import load_cases, stratified_sample  # noqa: E402
-from joern.langmap import resolve  # noqa: E402
-from joern.sanitizer_spec import write_san_file  # noqa: E402
-
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "rebuild" / "out"
 
-# v3 쿼리를 쓰도록 강제 (핸들러 import 전에 설정해야 SCRIPT 상수에 반영된다)
-os.environ.setdefault("JOERN_SCRIPT", str(ROOT / "joern" / "queries" / "taint_v3.sc"))
+# ── v3 쿼리 강제 ────────────────────────────────────────────────────────────
+# handler_joern 은 **import 시점에** SCRIPT 상수를 환경변수에서 읽는다.
+# bench_joern 도 handler_joern 을 import 하므로, 어떤 joern 모듈보다 **먼저**
+# 환경변수를 세팅해야 한다. (실측 사고: 아래 import 뒤에 두었더니 v1 taint.sc 로 돌았다.)
+_V3 = str(ROOT / "joern" / "queries" / "taint_v3.sc")
+os.environ["JOERN_SCRIPT"] = _V3
 
-from joern.handler_joern import analyze_batch  # noqa: E402
+from joern.bench_joern import load_cases, stratified_sample  # noqa: E402
+from joern.handler_joern import SCRIPT as _ACTIVE_SCRIPT, analyze_batch  # noqa: E402
+from joern.langmap import resolve  # noqa: E402
+from joern.sanitizer_spec import write_san_file  # noqa: E402
+
+if Path(_ACTIVE_SCRIPT).name != "taint_v3.sc":  # 조용한 오실행 방지
+    raise SystemExit(f"[v3] FATAL: 활성 쿼리가 v3 가 아니다 → {_ACTIVE_SCRIPT}")
 
 
 def _flatten_path(findings: list[dict]) -> tuple[list[dict], list[dict]]:
