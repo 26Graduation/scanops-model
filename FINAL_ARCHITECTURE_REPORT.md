@@ -785,3 +785,29 @@ CleanVul Δprecision CI 하한 > 0)를 통과한 OP 가 없다. **배포 운영�
 | 서빙 경로 점수 대조 (판정 일치율 0.95 / 순위상관 0.9865 / 척도 편차 +0.334) | `rebuild/out/serving_score_check.json`, `OPPOINT_RESULTS.md` §2-0b |
 | 결정 로그 (이유·대안·되돌리는 법) | `rebuild/out/SESSION_DECISIONS_20260817B.md` |
 | 사전등록 사양 (측정 전 커밋) | `rebuild/OPPOINT_RUN_SPEC.md` §8 (`b6ea0d1`) |
+
+---
+
+## §5-8 배포 반영 — **하지 않았다** (2026-08-17, 사유 기록)
+
+이번 세션의 배포 반영은 두 조건 중 하나가 성립할 때만 하기로 사전에 정해져 있었다.
+**둘 다 성립하지 않았다.**
+
+| 조건 | 판정 | 근거 |
+|---|---|---|
+| 운영점 후보(`OP-CANDIDATE`) | **`OP-INSUFFICIENT`** | `OPPOINT_RESULTS.md` §2-3. 게이트 통과 OP 없음 |
+| v4 어댑터 채택(`ADOPT`) | `TRAIN_V4_RESULTS.md` §0 참조 | 사양 `V4_TRAIN_RUN_SPEC.md` §10-2 |
+
+**따라서 바꾼 것이 없다:**
+
+- `SCANOPS_TAU` **미설정** → `_detect` 는 현행 greedy 그대로. 코드 경로 변경 없음.
+- 어댑터 교체 없음 → `models/adapter_v1_fix.gguf` 그대로.
+- 컨테이너 재기동·데모 재실행 없음 → §6 의 데모 응답 3건이 여전히 최신이다.
+
+**회귀 검사를 하지 않은 이유:** 변경이 없으므로 회귀할 대상이 없다.
+대신 **서빙 경로가 오프라인 분석과 같은 것을 재는지**를 실측으로 확인했다
+(`OPPOINT_RESULTS.md` §2-0b — 판정 일치율 0.95, 순위상관 0.9865, 토큰 ID 일치).
+
+> **τ 를 도입하기로 하는 날의 선결 조건:** 양자화 때문에 서빙 점수가 오프라인보다
+> 평균 +0.334(음수 구간 +0.685) 높다. **오프라인에서 고른 τ 를 그대로 넣으면 안 된다.**
+> 서빙 경로에서 다시 골라야 한다. (`rebuild/out/serving_score_check.json`)
