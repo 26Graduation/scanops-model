@@ -17,6 +17,7 @@ v2 실패의 2차 원인을 고친다: 체크포인트 선택 기준.
   EVAL_STEPS                기본 150
   GEN_EVAL_N                생성 채점 표본 수 (기본 200)
   MAX_STEPS                 (선택) 시간 예산에 맞춘 상한
+  LEARNING_RATE             기본 2e-4 (v3 재현성 유지). V4-TRAIN 은 1e-4 를 넘긴다
 """
 from __future__ import annotations
 
@@ -40,7 +41,7 @@ MODEL_ID = "unsloth/Qwen3.5-9B"
 MAX_SEQ_LEN = 4096
 LORA_RANK = int(os.environ.get("LORA_RANK", 16))
 LORA_ALPHA = LORA_RANK * 2
-LEARNING_RATE = 2e-4
+LEARNING_RATE = float(os.environ.get("LEARNING_RATE", 2e-4))
 MAX_EPOCHS = float(os.environ.get("MAX_EPOCHS", 2))
 EARLY_STOP_PATIENCE = 3
 BATCH_PER_DEVICE = int(os.environ.get("BATCH_PER_DEVICE", 8))   # A100 80GB
