@@ -782,5 +782,6 @@ CleanVul Δprecision CI 하한 > 0)를 통과한 OP 가 없다. **배포 운영�
 | 사전등록한 τ 로의 `PRECISION-UNREACHABLE` | `rebuild/out/oppoint_metrics.json` |
 | 레거시 벤치 2종 누수 검사 | `rebuild/out/legacy_bench_leak.json` |
 | 언어별 AUC 분해 | `rebuild/out/lang_breakdown_v1.json` |
+| 서빙 경로 점수 대조 (판정 일치율 0.95 / 순위상관 0.9865 / 척도 편차 +0.334) | `rebuild/out/serving_score_check.json`, `OPPOINT_RESULTS.md` §2-0b |
 | 결정 로그 (이유·대안·되돌리는 법) | `rebuild/out/SESSION_DECISIONS_20260817B.md` |
 | 사전등록 사양 (측정 전 커밋) | `rebuild/OPPOINT_RUN_SPEC.md` §8 (`b6ea0d1`) |
