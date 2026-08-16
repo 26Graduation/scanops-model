@@ -4,17 +4,20 @@
     "test": {
       "auc": 0.9052,
       "n_items": 1197,
-      "n_pair_ids": 0,
-      "n_full_pairs": 0,
-      "n_items_without_pair_id": 1197,
-      "paired_item_ratio": 0.0
+      "n_pair_keys": 641,
+      "n_exact_1to1_pairs": 472,
+      "pair_key_source": "cve_id (pair_id 필드 없음)",
+      "paired_item_ratio": 0.7886,
+      "within_pair_rank_acc": 0.9068,
+      "within_pair_tie_rate": 0.0275,
+      "n_pairs_scored": 472
     },
     "cleanvul_v2_report": {
       "auc": 0.6165,
       "n_items": 2706,
-      "n_pair_ids": 1353,
-      "n_full_pairs": 1353,
-      "n_items_without_pair_id": 0,
+      "n_pair_keys": 1353,
+      "n_exact_1to1_pairs": 1353,
+      "pair_key_source": "pair_id",
       "paired_item_ratio": 1.0,
       "within_pair_rank_acc": 0.5558,
       "within_pair_tie_rate": 0.1774,
@@ -23,9 +26,9 @@
     "primevul_report": {
       "auc": 0.5618,
       "n_items": 288,
-      "n_pair_ids": 144,
-      "n_full_pairs": 144,
-      "n_items_without_pair_id": 0,
+      "n_pair_keys": 144,
+      "n_exact_1to1_pairs": 144,
+      "pair_key_source": "pair_id",
       "paired_item_ratio": 1.0,
       "within_pair_rank_acc": 0.4931,
       "within_pair_tie_rate": 0.3056,
@@ -34,26 +37,26 @@
     "cvefixes157": {
       "auc": 0.8732,
       "n_items": 157,
-      "n_pair_ids": 157,
-      "n_full_pairs": 0,
-      "n_items_without_pair_id": 0,
+      "n_pair_keys": 157,
+      "n_exact_1to1_pairs": 0,
+      "pair_key_source": "pair_id",
       "paired_item_ratio": 0.0
     },
     "cybernative154": {
       "auc": 0.9126,
       "n_items": 154,
-      "n_pair_ids": 154,
-      "n_full_pairs": 0,
-      "n_items_without_pair_id": 0,
+      "n_pair_keys": 154,
+      "n_exact_1to1_pairs": 0,
+      "pair_key_source": "pair_id",
       "paired_item_ratio": 0.0
     }
   },
   "train": {
     "train_v3": {
       "n_items": 13406,
-      "n_pair_ids": 7203,
-      "n_full_pairs": 5533,
-      "n_items_without_pair_id": 53,
+      "n_pair_keys": 7210,
+      "n_exact_1to1_pairs": 5533,
+      "pair_key_source": "pair_id",
       "paired_item_ratio": 0.8255,
       "source_dist": {
         "cvefixes": 9191,
@@ -63,9 +66,9 @@
     },
     "val_v3": {
       "n_items": 1489,
-      "n_pair_ids": 729,
-      "n_full_pairs": 548,
-      "n_items_without_pair_id": 120,
+      "n_pair_keys": 742,
+      "n_exact_1to1_pairs": 548,
+      "pair_key_source": "pair_id",
       "paired_item_ratio": 0.7361,
       "source_dist": {
         "cvefixes": 1213,

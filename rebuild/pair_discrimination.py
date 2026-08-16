@@ -41,17 +41,28 @@ def load_data(split: str) -> list[dict] | None:
     return [json.loads(l) for l in p.open()] if p.exists() else None
 
 
+def pair_key(meta: dict) -> str | None:
+    """쌍 식별자. `pair_id` 가 있으면 그것, 없으면 `cve_id` 로 되돌린다.
+
+    **중요:** 내부 test(`data/test.jsonl`)는 구버전 빌더로 만들어져 `pair_id` 필드가 없다.
+    그러나 같은 CVE 의 취약본·패치본이 **둘 다 들어 있다**(641 CVE 중 496개).
+    `pair_id` 만 보면 "쌍이 아니다"라고 잘못 읽게 된다 — 실제로 한 번 그렇게 읽었다(D-10 정정).
+    """
+    return meta.get("pair_id") or meta.get("cve_id") or None
+
+
 def pair_stats(rows: list[dict]) -> dict:
-    """meta.pair_id 기준 완전쌍 수. pair_id 가 None 이면 쌍 구성이 아니다."""
+    """정확히 1:1(취약 1건·안전 1건)인 쌍만 센다. 1:N 은 쌍 비교가 성립하지 않는다."""
     g = defaultdict(list)
     for r in rows:
-        pid = r["meta"].get("pair_id")
+        pid = pair_key(r["meta"])
         if pid is None:
             continue
         g[pid].append(r["meta"]["label"])
     full = sum(1 for v in g.values() if sorted(v) == ["safe", "vuln"])
-    return {"n_items": len(rows), "n_pair_ids": len(g), "n_full_pairs": full,
-            "n_items_without_pair_id": sum(1 for r in rows if r["meta"].get("pair_id") is None),
+    return {"n_items": len(rows), "n_pair_keys": len(g), "n_exact_1to1_pairs": full,
+            "pair_key_source": ("pair_id" if rows and rows[0]["meta"].get("pair_id")
+                                else "cve_id (pair_id 필드 없음)"),
             "paired_item_ratio": round(full * 2 / len(rows), 4) if rows else 0.0}
 
 
@@ -64,13 +75,14 @@ def main() -> None:
             out["eval"][sp] = {"status": "미실행 — logprob 파일 없음"}
             continue
         ps = pair_stats(recs)
-        g = defaultdict(dict)
+        g = defaultdict(lambda: defaultdict(list))
         for r in recs:
-            pid = r["meta"].get("pair_id")
-            if pid is None:        # pair_id 가 없으면 쌍이 아니다 (내부 test 가 이 경우)
+            pid = pair_key(r["meta"])
+            if pid is None:
                 continue
-            g[pid][r["meta"]["label"]] = r["score"]
-        full = [v for v in g.values() if len(v) == 2]
+            g[pid][r["meta"]["label"]].append(r["score"])
+        full = [{"vuln": v["vuln"][0], "safe": v["safe"][0]} for v in g.values()
+                if len(v.get("vuln", [])) == 1 and len(v.get("safe", [])) == 1]
         e = {"auc": auc(recs), **ps}
         if full:
             win = sum(1 for v in full if v["vuln"] > v["safe"])
@@ -79,7 +91,7 @@ def main() -> None:
             e["within_pair_tie_rate"] = round(tie / len(full), 4)   # 같은 점수 = 구분 불가
             e["n_pairs_scored"] = len(full)
         out["eval"][sp] = e
-        print(f"[{sp:20s}] AUC={e['auc']}  완전쌍={ps['n_full_pairs']:5d}/{ps['n_items']:5d}"
+        print(f"[{sp:20s}] AUC={e['auc']}  1:1쌍={ps['n_exact_1to1_pairs']:5d}/{ps['n_items']:5d}"
               + (f"  쌍내순위={e['within_pair_rank_acc']}  동점률={e['within_pair_tie_rate']}"
                  if full else "  (쌍 구성 아님)"))
 
@@ -90,7 +102,7 @@ def main() -> None:
         ps = pair_stats(rows)
         ps["source_dist"] = dict(Counter(r["meta"].get("source") for r in rows))
         out["train"][sp] = ps
-        print(f"[학습 {sp:15s}] 항목 {ps['n_items']:6d}  완전쌍 {ps['n_full_pairs']:5d} "
+        print(f"[학습 {sp:15s}] 항목 {ps['n_items']:6d}  1:1쌍 {ps['n_exact_1to1_pairs']:5d} "
               f"(쌍 항목 비율 {ps['paired_item_ratio']:.1%})  {ps['source_dist']}")
 
     p = ROOT / "out" / f"pair_discrimination_{TAG}.json"
