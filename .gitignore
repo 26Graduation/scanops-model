@@ -62,3 +62,6 @@ rebuild/out/*_predictions.jsonl
 rebuild/out/*_logprob_*.jsonl
 rebuild/out/*_votes_k*.jsonl
 rebuild/out/*.csv
+
+# 1GB 원시 수집 파일 — 깃 제외 (GitHub 100MB 한도 초과). 로컬 보관.
+rebuild/data/v4_files.jsonl
