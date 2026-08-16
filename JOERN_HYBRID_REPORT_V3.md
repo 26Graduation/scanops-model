@@ -351,3 +351,95 @@ CI 상한(0.6957)도 0.70 에 닿지 않는다. → **전건 1,878건 확장은 
 
 **원인 분류: 문맥 부족 아님(§3-2 T2=0.83). sanitizer 미인식도 아님(코드에 보임).
 → 모델이 주어진 문맥을 판단에 쓰지 않는다.**
+
+---
+
+## §5 hybrid.py 변경과 evidence 예시
+
+`V3-FAIL` 이므로 **판정 로직은 건드리지 않았다.** 대신 `attach_joern_evidence()` 를 추가해
+Joern v3 산출물을 **근거로만** 노출한다. 판정에 쓰이지 않았음을 `advisory_only: true` 로 명시한다.
+
+**불변 규칙 단위검증 10/10 통과** — 특히:
+- joern 의 `safe` / `safe_sanitized` 가 LLM `detected` 를 **덮지 않는다**
+- `JOERN-NO-BETTER` 에서 joern `vuln` 이 판정을 **바꾸지 않는다**
+- 자체 graph `vuln` 폴백은 **살아 있다**
+
+**예시 1 — LLM 탐지 + Joern 은 sanitized 라고 함 (판정 유지, 근거만 첨부)**
+```json
+{ "detected": true, "source": "llm", "status": "DONE", "score": 0.91,
+  "vulnerability": "SQL Injection", "severity": "HIGH", "cvss": 8.1,
+  "joern_evidence": {
+    "flow": [ {"line":1,"code":"String name","role":"source"},
+              {"line":3,"code":"ps","role":"intermediate"},
+              {"line":4,"code":"ps.executeQuery()","role":"sink"} ],
+    "sanitizer_hits": [ {"line":3,"code":"ps.setString(1, name)",
+                         "role":"intermediate","pattern":"\\.setString\\("} ],
+    "joern_note": "sanitized_flow", "joern_verdict": "safe_sanitized",
+    "advisory_only": true } }
+```
+
+**예시 2 — LLM 미탐 + Joern vuln (판정 안 바뀜)**
+```json
+{ "detected": false, "source": "llm", "status": "DONE", "score": 0.12,
+  "joern_evidence": { "flow": [...], "joern_verdict": "vuln", "advisory_only": true } }
+```
+
+**예시 3 — Joern 미도착**: `joern_evidence` 키 자체가 없고 `status` 는 어젯밤 규약대로 `PARTIAL`.
+
+> 백엔드/프론트 반영은 하지 않았다(선택 사항). 분석서버 응답에 `joern_evidence` 가
+> **추가만** 되므로 기존 소비자는 깨지지 않는다. UI 노출이 필요하면 §12 참조.
+
+---
+
+## §6 비용
+
+| 항목 | 값 |
+|---|---|
+| 세션 시작 잔액 (22:28) | **$28.3058024938** |
+| 측정 시점 잔액 | **$28.1196149272** |
+| **소진** | **$0.1862** (상한 $10.00 의 **1.9%**) |
+| Critic 호출 총 건수 | **127** (probe 5 + v1 98 + v2 진행분) |
+| 건당 실측 단가 | 약 **$0.0015** |
+| 프롬프트 v1 latency | 평균 6.5s/건 (num_predict 600) |
+| 프롬프트 v2 latency | 평균 **17.5s/건** (num_predict 3000) |
+| Joern 배치 (2,586건 상당) | **$0** — 전부 로컬 CPU |
+
+> 첫 probe 5건 때는 잔액 변동이 **$0.0000** 이었다. `workersStandby=2` 라 워커가 이미 상시
+> 대기 중이어서 소량 호출은 standby 요금에 묻힌다. 98건 규모부터 실제 과금이 드러났다.
+
+---
+
+## §7 병목과 한계
+
+### 7-1. Critic 도 결국 같은 v1 어댑터 LLM 이다
+
+이 모델은 외부 벤치에서 AUC 0.56 이다. 오늘 Critic 은 그 모델에게 **입력만 바꿔서** 다시 물은
+것이다. 그래서 T1~T3 게이트를 **먼저** 걸었고, 실제로 T1 에서 걸렸다.
+게이트가 없었다면 "Joern+Critic arm 이 F1 0.6087 로 어제 arm(0.5652)보다 높다"는 표(§4)만 보고
+**개선이라고 오독했을 것이다.** 그 F1 상승은 판별력이 아니라 **union 으로 recall 을 올리고
+FPR 도 함께 올린**(0.375 → 0.467) 결과다.
+
+### 7-2. 고칠 수 있는 결함 (§4-1)
+
+- `self`/`this` 가 taint source 로 들어간다 → source 정의를 좁혀야 한다
+- sanitizer 표가 카테고리에 갇혀 `escapeHtml` 이 `deser` 흐름에서 무시된다 → `_any` 승격
+- `new URL(` 은 sanitizer 신호로서 판별력이 없다(쌍의 양쪽에 등장, §2-5)
+
+### 7-3. 측정의 한계
+
+- Phase 3 는 **240건 층화 표본**이다. 전건 확장은 사전등록 규칙상 하지 않았다.
+- Critic 은 tune 에서만 돌렸다. `V3-FAIL` 이라 report 적용을 하지 않았기 때문이다.
+- v2 프롬프트 재측정은 세션 종료 시점까지 완료되지 않을 수 있다(§9).
+
+---
+
+## §8 결정 로그
+
+| 시각 | 결정 | 대안 | 근거 | 되돌리는 법 |
+|---|---|---|---|---|
+| 22:2x | flow 노드의 **상위 AST 3단계**까지 sanitizer 대조 | 노드 코드만 검사 | 노드는 `ps` 같은 식이라 `ps.setString(...)` 을 못 봄(스모크 실측) | `taint_v3.sc` 의 `enclosingCodes` 를 `List(n.code)` 로 |
+| 22:3x | sanitizer 를 flow **전 노드**에 적용(지시서는 중간 노드만) | 지시서 그대로 | 지시서 예시가 전부 sink 쪽 신호 | `hits` 계산에서 role 필터 추가 |
+| 22:38 | astgen **심볼릭 링크** 생성 | JS 언어 제외 | JS 102/102 parse_fail 이 v3 결함이 아니라 로컬 설치 문제였음 | `rm` (아래 §7 명령) |
+| 22:5x | UNPARSED 27.55% → 프롬프트 **1회** 개정 후 전건 재측정 | UNPARSED 만 재시도 | 두 프롬프트를 섞으면 T1 이 편향된다 | v1 결과는 §3-1 에 보존 |
+| 22:5x | `V3-FAIL` 이므로 hybrid **판정 로직 불변**, evidence 만 추가 | policy 에 JOERN-V3-CRITIC 추가 | 사전등록 §3-0 | `attach_joern_evidence` 호출 제거 |
+| 22:59 | Dockerfile 을 microdnf 로 수정 | apt-get 유지 | 베이스가 AlmaLinux 9 (실측) | git revert |
