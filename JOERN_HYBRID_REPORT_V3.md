@@ -125,3 +125,90 @@ Phase 1 에서 드라이버가 path 를 저장하도록 고쳤다 → **v3 에�
 | `<think>` 처리 | 워커가 블록을 제거해 반환. Critic 은 방어적으로 한 번 더 제거 | `api_rebuild.py:283`, `llm_critic.strip_think` |
 | 서빙 | `RUNPOD_ENDPOINT_ID` 설정 시 RunPod, 미설정 시 `LLAMA_SERVER_URL` | `llm_client.py:30-36` |
 
+
+---
+
+## §2 Sanitizer-aware Joern v3 — 설계와 실측
+
+### 2-1. 핵심 설계 결정 — flow 원소는 "식"이지 "문장"이 아니다
+
+첫 스모크에서 sanitizer 가 **하나도 안 걸렸다.** 원인을 보니 Joern 의 dataflow flow 원소는
+추적되는 **식**이었다:
+
+```
+[source] line 1: String name
+[intermediate] line 3: name
+[intermediate] line 3: ps          ← ps.setString(1, name) 이 아니라 그냥 `ps`
+[sink] line 4: ps.executeQuery()
+```
+
+`ps.setString(1, name)` 이라는 **문장 자체가 flow 원소로 등장하지 않는다.** 노드 코드만
+대조하면 sanitizer 를 영영 못 본다. → **노드 자신 + 상위 AST 3단계**의 code 를 함께 검사하도록
+`enclosingCodes()` 를 넣었다(`taint_v3.sc`). 흐름에 국한되므로 "파일 어딘가에 setString 이
+있으면 안전" 같은 과광의 매칭은 되지 않는다.
+
+수정 후 같은 스모크: `safe → safe_sanitized` (hit: `ps.setString(1, name)`), `vuln → vuln` (문자열 연결).
+
+### 2-2. path 를 실제로 저장한다 (어젯밤 결함 해소)
+
+어젯밤 raw 의 path 보유율은 **0%** 였다 — 쿼리는 내보냈는데 드라이버가 버렸다(§1).
+v3 에서는 `{line, code, role}` 구조로 저장하고, **vuln 인데 path 가 비면 `unknown(no_path)`** 로
+낮춘다.
+
+| | 어젯밤 v2 | **오늘 v3** |
+|---|---|---|
+| vuln 의 path 보유율 | 0% | **100% (98/98)** |
+| `no_path` 로 낮춰진 건수 | — | **0** |
+
+### 2-3. sanitizer 표는 데이터로 분리
+
+`joern/sanitizers.json` (시드 = `scanops/core/multi_graph.py:114` `SANITIZERS`).
+언어별 44/41/40 패턴(JAVASRC/PYTHONSRC/JSSRC). `_any` 는 전 카테고리 공통.
+
+> **지시서와의 편차(명시)**: 지시서는 "flow 의 **중간** 노드"만 검사하라고 했으나,
+> 지시서가 든 예시(`PreparedStatement.set*`, `parameterized execute(sql, params)`)가 전부
+> **sink 쪽** 신호다. 그래서 모든 노드를 검사하고 걸린 노드의 role 을 기록한다.
+
+### 2-4. v2 → v3 전이 행렬 (tune 468건, 같은 case_id)
+
+| v2 | → v3 | 건수 |
+|---|---|---|
+| safe | safe | 357 |
+| **vuln** | **vuln** | **98** |
+| **vuln** | **safe_sanitized** | **6** |
+| unknown | unknown | 7 |
+
+**손실 없이 깨끗하다** — v2 의 vuln 104건 중 6건만 sanitizer 로 걸러졌고, 나머지는 그대로다.
+
+### 2-5. 단위 테스트 — 걸러진 6건이 옳게 걸러졌나
+
+지시서는 "과탐 10건 + 진탐 10건"을 요구했으나, **v2-vuln 104건 전체를 v3 로 재실행**한
+것이 같은 측정의 상위집합이므로 그것으로 대신한다(표본이 5배 크다).
+
+| 결과 | 건수 |
+|---|---|
+| **과탐 제거 성공** (gold=safe 인데 v2 가 vuln 이라 했던 것) | **5** |
+| **진탐 손실** (gold=vuln 인데 safe_sanitized 로 낮춤) | **1** |
+
+진탐 손실(1) < 과탐 제거(5) 이므로 **사전 규칙상 패턴을 좁히지 않는다.**
+
+다만 유일한 손실 `cvh_94|vuln` 은 시사적이다: 패턴 `new\s+URL\(` 이 **쌍의 양쪽 모두**에
+걸렸다(`new URL(serviceCall)`). URL 을 파싱하는 것은 검증이 아니므로 이 패턴은
+sanitizer 신호로서 판별력이 없다. → §12 에 후보로 남긴다.
+
+### 2-6. v3 단독 성능 (tune) — sanitizer 만으로는 거의 안 움직인다
+
+| | vuln 건수 | precision |
+|---|---|---|
+| v2 (어제) | 104 | 0.4904 |
+| **v3 (오늘)** | **98** | **0.5102** |
+
+| 언어 | n | vuln | precision | safe_sanitized | parse_fail |
+|---|---|---|---|---|---|
+| Java | 222 | 25 | 0.4800 | 2 | 1.4% |
+| Python | 144 | 59 | 0.5593 | 4 | 1.4% |
+| JavaScript | 102 | 14 | 0.3571 | 0 | 2.0% |
+
+**세 언어 모두 parse_fail < 30%** → 제외된 언어 없음.
+sanitizer 는 v2-vuln 의 **5.8%(6/104)** 에만 걸렸다. 즉 **v3 단독으로는 어제 문제가 해결되지
+않는다.** 가설의 무게는 전적으로 Critic(§3)에 실린다.
