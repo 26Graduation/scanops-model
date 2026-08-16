@@ -1,0 +1,77 @@
+{
+  "tag": "v1",
+  "eval": {
+    "test": {
+      "auc": 0.9052,
+      "n_items": 1197,
+      "n_pair_ids": 0,
+      "n_full_pairs": 0,
+      "n_items_without_pair_id": 1197,
+      "paired_item_ratio": 0.0
+    },
+    "cleanvul_v2_report": {
+      "auc": 0.6165,
+      "n_items": 2706,
+      "n_pair_ids": 1353,
+      "n_full_pairs": 1353,
+      "n_items_without_pair_id": 0,
+      "paired_item_ratio": 1.0,
+      "within_pair_rank_acc": 0.5558,
+      "within_pair_tie_rate": 0.1774,
+      "n_pairs_scored": 1353
+    },
+    "primevul_report": {
+      "auc": 0.5618,
+      "n_items": 288,
+      "n_pair_ids": 144,
+      "n_full_pairs": 144,
+      "n_items_without_pair_id": 0,
+      "paired_item_ratio": 1.0,
+      "within_pair_rank_acc": 0.4931,
+      "within_pair_tie_rate": 0.3056,
+      "n_pairs_scored": 144
+    },
+    "cvefixes157": {
+      "auc": 0.8732,
+      "n_items": 157,
+      "n_pair_ids": 157,
+      "n_full_pairs": 0,
+      "n_items_without_pair_id": 0,
+      "paired_item_ratio": 0.0
+    },
+    "cybernative154": {
+      "auc": 0.9126,
+      "n_items": 154,
+      "n_pair_ids": 154,
+      "n_full_pairs": 0,
+      "n_items_without_pair_id": 0,
+      "paired_item_ratio": 0.0
+    }
+  },
+  "train": {
+    "train_v3": {
+      "n_items": 13406,
+      "n_pair_ids": 7203,
+      "n_full_pairs": 5533,
+      "n_items_without_pair_id": 53,
+      "paired_item_ratio": 0.8255,
+      "source_dist": {
+        "cvefixes": 9191,
+        "primevul": 4162,
+        "cleanvul": 53
+      }
+    },
+    "val_v3": {
+      "n_items": 1489,
+      "n_pair_ids": 729,
+      "n_full_pairs": 548,
+      "n_items_without_pair_id": 120,
+      "paired_item_ratio": 0.7361,
+      "source_dist": {
+        "cvefixes": 1213,
+        "cleanvul": 120,
+        "primevul": 156
+      }
+    }
+  }
+}
