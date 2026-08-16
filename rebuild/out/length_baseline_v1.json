@@ -11,7 +11,10 @@
       "rho_score_length": -0.3763,
       "rho_gold_length": -0.1885,
       "median_len_vuln": 273.5,
-      "median_len_safe": 667
+      "median_len_safe": 667,
+      "auc_model_length_stratified": 0.8927,
+      "auc_length_only_stratified": 0.5179,
+      "n_length_bins": 5
     },
     "cleanvul_v2_report": {
       "label": "CleanVul_v2 report",
@@ -22,7 +25,10 @@
       "rho_score_length": -0.2246,
       "rho_gold_length": -0.0727,
       "median_len_vuln": 897,
-      "median_len_safe": 990
+      "median_len_safe": 990,
+      "auc_model_length_stratified": 0.6174,
+      "auc_length_only_stratified": 0.5265,
+      "n_length_bins": 5
     },
     "primevul_report": {
       "label": "PrimeVul report",
@@ -33,7 +39,10 @@
       "rho_score_length": 0.0566,
       "rho_gold_length": 0.0099,
       "median_len_vuln": 1597.0,
-      "median_len_safe": 1673.5
+      "median_len_safe": 1673.5,
+      "auc_model_length_stratified": 0.5725,
+      "auc_length_only_stratified": 0.498,
+      "n_length_bins": 5
     },
     "cvefixes157": {
       "label": "CVEfixes 157",
@@ -44,7 +53,10 @@
       "rho_score_length": -0.3209,
       "rho_gold_length": -0.1179,
       "median_len_vuln": 285.5,
-      "median_len_safe": 374
+      "median_len_safe": 374,
+      "auc_model_length_stratified": 0.8719,
+      "auc_length_only_stratified": 0.4992,
+      "n_length_bins": 5
     },
     "cybernative154": {
       "label": "CyberNative 154",
@@ -55,7 +67,10 @@
       "rho_score_length": -0.2276,
       "rho_gold_length": -0.2557,
       "median_len_vuln": 324,
-      "median_len_safe": 466
+      "median_len_safe": 466,
+      "auc_model_length_stratified": 0.916,
+      "auc_length_only_stratified": 0.483,
+      "n_length_bins": 5
     }
   }
 }

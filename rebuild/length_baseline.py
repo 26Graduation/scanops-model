@@ -8,6 +8,8 @@ AUC 가 0.5 를 넘는다. **그 값을 재서 병기해야 모델의 기여분�
 재는 것:
   1. `ρ(score, 코드 길이)` 와 `ρ(gold, 코드 길이)` — 모델이 길이를 라벨보다 더 세게 쓰는가
   2. **길이만 쓰는 분류기의 AUC** (`score = −len(code)`) vs 모델 AUC
+  3. **길이 층화 AUC** — 길이 5분위 안에서 AUC 를 재고 표본수로 가중 평균한다.
+     길이를 통제해도 모델 AUC 가 남으면, 길이 단서가 성능을 떠받치고 있는 것이 아니다.
 
 비용 $0. 실행: python3 rebuild/length_baseline.py [tag]
 출력: out/length_baseline_{tag}.json
@@ -78,10 +80,27 @@ def main() -> None:
             "median_len_vuln": st.median([l for l, y in zip(L, Y) if y]),
             "median_len_safe": st.median([l for l, y in zip(L, Y) if not y]),
         }
+        # ── 길이 5분위 층화 (길이 통제) ───────────────────────────────────
+        order = sorted(L)
+        cuts = [order[int(len(order) * f)] for f in (0.2, 0.4, 0.6, 0.8)] + [10 ** 12]
+        bins, prev = [], -1
+        for hi in cuts:
+            b = [(x, y) for x, y in zip(sc, lenrecs) if prev < -y["score"] <= hi]
+            prev = hi
+            if b and len({r[0]["meta"]["label"] for r in b}) == 2:
+                bins.append(b)
+        tot = sum(len(b) for b in bins)
+        e["auc_model_length_stratified"] = round(
+            sum(auc([r[0] for r in b]) * len(b) for b in bins) / tot, 4) if tot else None
+        e["auc_length_only_stratified"] = round(
+            sum(auc([r[1] for r in b]) * len(b) for b in bins) / tot, 4) if tot else None
+        e["n_length_bins"] = len(bins)
         out["splits"][split] = e
         print(f"[{label:20s}] 모델 {e['auc_model']:.4f}  길이만 {e['auc_length_only']:.4f}  "
               f"차이 {e['margin_over_length']:+.4f}   "
               f"ρ(score,len) {e['rho_score_length']:+.4f} / ρ(gold,len) {e['rho_gold_length']:+.4f}")
+        print(f"{'':22s}  길이 5분위 층화: 모델 {e['auc_model_length_stratified']}  "
+              f"길이만 {e['auc_length_only_stratified']}")
 
     p = ROOT / "out" / f"length_baseline_{TAG}.json"
     p.write_text(json.dumps(out, ensure_ascii=False, indent=2))
