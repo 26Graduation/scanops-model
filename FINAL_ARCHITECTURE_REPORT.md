@@ -271,3 +271,101 @@ llama-server 원문 출력을 직접 받아봤다:
 미탐이더라도 **응답 계약은 설계대로** 나왔다:
 `source="llm"`, `status="DONE"`, `joern_evidence.advisory_only=true`(판정 미개입),
 `evidence`·`score` 필드 존재. 백엔드 `ScanopsModelClient` 계약과 호환된다.
+
+---
+
+## §7 한계와 다음 단계 (근거 순)
+
+### 7-1 지금 상태에서 말할 수 있는 것 / 없는 것
+
+| 말할 수 있다 | 말할 수 없다 |
+|---|---|
+| 내부 test split에서 F1 80.5 (`rebuild/out/test_report.json`) | 그 숫자가 외부 데이터에서 재현된다 |
+| 외부 CleanVul 240건에서 LLM+graph arm precision 0.5909 (§3-1) | precision 0.70(사업계획서 "오탐 1/3") 달성 |
+| Joern v4가 taint 흐름과 sanitizer 적중을 **근거로** 제시한다 (§6 재검증) | Joern이 판정 정확도를 올린다 (§3-1·§3-2 둘 다 미달) |
+| 외부 호출 0 스택이 실제로 기동한다 (§5-1 실측) | 에어갭에서 GitHub OAuth 로그인이 된다 (§5-2) |
+
+### 7-2 다음 단계 — 근거가 강한 순
+
+1. **Critic 노선 종료 유지.** 상한이 5.1%로 측정됐다(§4-1). 재개하려면 먼저
+   **"패치가 흐름 안에 있는 벤치"** 를 만들어야 한다 — CleanVul에서 그 조건을 만족하는
+   쌍만 추리면 소수(4.8%)라 새 데이터가 필요하다.
+2. **Joern은 evidence 전용으로 고정.** 판정 개입은 두 벤치 모두에서 미달이다.
+   evidence의 값어치는 §6 재검증처럼 "왜 그렇게 봤는지"를 보여주는 데 있다.
+3. **모델 쪽**: self-consistency(V3에서 유일하게 유효했던 것, `V3_RUN_SPEC`)의
+   비용/이득 재측정. 오늘 세션에서는 다루지 않았다.
+4. **원가 실측**: 이번 세션 RunPod 소진 $0(GPU 호출 0). 온프레미스는 하드웨어 원가만.
+   SaaS 원가는 별도 측정이 필요하다.
+
+### 7-3 미완 (§9와 중복 없이)
+
+- v1 어댑터 GGUF로의 데모 — 로컬에 파일이 없다.
+- 백엔드(Spring) 컨테이너 기동 — 시간상 미실행(§9).
+- 전건 1,878건 v4 확장 — 사전등록 `V4-FAIL`이라 **의도적으로** 안 함.
+
+---
+
+## §8 사업계획서 정정 목록 (누적, 최신)
+
+| # | 계획서 표현 | 실측 | 상태 |
+|---|---|---|---|
+| 1 | "오탐률 1/3 (precision ~0.70+)" | CleanVul 240건 최고 arm precision **0.5909** (§3-1), OWASP **0.5172** (§3-2) | **미달** |
+| 2 | "F1 80.5" | 내부 test split 기준. **외부 벤치에서는 어떤 arm도 자명 기준선 F1 0.6667을 못 넘음** | **조건 명시 필요** |
+| 3 | "지식그래프가 오탐을 걸러낸다" | ABLATION ΔF1 −0.0014, CI 0 포함, unknown 91.6% | **기여 없음** |
+| 4 | "Joern CPG 하이브리드로 정밀도 향상" | v1~v4 전부 사전등록 게이트 미달 (§2 #4·#6·#10) | **미달, evidence 전용으로 축소** |
+| 5 | "LLM이 흐름을 검증한다(Critic)" | 세 번 KILL. 상한 5.1% (§4-1) | **종료** |
+| 6 | "온프레미스 완전 격리" | 스택 기동 확인(§5-1). 단 **GitHub OAuth는 외부 접속 필요**(§5-2) | **조건부 사실** |
+
+> 대외 자료에는 **AUC**를 쓰고, F1을 쓸 때는 **자명 기준선(all-vuln F1 0.6667)** 을 함께 적는다.
+
+---
+
+## §9 용어 사전
+
+| 용어 | 뜻 |
+|---|---|
+| **자명 기준선(trivial baseline)** | "전부 취약"이라고 답하는 분류기. 1:1 균형 데이터에서 F1 0.6667 |
+| **precision / recall / FPR** | 정밀도 = 취약 판정 중 실제 취약 비율 / 재현율 = 실제 취약 중 잡은 비율 / 오경보율 = 안전한 것 중 취약이라 한 비율 |
+| **taint flow** | 사용자 입력(source)이 위험 지점(sink)까지 흐르는 데이터 경로 |
+| **sanitizer** | 그 흐름 중간에서 값을 검증·이스케이프·파라미터화하는 호출 |
+| **CPG** | Code Property Graph. Joern이 만드는 코드 표현 |
+| **사전 등록(pre-registration)** | 측정 **전에** 성공/실패 기준을 문서에 적고, 결과를 본 뒤 바꾸지 않는 규율 |
+| **evidence 전용** | 응답에 근거만 싣고 `detected` 값을 바꾸지 않는 경로. `advisory_only: true`로 표시 |
+| **CRITIC-KILL / V3-FAIL / V4-FAIL** | 각 세션에서 사전 등록한 게이트를 통과하지 못했다는 판정 이름 |
+
+---
+
+## §10 재현 명령어
+
+```bash
+# 온프레미스 기동 (프로젝트명 격리 필수 — 기존 컨테이너와 섞이지 않게)
+cd scanops-infra
+cp .env.onprem.example .env.onprem     # GGUF_DIR 를 실제 경로로
+docker compose -p scanops-onprem-demo -f docker-compose.onprem.yml \
+  --env-file .env.onprem --profile llm up -d joern-worker llama-server model-api
+
+# 데모
+curl -X POST localhost:8100/analyze -H "Content-Type: application/json" \
+  -H "X-API-Key: onprem-local-key" -d @demo/a_java_sqli.json
+
+# 정리 (프로젝트명 반드시 지정)
+docker compose -p scanops-onprem-demo -f docker-compose.onprem.yml down -v
+
+# 벤치 재현 (scanops-model)
+python3 joern/bench_owasp_final.py                  # OWASP taint 110건
+python3 joern/bench_joern_v4.py sample              # CleanVul 240건
+python3 joern/eval_v4.py sample
+./joern/setup_local.sh status                       # 로컬 macOS astgen 링크
+```
+
+---
+
+## §11 결정 로그 (세션별 원문)
+
+| 세션 | 파일 | 결정 로그 |
+|---|---|---|
+| Joern 하이브리드 v1/v2 | `JOERN_HYBRID_REPORT.md` | §8 |
+| sanitizer v3 + Critic | `JOERN_HYBRID_REPORT_V3.md` | §8 |
+| v4 + 전략 A/D/E | `JOERN_HYBRID_REPORT_V4.md` | §8 (D-0 ~ D-5) |
+| CTX-1 문맥주입 | `rebuild/out/CTX_RESULTS.md` | §6·§7 |
+| ABLATION | `rebuild/out/ABLATION_RESULTS.md` | §0·§8 |
