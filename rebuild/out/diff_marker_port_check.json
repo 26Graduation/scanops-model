@@ -1,0 +1,32 @@
+{
+  "checks": {
+    "source_shape": "OK — _detect(prompt_code=None) 은 code 를 그대로 쓴다",
+    "R1_analyze_50": {
+      "n": 50,
+      "mismatch": 0,
+      "pass": true
+    },
+    "R2_flag_off": {
+      "identical": true,
+      "pass": true
+    },
+    "R3_edge": {
+      "no_patch_identical": true,
+      "no_patch_marked": null,
+      "delete_only_identical": true,
+      "delete_only_marked": 0,
+      "multi_hunk_lines": [
+        2,
+        12
+      ],
+      "pass": true
+    },
+    "R4_insert_only": {
+      "original_lines": 4,
+      "kept_lines": 4,
+      "markers": 2,
+      "pass": true
+    }
+  },
+  "all_pass": true
+}

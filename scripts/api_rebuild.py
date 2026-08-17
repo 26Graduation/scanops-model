@@ -158,6 +158,8 @@ class PrFinding(BaseModel):
     graph_evidence: list[dict] = Field(default_factory=list)
     suppressed_by_graph: bool = False
     diff_line: Optional[int] = None
+    # `[DIFF]` 마커로 표시한 변경 줄 수. 플래그 off 이거나 patch 가 없으면 None.
+    diff_marked_lines: Optional[int] = None
 
 
 class PrScanResponse(BaseModel):
@@ -217,12 +219,17 @@ def _parse4(raw: str) -> tuple[str, str, str, str]:
     return g(_RE_VULN), g(_RE_SEV).upper(), g(_RE_CVSS), g(_RE_REASON)
 
 
-def _detect(language: str, code: str) -> dict:
+def _detect(language: str, code: str, prompt_code: Optional[str] = None) -> dict:
     """모델 호출 → 4줄 파싱. 실패 시 **1회만** 예산을 늘려 재시도한다.
 
     반환에 debug 필드(retried/parse_fail)를 실어 운영에서 재시도율을 볼 수 있게 한다.
+
+    `prompt_code` 는 **LLM 프롬프트에만** 쓰는 대체 본문이다(PR 경로의 `[DIFF]` 마커).
+    None 이면 `code` 를 그대로 쓴다 = 기존과 바이트 동일. graph/Joern/점수 경로는
+    언제나 원본 `code` 를 본다 — 마커가 정적 분석 입력을 바꾸지 않게 하기 위해서다.
     """
-    prompt = PROMPT_TMPL.format(language=language, code=code[:_MAX_CODE])
+    prompt = PROMPT_TMPL.format(
+        language=language, code=(code if prompt_code is None else prompt_code)[:_MAX_CODE])
     _PARSE_STATS["total"] += 1
 
     raw = llm_completion(CHATML_TMPL.format(p=prompt),
@@ -289,6 +296,35 @@ def _first_added_line(patch: Optional[str]) -> Optional[int]:
         if not line.startswith("-"):
             new_ln += 1
     return None
+
+
+# ── PR 경로 `[DIFF]` 마커 (기본 on, 되돌림은 환경변수 하나) ────────────────────
+# 근거: rebuild/out/DIFF_AWARE_RESULTS.md — v1 그대로 쌍 판별 0.4600 → 0.6050
+# (+0.1450 [+0.0650, +0.2225], 위치 상쇄 후). 단건 회귀 없음(내부 test 0.9101 동일,
+# CyberNative +0.0176), 안전 판본 오탐률 0.065 불변.
+# **사전등록 게이트는 통과하지 못했다**(`CB-PARTIAL`, 동점률 0.155 > 0.10).
+# 그래서 이것은 게이트 통과가 아니라 **제품 판단**이고, 그 사실을 문서에 적는다.
+# SCANOPS_PR_DIFF_MARKER=0 으로 끄면 프롬프트가 이전과 **바이트 동일**해진다.
+PR_DIFF_MARKER = os.getenv("SCANOPS_PR_DIFF_MARKER", "1").lower() in ("1", "on", "true")
+
+
+def _pr_marked_content(language: str, content: str,
+                       patch: Optional[str]) -> tuple[Optional[str], Optional[int]]:
+    """PR 프롬프트용 본문과 표시한 변경 줄 수.
+
+    반환이 (None, None) 이면 호출측은 **원본 그대로** 쓴다 = 현행과 바이트 동일.
+    변경 줄이 하나도 없으면(패치 없음·삭제만 있는 hunk) 마커를 넣지 않는다.
+    """
+    if not PR_DIFF_MARKER or not patch:
+        return None, None
+    try:
+        from rebuild.pr_diff_marker import changed_lines_from_patch, mark_content
+        changed = changed_lines_from_patch(patch)
+        if not changed:
+            return None, 0
+        return mark_content(content, changed, language), len(changed)
+    except Exception:  # noqa: BLE001 — 마커 실패가 스캔을 죽이지 않게
+        return None, None
 
 
 def _cvss_float(v) -> Optional[float]:
@@ -417,9 +453,10 @@ def _joern(language: str, code: str, file_path: Optional[str]) -> Optional[dict]
         return None
 
 
-def _analyze_one(language: str, code: str, file_path: Optional[str]) -> AnalyzeResponse:
+def _analyze_one(language: str, code: str, file_path: Optional[str],
+                 prompt_code: Optional[str] = None) -> AnalyzeResponse:
     t0 = time.time()
-    r = _detect(language, code)
+    r = _detect(language, code, prompt_code)
     r["score"] = _score(language, code)
     joern = _joern(language, code, file_path)
     agg = hybrid_mod.aggregate(r, joern, None, HYBRID_POLICY)
@@ -504,8 +541,10 @@ def analyze_pr(req: PrScanRequest, _=Security(_require_api_key)):
     for f in req.files:
         if not f.content.strip():
             continue
+        lang = _lang_of(f.filename)
+        prompt_code, marked = _pr_marked_content(lang, f.content, f.patch)
         try:
-            r = _analyze_one(_lang_of(f.filename), f.content, f.filename)
+            r = _analyze_one(lang, f.content, f.filename, prompt_code=prompt_code)
         except Exception:  # noqa: BLE001
             continue
         if not r.detected:
@@ -517,6 +556,7 @@ def analyze_pr(req: PrScanRequest, _=Security(_require_api_key)):
             attack=r.attack, fix=r.fix, summary=r.summary,
             ai_prompt=r.ai_prompt, cve_references=r.cve_references,
             diff_line=_first_added_line(f.patch),
+            diff_marked_lines=marked,
         ))
     return PrScanResponse(repo=req.repo, pr_number=req.pr_number,
                           total_files=len(req.files),
