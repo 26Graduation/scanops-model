@@ -67,14 +67,29 @@ else:
           f"{f(r['recall_loc_single_file'])} | {f(r['flag_rate'])} | {r['n_fp_files']} | "
           f"{f(r['precision_file'])} | {secs} |")
     A("")
+    sat = m.get("SATURATION", {})
+    if sat.get("recall_identical_across_arms"):
+        A("> ### ⚠ 이 표를 읽기 전에 — **이 벤치는 포화됐다**")
+        A("> ")
+        A(f"> **세 arm 의 recall 이 전부 {list(sat['recall_by_arm'].values())[0]:.4f} 로 같다. "
+          "즉 recall 은 arm 을 가르지 못한다.**")
+        A(f"> {sat['why']}")
+        A("> ")
+        A("> **사전등록한 설계의 결함이다.** 결과를 본 뒤 지표를 바꾸지 않았고, 대신 이 벤치가")
+        A("> 실제로 가르는 것만 아래에서 읽는다.")
+        A("")
     gv = m["graph_verdict"]
     A(f"**사전등록 판정 = `{gv['verdict']}`** "
       f"(구속력: {'있음' if gv['binding'] else '**없음 — 표본 부족**'})")
     A("")
     A(f"- S2 − C1 cross-file recall 차 = **{gv['delta_cross_file_recall_S2_minus_C1']:+.4f}** "
       f"(WIN 기준선 +0.20, CI 겹침 {gv['ci_overlap']})")
-    A(f"- **그래프 순기여 S2 − S1**: 전체 recall **{gv['S2_minus_S1_recall_loc']:+.4f}**, "
-      f"cross-file recall **{gv['S2_minus_S1_recall_cross_file']:+.4f}**")
+    A(f"- **그래프 순기여 S2 − S1** — 이 벤치가 실제로 가르는 값:")
+    A(f"  - 새로 잡은 정답 파일 **{len(gv['S2_minus_S1_new_truth_files'])}개** "
+      f"({gv['S2_minus_S1_new_truth_files'] or '없음'})")
+    A(f"  - 추가로 켠 경보 **{gv['S2_minus_S1_extra_flagged_files']}개 파일** "
+      f"(경보율 {m['arms']['S1']['flag_rate']:.4f} → {m['arms']['S2']['flag_rate']:.4f})")
+    A(f"  - → **이 레포에서 그래프는 탐지를 더하지 않고 경보만 더했다.**")
     A(f"- 발표 문구(사전 고정) → **\"{gv['presentation_wording']}\"**")
     A("")
     g = m["graph_components"]

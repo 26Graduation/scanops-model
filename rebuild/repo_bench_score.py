@@ -181,6 +181,23 @@ def main(repo: str) -> None:
     if ci_overlap and verdict == "GRAPH-WIN":
         verdict = "GRAPH-TIE"
 
+    # ── 포화 진단: recall 이 arm 을 가르지 못하면 그 사실을 먼저 적는다 ────────
+    recalls = {a: report["arms"][a]["recall_loc"] for a in arms}
+    saturated = len(set(round(v, 4) for v in recalls.values())) == 1
+    report["SATURATION"] = {
+        "recall_identical_across_arms": saturated,
+        "recall_by_arm": recalls,
+        "flag_rate_by_arm": {a: report["arms"][a]["flag_rate"] for a in arms},
+        "verdict": ("**이 벤치는 포화됐다 — recall 이 arm 을 가르지 못한다.**" if saturated
+                    else "recall 이 arm 을 가른다"),
+        "why": ("정답이 있는 파일이 9개뿐인데 세 arm 모두 전체 파일의 45~62% 를 vuln 으로 판정한다. "
+                "파일 단위 매칭에서는 그 9개가 자동으로 전부 포함된다 → recall 이 1.0 으로 붙는다. "
+                "**사전등록한 설계의 결함이고, 결과를 본 뒤 지표를 바꾸지 않는다.** "
+                "대신 이 벤치가 실제로 가르는 것만 읽는다: (a) **arm 간 경보율**, "
+                "(b) **S2 − S1 = 그래프가 새로 잡은 정답 수와 추가로 켠 경보 수**, "
+                "(c) 카테고리까지 맞힌 비율(recall_cat)."),
+    }
+
     enough = (report["truth_in_scope_scored"] >= 40 and report["n_cross_file"] >= 12)
     report["gate_sample_size"] = {
         "truth_scored": report["truth_in_scope_scored"], "need": 40,
@@ -201,6 +218,9 @@ def main(repo: str) -> None:
         "S2_minus_S1_recall_cross_file": round(
             (s2["recall_loc_cross_file"] or 0)
             - (report["arms"]["S1"]["recall_loc_cross_file"] or 0), 4),
+        "S2_minus_S1_new_truth_files": sorted(
+            set(arm_files("S2")[0] & truth_files) - set(arm_files("S1")[0] & truth_files)),
+        "S2_minus_S1_extra_flagged_files": len(arm_files("S2")[0] - arm_files("S1")[0]),
         "presentation_wording": ("멀티파일 taint 주력 탐지기 + LLM 단건 주력"
                                  if verdict == "GRAPH-WIN" and enough
                                  else "보조 탐지 + 근거 표시"),
