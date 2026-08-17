@@ -138,47 +138,55 @@ LLAMA = os.getenv("LLAMA_SERVER_URL", "http://127.0.0.1:8080")
 
 
 def cmd_s1(repo: str, repo_dir: Path) -> None:
+    """로컬 llama-server 로 파일 단위 판정. **재개 가능**(같은 명령을 다시 돌리면 이어서 한다).
+
+    llama-server 는 `--parallel 2` 로 떠 있으므로 요청도 2개씩 겹쳐 보낸다.
+    판정은 greedy(temperature 0)라 동시성이 결과를 바꾸지 않는다 — 순서만 달라진다.
+    """
     import requests
+    from concurrent.futures import ThreadPoolExecutor
     _assert_prompt_parity()
     lang = SCOPE[repo]["lang"]
+    conc = int(os.getenv("RB_CONCURRENCY", "2"))
     out_path = OUT / f"repo_bench_{repo}_s1.jsonl"
     done = set()
     if out_path.exists():
         done = {json.loads(l)["file"] for l in out_path.open()}
-        print(f"재개: {len(done)}건 완료")
-    files = scan_files(repo, repo_dir)
+        print(f"재개: {len(done)}건 완료 (동시성 {conc})")
+    files = [(rel, code) for rel, code in scan_files(repo, repo_dir) if rel not in done]
     t_all = time.time()
-    with out_path.open("a") as f:
-        for i, (rel, code) in enumerate(files, 1):
-            if rel in done:
-                continue
-            t0 = time.time()
-            parts = chunks(code)
-            raws, labels = [], []
-            for ch in parts:
-                prompt = PROMPT_TMPL.format(language=lang, code=ch[:MAX_CODE])
-                r = requests.post(f"{LLAMA}/completion", json={
-                    "prompt": CHATML_TMPL.format(p=prompt),
-                    "n_predict": 200, "temperature": 0.0,
-                    "stop": ["<|im_end|>"]}, timeout=600)
-                r.raise_for_status()
-                raw = r.json().get("content", "")
-                raws.append(raw[:600])
-                labels.append(parse(raw))
-            vuln = [p for p in labels if p["label"] == "vuln"]
-            rec = {
-                "file": rel, "n_chunks": len(parts), "chars": len(code),
-                "label": "vuln" if vuln else ("parse_fail" if all(
-                    p["label"] == "parse_fail" for p in labels) else "safe"),
-                "cwe": vuln[0]["cwe"] if vuln else "",
-                "severity": vuln[0]["severity"] if vuln else "",
-                "raws": raws, "elapsed": round(time.time() - t0, 2),
-            }
+
+    def work(item):
+        rel, code = item
+        t0 = time.time()
+        parts = chunks(code)
+        raws, labels = [], []
+        for ch in parts:
+            prompt = PROMPT_TMPL.format(language=lang, code=ch[:MAX_CODE])
+            r = requests.post(f"{LLAMA}/completion", json={
+                "prompt": CHATML_TMPL.format(p=prompt),
+                "n_predict": 200, "temperature": 0.0,
+                "stop": ["<|im_end|>"]}, timeout=900)
+            r.raise_for_status()
+            raw = r.json().get("content", "")
+            raws.append(raw[:600])
+            labels.append(parse(raw))
+        vuln = [p for p in labels if p["label"] == "vuln"]
+        return {
+            "file": rel, "n_chunks": len(parts), "chars": len(code),
+            "label": "vuln" if vuln else ("parse_fail" if all(
+                p["label"] == "parse_fail" for p in labels) else "safe"),
+            "cwe": vuln[0]["cwe"] if vuln else "",
+            "severity": vuln[0]["severity"] if vuln else "",
+            "raws": raws, "elapsed": round(time.time() - t0, 2),
+        }
+
+    with out_path.open("a") as f, ThreadPoolExecutor(max_workers=conc) as ex:
+        for i, rec in enumerate(ex.map(work, files), 1):
             f.write(json.dumps(rec, ensure_ascii=False) + "\n")
             f.flush()
             if i % 10 == 0:
-                el = time.time() - t_all
-                print(f"  {i}/{len(files)}  {el:.0f}s 경과", flush=True)
+                print(f"  {i}/{len(files)}  {time.time() - t_all:.0f}s 경과", flush=True)
     print(f"S1 완료: {out_path}  총 {time.time() - t_all:.0f}s")
 
 
