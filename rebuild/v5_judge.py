@@ -166,7 +166,7 @@ def main() -> None:
     }
     out["adopt_conditions"] = conds
     out["verdict"] = "ADOPT-PR" if all(conds.values()) else "NO-ADOPT"
-    p = ROOT / "out" / "v5_metrics.json"
+    p = ROOT / "out" / f"{TAG}_metrics.json"
     p.write_text(json.dumps(out, ensure_ascii=False, indent=2))
     print(f"\n조건: {conds}")
     print(f"판정: {out['verdict']}")
