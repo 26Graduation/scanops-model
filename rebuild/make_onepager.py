@@ -148,7 +148,12 @@ for tag, name, base in (("test", "내부 test", 0.6312),
     else:
         A(f"| {name} | — | Claude PARITY (오늘) | `claude-opus-5` | — | 미측정 | 미측정 | 미측정 | 미측정 | {base:.4f} | — |")
 A("")
+pp = load(OUT / "repo_bench_prompt_parity_check.json")
 A(f"> 프롬프트 해시 `{(c1meta or {}).get('prompt_sha256_16', '—')}` (PROMPT_TMPL sha256 앞 16자, 전 arm 공통).")
+if pp:
+    A(f"> **PARITY 검증**: 레포 벤치 {pp['units']}개 유닛 전부에서 우리 쪽과 Claude 쪽이 보내는 "
+      f"**사용자 본문이 바이트 동일**함을 확인했다({pp['identical_user_content']}/{pp['units']}). "
+      f"다른 것은 ChatML 래핑뿐이다. (`repo_bench_prompt_parity_check.json`)")
 A("> **`temperature=0` 은 우리 쪽에만 적용된다** — Claude 5 계열은 sampling 파라미터를 받지 않는다(400). '동일 조건'이라 쓰지 않는다.")
 A("> 기존 Claude 행은 **`claude-sonnet-5`**, 오늘 행은 **`claude-opus-5`** 다. 두 모델을 같은 칸에서 비교하지 않는다.")
 A("")

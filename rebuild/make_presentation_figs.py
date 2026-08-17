@@ -82,7 +82,9 @@ def fig1():
     ax.legend(frameon=False, ncol=len(arms), loc="upper center",
               bbox_to_anchor=(0.5, -0.16))
     fig.text(0.5, -0.02,
-             "Ground truth = in-repo `vuln-code-snippet vuln-line` markers, committed before any scan.",
+             "Ground truth = in-repo `vuln-code-snippet vuln-line` markers, committed before any scan. "
+             "File-level match (neither LLM emits line numbers) — optimistic for all three arms. "
+             f"Below the pre-registered sample-size floor (33 < 40), so the verdict is indicative only.",
              ha="center", fontsize=8, color=MUTED)
     fig.tight_layout()
     fig.savefig(FIG / "fig1_repo_recall.png", dpi=200, bbox_inches="tight")
