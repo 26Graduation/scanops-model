@@ -1,0 +1,464 @@
+{
+  "spec": "rebuild/DIFF_AWARE_RUN_SPEC.md",
+  "n_boot": 2000,
+  "arms": {
+    "P0": {
+      "n_pairs": 200,
+      "rank_acc_strict": 0.46,
+      "rank_acc_tie05": 0.625,
+      "tie_rate": 0.33,
+      "strict_ci95": [
+        0.395,
+        0.53
+      ],
+      "tie05_ci95": [
+        0.5725,
+        0.6775
+      ],
+      "auc": 0.5776,
+      "n_items": 400,
+      "trivial_all_vuln_f1": 0.6667,
+      "auc_length_only": 0.5079,
+      "by_bench": {
+        "CleanVul": {
+          "n_pairs": 120,
+          "rank_acc_strict": 0.4667,
+          "rank_acc_tie05": 0.6333,
+          "tie_rate": 0.3333,
+          "strict_ci95": [
+            0.3833,
+            0.55
+          ],
+          "tie05_ci95": [
+            0.5667,
+            0.7
+          ]
+        },
+        "PrimeVul": {
+          "n_pairs": 70,
+          "rank_acc_strict": 0.4,
+          "rank_acc_tie05": 0.5786,
+          "tie_rate": 0.3571,
+          "strict_ci95": [
+            0.2857,
+            0.5286
+          ],
+          "tie05_ci95": [
+            0.4857,
+            0.6714
+          ]
+        },
+        "내부test": {
+          "n_pairs": 10,
+          "rank_acc_strict": 0.8,
+          "rank_acc_tie05": 0.85,
+          "tie_rate": 0.1,
+          "strict_ci95": [
+            0.5,
+            1.0
+          ],
+          "tie05_ci95": [
+            0.6,
+            1.0
+          ]
+        }
+      }
+    },
+    "P1": {
+      "n_pairs": 200,
+      "rank_acc_strict": 0.545,
+      "rank_acc_tie05": 0.5675,
+      "tie_rate": 0.045,
+      "strict_ci95": [
+        0.475,
+        0.61
+      ],
+      "tie05_ci95": [
+        0.5,
+        0.63
+      ],
+      "auc": 0.5349,
+      "n_items": 400,
+      "trivial_all_vuln_f1": 0.6667,
+      "auc_length_only": 0.5079,
+      "by_bench": {
+        "CleanVul": {
+          "n_pairs": 120,
+          "rank_acc_strict": 0.525,
+          "rank_acc_tie05": 0.5417,
+          "tie_rate": 0.0333,
+          "strict_ci95": [
+            0.4417,
+            0.6167
+          ],
+          "tie05_ci95": [
+            0.4583,
+            0.625
+          ]
+        },
+        "PrimeVul": {
+          "n_pairs": 70,
+          "rank_acc_strict": 0.5429,
+          "rank_acc_tie05": 0.5786,
+          "tie_rate": 0.0714,
+          "strict_ci95": [
+            0.4286,
+            0.6571
+          ],
+          "tie05_ci95": [
+            0.4714,
+            0.6929
+          ]
+        },
+        "내부test": {
+          "n_pairs": 10,
+          "rank_acc_strict": 0.8,
+          "rank_acc_tie05": 0.8,
+          "tie_rate": 0.0,
+          "strict_ci95": [
+            0.5,
+            1.0
+          ],
+          "tie05_ci95": [
+            0.5,
+            1.0
+          ]
+        }
+      }
+    },
+    "P2": {
+      "n_pairs": 200,
+      "rank_acc_strict": 0.59,
+      "rank_acc_tie05": 0.665,
+      "tie_rate": 0.15,
+      "strict_ci95": [
+        0.525,
+        0.66
+      ],
+      "tie05_ci95": [
+        0.605,
+        0.725
+      ],
+      "auc": 0.6429,
+      "n_items": 400,
+      "trivial_all_vuln_f1": 0.6667,
+      "auc_length_only": 0.5094,
+      "by_bench": {
+        "CleanVul": {
+          "n_pairs": 120,
+          "rank_acc_strict": 0.6083,
+          "rank_acc_tie05": 0.6875,
+          "tie_rate": 0.1583,
+          "strict_ci95": [
+            0.5167,
+            0.6917
+          ],
+          "tie05_ci95": [
+            0.6083,
+            0.7583
+          ]
+        },
+        "PrimeVul": {
+          "n_pairs": 70,
+          "rank_acc_strict": 0.5429,
+          "rank_acc_tie05": 0.6143,
+          "tie_rate": 0.1429,
+          "strict_ci95": [
+            0.4286,
+            0.6571
+          ],
+          "tie05_ci95": [
+            0.5071,
+            0.7143
+          ]
+        },
+        "내부test": {
+          "n_pairs": 10,
+          "rank_acc_strict": 0.7,
+          "rank_acc_tie05": 0.75,
+          "tie_rate": 0.1,
+          "strict_ci95": [
+            0.4,
+            1.0
+          ],
+          "tie05_ci95": [
+            0.5,
+            1.0
+          ]
+        }
+      }
+    },
+    "P3": {
+      "n_pairs": 200,
+      "rank_acc_strict": 0.62,
+      "rank_acc_tie05": 0.6375,
+      "tie_rate": 0.035,
+      "strict_ci95": [
+        0.555,
+        0.685
+      ],
+      "tie05_ci95": [
+        0.5725,
+        0.705
+      ],
+      "auc": 0.6751,
+      "n_items": 400,
+      "trivial_all_vuln_f1": 0.6667,
+      "auc_length_only": 0.5,
+      "by_bench": {
+        "CleanVul": {
+          "n_pairs": 120,
+          "rank_acc_strict": 0.625,
+          "rank_acc_tie05": 0.6417,
+          "tie_rate": 0.0333,
+          "strict_ci95": [
+            0.5417,
+            0.7083
+          ],
+          "tie05_ci95": [
+            0.5583,
+            0.7208
+          ]
+        },
+        "PrimeVul": {
+          "n_pairs": 70,
+          "rank_acc_strict": 0.6,
+          "rank_acc_tie05": 0.6214,
+          "tie_rate": 0.0429,
+          "strict_ci95": [
+            0.4857,
+            0.7143
+          ],
+          "tie05_ci95": [
+            0.5143,
+            0.7357
+          ]
+        },
+        "내부test": {
+          "n_pairs": 10,
+          "rank_acc_strict": 0.7,
+          "rank_acc_tie05": 0.7,
+          "tie_rate": 0.0,
+          "strict_ci95": [
+            0.4,
+            1.0
+          ],
+          "tie05_ci95": [
+            0.4,
+            1.0
+          ]
+        }
+      }
+    },
+    "P1shuf": {
+      "n_pairs": 200,
+      "rank_acc_strict": 0.49,
+      "rank_acc_tie05": 0.5125,
+      "tie_rate": 0.045,
+      "strict_ci95": [
+        0.425,
+        0.56
+      ],
+      "tie05_ci95": [
+        0.445,
+        0.58
+      ],
+      "auc": 0.505,
+      "n_items": 400,
+      "trivial_all_vuln_f1": 0.6667,
+      "auc_length_only": 0.4994,
+      "by_bench": {
+        "CleanVul": {
+          "n_pairs": 120,
+          "rank_acc_strict": 0.5,
+          "rank_acc_tie05": 0.5167,
+          "tie_rate": 0.0333,
+          "strict_ci95": [
+            0.4167,
+            0.5917
+          ],
+          "tie05_ci95": [
+            0.4292,
+            0.6083
+          ]
+        },
+        "PrimeVul": {
+          "n_pairs": 70,
+          "rank_acc_strict": 0.4429,
+          "rank_acc_tie05": 0.4786,
+          "tie_rate": 0.0714,
+          "strict_ci95": [
+            0.3286,
+            0.5571
+          ],
+          "tie05_ci95": [
+            0.3643,
+            0.5857
+          ]
+        },
+        "내부test": {
+          "n_pairs": 10,
+          "rank_acc_strict": 0.7,
+          "rank_acc_tie05": 0.7,
+          "tie_rate": 0.0,
+          "strict_ci95": [
+            0.4,
+            1.0
+          ],
+          "tie05_ci95": [
+            0.4,
+            1.0
+          ]
+        }
+      }
+    },
+    "P3shuf": {
+      "n_pairs": 200,
+      "rank_acc_strict": 0.48,
+      "rank_acc_tie05": 0.4975,
+      "tie_rate": 0.035,
+      "strict_ci95": [
+        0.415,
+        0.55
+      ],
+      "tie05_ci95": [
+        0.43,
+        0.565
+      ],
+      "auc": 0.5231,
+      "n_items": 400,
+      "trivial_all_vuln_f1": 0.6667,
+      "auc_length_only": 0.5,
+      "by_bench": {
+        "CleanVul": {
+          "n_pairs": 120,
+          "rank_acc_strict": 0.45,
+          "rank_acc_tie05": 0.4667,
+          "tie_rate": 0.0333,
+          "strict_ci95": [
+            0.3667,
+            0.5333
+          ],
+          "tie05_ci95": [
+            0.3833,
+            0.55
+          ]
+        },
+        "PrimeVul": {
+          "n_pairs": 70,
+          "rank_acc_strict": 0.5143,
+          "rank_acc_tie05": 0.5357,
+          "tie_rate": 0.0429,
+          "strict_ci95": [
+            0.4,
+            0.6286
+          ],
+          "tie05_ci95": [
+            0.4214,
+            0.65
+          ]
+        },
+        "내부test": {
+          "n_pairs": 10,
+          "rank_acc_strict": 0.6,
+          "rank_acc_tie05": 0.6,
+          "tie_rate": 0.0,
+          "strict_ci95": [
+            0.3,
+            0.9
+          ],
+          "tie05_ci95": [
+            0.3,
+            0.9
+          ]
+        }
+      }
+    }
+  },
+  "regression": {
+    "test": {
+      "P0": {
+        "auc": 0.9101,
+        "n": 100,
+        "delta_vs_P0": 0.0,
+        "pass": true
+      },
+      "P1": {
+        "auc": 0.9164,
+        "n": 100,
+        "delta_vs_P0": 0.0063,
+        "pass": true
+      },
+      "P2": {
+        "auc": 0.9101,
+        "n": 100,
+        "delta_vs_P0": 0.0,
+        "pass": true
+      }
+    },
+    "cybernative154": {
+      "P0": {
+        "auc": 0.852,
+        "n": 50,
+        "delta_vs_P0": 0.0,
+        "pass": true
+      },
+      "P1": {
+        "auc": 0.8384,
+        "n": 50,
+        "delta_vs_P0": -0.0136,
+        "pass": true
+      },
+      "P2": {
+        "auc": 0.8696,
+        "n": 50,
+        "delta_vs_P0": 0.0176,
+        "pass": true
+      }
+    }
+  },
+  "verdict": {
+    "gate": "PROMPT-WIN",
+    "best_arm": "P3",
+    "candidates": {
+      "P0": {
+        "rank_acc_strict": 0.46,
+        "tie_rate": 0.33,
+        "shuf_arm": null,
+        "shuf_rank_acc": null,
+        "shuf_ok": true,
+        "regression_ok": true,
+        "invalidated_by_shuf": false
+      },
+      "P1": {
+        "rank_acc_strict": 0.545,
+        "tie_rate": 0.045,
+        "shuf_arm": "P1shuf",
+        "shuf_rank_acc": 0.49,
+        "shuf_ok": true,
+        "regression_ok": true,
+        "invalidated_by_shuf": false
+      },
+      "P2": {
+        "rank_acc_strict": 0.59,
+        "tie_rate": 0.15,
+        "shuf_arm": null,
+        "shuf_rank_acc": null,
+        "shuf_ok": true,
+        "regression_ok": true,
+        "invalidated_by_shuf": false
+      },
+      "P3": {
+        "rank_acc_strict": 0.62,
+        "tie_rate": 0.035,
+        "shuf_arm": "P3shuf",
+        "shuf_rank_acc": 0.48,
+        "shuf_ok": true,
+        "regression_ok": null,
+        "invalidated_by_shuf": false
+      }
+    },
+    "baseline_P0_rank_acc": 0.46,
+    "rule": "§7 — WIN ≥0.60 & 동점 ≤0.10 & 회귀통과 & shuf ≤0.55 / PARTIAL 0.53~0.60 / NULL <0.53. shuf >0.55 인 arm 은 제외"
+  }
+}
