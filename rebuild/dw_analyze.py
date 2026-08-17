@@ -94,7 +94,7 @@ def main() -> None:
                  "arms": {}, "regression": {}, "verdict": {}}
 
     for arm in ARMS:
-        recs = load("dw", arm)
+        recs = load("dw", f"dw_{arm}")
         if recs is None:
             res["arms"][arm] = {"status": "미실행"}
             print(f"[{arm}] 미실행")
@@ -120,7 +120,7 @@ def main() -> None:
         res["regression"][split] = {}
         base = None
         for arm in REG_ARMS:
-            recs = load("dw", f"reg_{split}_{arm}")
+            recs = load("dw", f"dw_reg_{split}_{arm}")
             if recs is None:
                 res["regression"][split][arm] = {"status": "미실행"}
                 continue

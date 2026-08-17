@@ -31,8 +31,8 @@ import torch
 import torch.nn.functional as F
 
 ROOT = Path(__file__).resolve().parent
-MAX_LEN = 4096
-BATCH = 8
+MAX_LEN = int(__import__("os").environ.get("SCORE_MAX_LEN", 4096))  # 기본 4096 유지(과거 산출물 재현성)
+BATCH = int(__import__("os").environ.get("SCORE_BATCH", 8))  # 긴 프롬프트(8192)에서는 줄인다
 
 adapter = sys.argv[1]
 tag = sys.argv[2]

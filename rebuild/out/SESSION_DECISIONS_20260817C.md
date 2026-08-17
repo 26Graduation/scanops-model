@@ -168,3 +168,40 @@ TORCH 2.8.0+cu128 AVAIL True
 **대신 새 문제가 하나 나왔다.** Ubuntu 24.04 라 `pip install` 이 PEP 668
 (`externally-managed-environment`)로 막혔다. `--break-system-packages` 로 해결했다.
 **컨테이너 안이므로 시스템 파이썬을 써도 위험이 없다** — venv 를 따로 만들지 않았다.
+
+---
+
+## D-24 — 환경 실패 1회: unsloth 설치가 torch 를 되돌려 놨다 (실행 기록)
+
+**무슨 일.** cu128 이미지를 골라 시작은 깨끗했다(`TORCH 2.8.0+cu128 AVAIL True`).
+그런데 `pip install unsloth` 가 **torch 를 2.11.0(PyPI 기본 = cu130 휠)으로 올려버렸다.**
+`torchaudio 2.8.0+cu128 requires torch==2.8.0, but you have torch 2.11.0` 경고가 그대로 찍혔고,
+`unsloth` import 가 `Unsloth cannot find any torch accelerator` 로 실패했다.
+
+**어제(D-2)와 같은 부류다.** 다만 원인이 다르다 — 어제는 **이미지**가 cu130 이었고,
+오늘은 **unsloth 의 의존성 해석**이 cu128 을 cu130 으로 덮었다.
+
+**조치 (1회, 어제 검증된 조합 그대로).**
+`pip install --break-system-packages --force-reinstall --no-cache-dir --index-url .../cu128
+ torch==2.11.0+cu128 torchvision==0.26.0+cu128 torchaudio==2.11.0+cu128`
+→ `UNSLOTH_IMPORT_OK`. **환경 실패 1회로 끝났다**(세션 규칙 상한 2회 안).
+
+**교훈.** cu128 이미지를 고르는 것만으로는 부족하다. **unsloth 를 설치한 뒤 torch 를 다시 고정**해야 한다.
+다음에는 순서를 바꾼다 — unsloth 먼저, 그 다음 torch 재고정, 그 다음 import 검증.
+
+---
+
+## D-25 — Phase 1 채점 파라미터를 바꿨고, 그것이 무엇을 바꾸는지 (실행 전 기록)
+
+| 파라미터 | 기존(v1 채점) | **이번 Phase 1** | 이유 |
+|---|---|---|---|
+| `MAX_LEN` | 4096 | **8192** | P3 는 두 판본을 함께 넣는다. 쌍 합산이 3,500 토큰을 넘는 경우가 **16.3%** — 4096 이면 잘린다 |
+| `BATCH` | 8 | **4** | 8192 컨텍스트 × A6000 48GB. OOM 을 피한다 |
+
+**두 값 모두 환경변수로 뺐다**(`SCORE_MAX_LEN` / `SCORE_BATCH`, 기본값은 4096/8 유지).
+**기본값을 그대로 둔 이유: 어제까지의 산출물을 재현할 수 있어야 하기 때문이다.**
+
+**이것이 만드는 교란과 대응.** MAX_LEN 이 다르면 v1 의 어제 점수와 직접 비교할 수 없다.
+그래서 **P0(현행 프롬프트)를 같은 8192·배치 4 로 다시 채점**해 기준선으로 삼는다(사양 §5).
+어제 4096 값과 P0 값이 크게 다르면(순위 정확도 ±0.05 초과) **절단이 결과를 만들고 있었다는 뜻**이고,
+그 사실 자체를 결과로 적는다(D-21 말미와 같은 규칙).
