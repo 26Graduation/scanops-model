@@ -264,6 +264,84 @@ def _detect(language: str, code: str, prompt_code: Optional[str] = None) -> dict
             "retried": retried}
 
 
+# ═══════════════════════════════════════════════════════════════════════════
+# v2 분기 (V2_RUN_SPEC.md rev.6 §11)
+# ═══════════════════════════════════════════════════════════════════════════
+# §11 은 v1 파일 동결을 원칙으로 하되, **이 파일만은 예외**로 "같은 파일 안에 v1/v2 분기를
+# 나란히 두는 것"을 허용한다(완전 별도 파일로 쪼개면 서빙 스위칭 로직이 이원화되므로).
+#
+# 규칙:
+#  · 위쪽 v1 경로(PROMPT_TMPL / CHATML_TMPL / _detect)는 **한 글자도 바꾸지 않았다.**
+#    `rebuild/repo_bench_scan.py:_assert_prompt_parity()` 가 이 파일에서 그 두 문자열을
+#    찾아 대조하므로, 건드리면 v1 벤치가 즉시 깨진다.
+#  · v2 경로는 프롬프트·포맷·4096 예산·파서를 전부 `rebuild/prompt_v2.py` 에서 import 한다.
+#    여기에 프롬프트 문자열을 다시 적지 않는다 — 그게 §11 단일 소스의 요점이다.
+#
+# 전환: 환경변수 `SCANOPS_MODEL_VERSION=v2` (기본값 v1 — 미설정 시 동작 무변화).
+
+_V2_ENABLED = os.getenv("SCANOPS_MODEL_VERSION", "v1").lower() == "v2"
+_V2_TOKENIZER_ID = os.getenv("V2_TOKENIZER", "unsloth/Qwen3.5-9B")
+_v2_mod = None
+_v2_tok = None
+
+
+def _v2_load():
+    """prompt_v2 와 토크나이저를 지연 로드한다 (v1 경로만 쓸 때 비용 0)."""
+    global _v2_mod, _v2_tok
+    if _v2_mod is None:
+        sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "rebuild"))
+        import prompt_v2 as _p
+        from transformers import AutoTokenizer
+        _v2_mod = _p
+        _v2_tok = AutoTokenizer.from_pretrained(_V2_TOKENIZER_ID)
+    return _v2_mod, _v2_tok
+
+
+def _detect_v2(language: str, code: str, prompt_code: Optional[str] = None) -> dict:
+    """v2 판정 — 파일 단위 입력(최대 4096-token context) + 5줄 출력(LINE 포함).
+
+    v1 `_detect` 와 다른 점:
+      · 코드를 12,000자로 자르지 않고 §8-2 절차(줄번호 부여 → 조립 → 실측 → 뒤에서 절단)를
+        학습 데이터 구축·평가와 **같은 함수**로 적용한다.
+      · 생성 프리필이 학습 텍스트 접두사와 바이트 동일하다
+        (`<|im_start|>assistant\\n<think>\\n\\n</think>\\n\\n` 까지 포함 — build_generation_prompt()).
+      · 출력에 `line` 이 실린다.
+    """
+    P, tok = _v2_load()
+    src = code if prompt_code is None else prompt_code
+    b = P.build_input_within_budget(src, language, tok, line=None)
+    raw = llm_completion(
+        P.build_generation_prompt(b["prompt"], tok),
+        {"num_predict": P.COMPLETION_RESERVE_TOKENS, "temperature": 0.0,
+         "stop": ["<|im_end|>"]})
+    r = P.parse_output_v2(raw)
+    base = {
+        "model_version": "v2",
+        "truncated": b["truncated"],
+        "input_tokens": b["input_tokens"],
+        "file_lines_total": b["file_lines_total"],
+        "lines_kept": b["lines_kept"],
+        "format_inconsistent": r["format_inconsistent"],
+    }
+    if r["label"] == "parse_fail":
+        return {**base, "detected": False, "vulnerability": "NONE", "severity": "NONE",
+                "cvss": None, "reason": "", "line": None, "parse_fail": True}
+    if r["label"] == "safe":
+        return {**base, "detected": False, "vulnerability": "NONE", "severity": "NONE",
+                "cvss": None, "reason": "", "line": 0}
+    return {**base, "detected": True, "vulnerability": r["cwe"],
+            "severity": (r["severity"] or "UNKNOWN").upper(),
+            "cvss": _cvss_float(r["cvss"]), "line": r["line"],
+            "reason": "" if r["reason"].upper() == "NONE" else r["reason"]}
+
+
+def detect(language: str, code: str, prompt_code: Optional[str] = None) -> dict:
+    """서빙 진입점 — SCANOPS_MODEL_VERSION 에 따라 v1/v2 로 분기한다."""
+    if _V2_ENABLED:
+        return _detect_v2(language, code, prompt_code)
+    return _detect(language, code, prompt_code)
+
+
 # ── 헬퍼 (api_v17.py 와 동일) ────────────────────────────────────────────────
 
 _EXT_LANG = {
