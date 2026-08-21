@@ -1,0 +1,68 @@
+{
+  "_설명": "①단계(extract_candidates.sc)가 자동으로 뽑아낸 720개 후보 중, 사람(이번엔 Claude)이 직접 검토해서 source/sink/sanitizer로 라벨링한 결과물. 실제 서비스에서는 이 라벨링을 LLM API 호출로 자동화해야 함(IRIS/CPGHunter 방식) — 지금은 그 자리를 대신 사람이 채운 프로토타입 단계.",
+  "repo": "juice-shop",
+  "labeled_at": "2026-08-20 (Claude가 candidates_raw.json 720건을 검토)",
+
+  "confirmed_vulnerabilities": [
+    {
+      "id": "V1",
+      "category": "sqli",
+      "cwe": "CWE-89",
+      "file": "routes/login.ts",
+      "line": 34,
+      "sink": "models.sequelize.query()",
+      "source": "req.body.email",
+      "sanitizer_present": false,
+      "verdict": "확인됨 — Joern reachableByFlows로 8개 경로 발견",
+      "note": "|| 연산, security.hash() 호출, 템플릿 리터럴 조립, 임시변수 대입을 거쳐 흘러감"
+    },
+    {
+      "id": "V2",
+      "category": "sqli",
+      "cwe": "CWE-89",
+      "file": "data/static/codefixes/dbSchemaChallenge_1.ts",
+      "line": 5,
+      "sink": "models.sequelize.query()",
+      "source": "req.query.q",
+      "sanitizer_present": false,
+      "verdict": "확인됨 — Joern reachableByFlows로 11개 경로 발견",
+      "note": "V1과 다른 파일/다른 소스(query vs body)/다른 코드 모양(문자열 concat + 삼항연산자 2개 + .substring()). 같은 파이프라인으로 별도 검증 성공."
+    },
+    {
+      "id": "V3",
+      "category": "xxe",
+      "cwe": "CWE-611",
+      "file_source": "routes/fileUpload.ts (line 74~76, source: file.buffer)",
+      "file_sink": "lib/xml.ts (line 38, sink: vm.runInContext + XML_PARSE_NOENT|XML_PARSE_DTDLOAD)",
+      "sink": "vm.runInContext('libxml2.XmlDocument.fromString(data, { option })', ...)",
+      "source": "file.buffer (업로드된 XML 파일 내용)",
+      "sanitizer_present": false,
+      "verdict": "★ 진짜 cross-file 확인됨 — Joern reachableByFlows로 15개 경로 발견, 경로가 routes/fileUpload.ts:76에서 lib/xml.ts:33(함수 파라미터)으로 파일 경계를 실제로 넘어감",
+      "note": "V1/V2와 결정적으로 다름: source와 sink가 서로 다른 파일에 있는 진짜 cross-file 케이스. 코드 주석에 'intentionally vulnerable to XXE'라고 명시된 실제 취약점. 이게 그래프(Joern)가 모델(파일 단위 스캔)로는 원리적으로 못 잡는 걸 잡아내는 첫 실증 사례."
+    }
+  ],
+
+  "candidates_reviewed_not_yet_tested": [
+    {
+      "name": "eval",
+      "file": "routes/captcha.ts",
+      "line": 22,
+      "category": "codei (CWE-94, 코드 인젝션)",
+      "note": "eval(expression) 호출은 있지만, expression이 Math.random() 기반 서버 생성 값이라 사용자입력이 아님. → 실제로는 안전할 가능성 높음(오탐 방지 케이스). 미검증."
+    },
+    {
+      "name": "redirect",
+      "file": "routes/redirect.ts",
+      "line": 18,
+      "category": "openredirect (CWE-601)",
+      "note": "toUrl = query.to (사용자입력) → security.isRedirectAllowed(toUrl) 체크(sanitizer 존재) → res.redirect(toUrl). Sanitizer가 allowlist 접두어 검사라 우회 가능성 있는 미묘한 케이스. 시간관계상 taint 질의까지는 안 돌려봄."
+    },
+    {
+      "name": "createHash",
+      "file": "lib/insecurity.ts",
+      "line": 41,
+      "category": "weak-hash (CWE-328)",
+      "note": "crypto.createHash('md5') — source 무관, API 자체가 약한 암호. taint 추적이 아니라 존재만 확인하면 되는 유형(우리 multi_graph.py의 WEAK_HASH 패턴과 같은 종류)."
+    }
+  ]
+}

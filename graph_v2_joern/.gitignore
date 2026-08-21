@@ -1,0 +1,4 @@
+cpg_cache/*.bin
+cpg_cache/workspace/
+test_repos/
+*.cpg.bin
