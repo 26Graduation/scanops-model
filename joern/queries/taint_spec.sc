@@ -17,8 +17,12 @@
  * 그 외 sanitizer 처리·path 출력·에러 처리는 taint_v4.sc 와 같은 방식을 따른다.
  *
  * specFile 형식 (TSV, 한 줄 = 룰 하나):
- *   sink<TAB>cat<TAB>cwe<TAB>field(name|full)<TAB>regex
+ *   sink<TAB>cat<TAB>cwe<TAB>field(name|full|assign_field)<TAB>regex
  *   source<TAB>-<TAB>-<TAB>field(name|full)<TAB>regex
+ * field=assign_field (PLAN.md 4단계): `el.innerHTML = x` 같은 프로퍼티 대입을 sink 로 본다.
+ * regex 는 대입 LHS 의 필드명(예: innerHTML)에 매칭한다 — 함수 호출이 아니므로 name/full 과는
+ * 다른 노드(<operator>.assignment)를 쿼리한다. 후보는 dump_candidates.sc 의 assigns, 라벨은
+ * graph_spec_llm.py 가 다른 후보와 같은 반과적합 규칙으로 생성한다.
  * sanFile 형식은 taint_v4.sc 와 동일 (3열: 블록카테고리 / applies_to / regex)
  * propFile 형식 (TSV):
  *   methodFullNameRegex<TAB>src,dst;src,dst;...      (src/dst: 정수 또는 "return")
@@ -28,6 +32,7 @@ import io.joern.dataflowengineoss.language._
 import io.joern.dataflowengineoss.queryengine.EngineContext
 import io.joern.dataflowengineoss.semanticsloader.{FlowSemantic, FullNameSemantics}
 import io.joern.dataflowengineoss.DefaultSemantics
+import io.shiftleft.codepropertygraph.generated.nodes.Call
 
 case class Rule(cat: String, cwe: String, sink: String, field: String)
 case class SrcRule(field: String, re: String)
@@ -209,7 +214,17 @@ def readLines(p: String): List[String] =
   var ruleErrors = List.empty[String]
   for (r <- rules) {
     try {
-      val sinks = if (r.field == "full") cpg.call.methodFullName(r.sink) else cpg.call.name(r.sink)
+      val sinks =
+        if (r.field == "full") cpg.call.methodFullName(r.sink)
+        else if (r.field == "assign_field")
+          // PLAN.md 4단계: 대입문 LHS 가 <operator>.fieldAccess 이고 그 필드명이 규칙에 매칭될 때.
+          cpg.call.name("<operator>.assignment").filter { a =>
+            a.argument.l.headOption.exists { lhs =>
+              lhs.isInstanceOf[Call] && lhs.asInstanceOf[Call].name == "<operator>.fieldAccess" &&
+              lhs.asInstanceOf[Call].astChildren.l.lastOption.exists(fc => fc.code.matches(r.sink))
+            }
+          }
+        else cpg.call.name(r.sink)
       val flows = sinks.reachableByFlows(sources).l
       val pats = sanPatternsFor(r.cat)
       for (f <- flows) {

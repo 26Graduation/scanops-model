@@ -38,10 +38,17 @@ KST = timezone(timedelta(hours=9))
 # 여전히 마감 초과로 막힌다 — 다른 상수(CALL_CAP 등)처럼 env로 새 마감을 줄 수 있게만 한다
 # (PLAN.md 1단계, 외부 레포용 신규 실행이라 §3 재현성과 무관).
 DEADLINE = datetime.fromisoformat(os.getenv("GSPEC_DEADLINE_ISO", "2026-08-18T23:00:00+09:00"))
-CALL_CAP = int(os.getenv("GSPEC_CALL_CAP", "300"))          # 사양 §3 스펙 생성 상한
-BATCH = int(os.getenv("GSPEC_BATCH", "55"))
-WORKERS = int(os.getenv("GSPEC_WORKERS", "6"))
-MODEL = os.getenv("GSPEC_MODEL", "claude-opus-5")
+CALL_CAP = int(os.getenv("GSPEC_CALL_CAP", "2000"))          # 로컬 모델은 비용 제약이 없어 여유있게
+# 2026-08-22: "소스코드 외부 전송 0" 요구사항 위반(Claude API 사용) 지적으로 로컬 모델로 전환.
+# 베이스 Qwen3.5-9B(어댑터 없음, L1과 동일 서버)는 55개씩 묶은 구조화 JSON 라벨링을 안정적으로
+# 못 해내서 배치를 대폭 줄였다 — 정확한 항목 수는 실측 전이라 작게 잡고 필요하면 올린다.
+BATCH = int(os.getenv("GSPEC_BATCH", "6"))
+WORKERS = int(os.getenv("GSPEC_WORKERS", "1"))               # llama-server --parallel 1 과 맞춤
+MODEL = os.getenv("GSPEC_MODEL", "qwen3.5-9b-local")
+LLAMA = os.getenv("LLAMA_SERVER_URL", "http://127.0.0.1:8080")
+# <think></think> 를 비워서 프리필 — 안 하면 6개 항목 배치에서도 사고과정만 쓰다 n_predict 를
+# 다 쓰는 경우가 실측됨(rebuild/out/graph_spec_raw_fittr-flickr.jsonl batch 0, 6702자 사고 후 미완성).
+CHATML_TMPL = "<|im_start|>user\n{p}<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n"
 
 # 허용 카테고리 — taint_v4.sc / multi_graph.py 와 같은 축을 쓴다
 CATS = {
@@ -53,13 +60,13 @@ CATS = {
 
 SYSTEM = """You are a static-analysis expert writing taint-tracking specifications for the Joern code property graph engine.
 
-You will be given a batch of API call names extracted from ONE repository, together with their resolved method-full-names and short usage snippets. For each API you decide what role it plays in taint analysis and emit a machine-readable rule.
+You will be given a batch of items extracted from ONE repository: most are API call names (with resolved method-full-names and short usage snippets), some are named function parameters, and some are PROPERTY-WRITE TARGETS (kind="property_write_target") — a field name that appears as the left-hand side of an assignment somewhere in the repo, e.g. for `el.innerHTML = x` the item is the bare field name `innerHTML`, not a call. For each item you decide what role it plays in taint analysis and emit a machine-readable rule.
 
 HARD RULES — a violation makes the whole answer unusable:
 1. Rules must describe GENERAL framework / library / language API behaviour. Never write a rule that keys on a source-file path, a project-specific file name, a line number, or a one-off local identifier. If an API is only meaningful because of where it happens to appear in this repository, label it "none".
-2. Match `name` against the bare call name; match `full` against the method-full-name (library-qualified). Use `full` when the receiver/library matters (ORM query builders, chained calls, package-scoped constructors) — this is required for ORM and chained APIs.
+2. Match `name` against the bare call name; match `full` against the method-full-name (library-qualified). Use `full` when the receiver/library matters (ORM query builders, chained calls, package-scoped constructors) — this is required for ORM and chained APIs. Use `assign_field` ONLY for kind="property_write_target" items — pattern is matched against the bare field name being assigned to (e.g. `^innerHTML$|^outerHTML$` for known DOM XSS sinks). Never use `assign_field` for kind="call" items, and never use `name`/`full` for kind="property_write_target" items.
 3. Regex is Java syntax. Anchor name patterns (`^...$`) unless you deliberately want a family.
-4. Be precise, not maximal. A sink that fires on every `get`/`send`/`write` destroys precision. Prefer `full` patterns that pin the library.
+4. Be precise, not maximal. A sink that fires on every `get`/`send`/`write` destroys precision. Prefer `full` patterns that pin the library. For property_write_target items, only mark as sink the small set of GENUINELY dangerous general write targets (e.g. DOM innerHTML/outerHTML family) — most property writes are role="none".
 5. Only emit `propagation` for EXTERNAL library APIs whose taint behaviour Joern cannot see inside (argument -> return value, argument -> receiver). Index 0 = receiver/this, 1..n = positional arguments, "return" = return value.
 
 Output ONE JSON array, no prose, no markdown fence. One object per input API, in the same order, each:
@@ -67,7 +74,7 @@ Output ONE JSON array, no prose, no markdown fence. One object per input API, in
  "role": "sink" | "source" | "sanitizer" | "none",
  "cat": "<category key, sink only>",
  "cwe": "CWE-nnn (sink only)",
- "match": "name" | "full",
+ "match": "name" | "full" | "assign_field",
  "pattern": "<Java regex>",
  "applies_to": ["<cat>", ...],           // sanitizer only; ["*"] means all categories
  "propagation": [{"from": <int|\"return\">, "to": <int|\"return\">}],   // optional
@@ -94,13 +101,6 @@ Return the JSON array now."""
 PATH_RE = re.compile(r"[A-Za-z0-9_./\-]+\.(ts|tsx|js|jsx|mjs|cjs|py|java|scala|go|rb|php)\b")
 PROGRAM_RE = re.compile(r"::program")
 LINE_RE = re.compile(r"(?:^|[^\w]):\d{1,5}\b")
-
-
-def _load_env() -> None:
-    for line in (REPO / ".env").read_text().splitlines():
-        if "=" in line and not line.strip().startswith("#"):
-            k, _, v = line.partition("=")
-            os.environ.setdefault(k.strip(), v.strip())
 
 
 def norm_full(s: str) -> str:
@@ -135,6 +135,12 @@ def build_items(cand: dict) -> list[dict]:
         byname[p["param"]] = byname.get(p["param"], 0) + p["n"]
     for nm, n in sorted(byname.items(), key=lambda kv: -kv[1]):
         items.append({"kind": "param", "name": nm, "fulls": [], "n": n, "snippets": []})
+    # 대입문 sink 후보 (PLAN.md 4단계, joern/queries/dump_candidates.sc 의 assigns)
+    for a in cand.get("assigns", []):
+        items.append({
+            "kind": "assign", "name": a["field"], "fulls": [], "n": a["n"],
+            "snippets": [strip_locs(x) for x in a["codes"][:2]],
+        })
     for i, it in enumerate(items):
         it["id"] = i
     return items
@@ -144,9 +150,28 @@ def fmt_item(it: dict) -> str:
     if it["kind"] == "param":
         return (f'{{"id":{it["id"]},"kind":"function_parameter","name":"{it["name"]}",'
                 f'"occurrences":{it["n"]}}}')
+    if it["kind"] == "assign":
+        return json.dumps({"id": it["id"], "kind": "property_write_target", "name": it["name"],
+                           "occurrences": it["n"], "snippets": it["snippets"]}, ensure_ascii=False)
     return json.dumps({"id": it["id"], "kind": "call", "name": it["name"],
                        "full_names": it["fulls"], "occurrences": it["n"],
                        "snippets": it["snippets"]}, ensure_ascii=False)
+
+
+def _parses_as_json_array(text: str) -> bool:
+    """graph_spec_to_joern.py::parse_raw 와 같은 전처리(think 제거·[..] 추출) 후 파싱 가능한가."""
+    txt = re.sub(r"<think>.*?</think>", "", text, flags=re.S).strip()
+    if txt.startswith("```"):
+        txt = re.sub(r"^```[a-z]*\n", "", txt)
+        txt = re.sub(r"\n```$", "", txt)
+    lb, rb = txt.find("["), txt.rfind("]")
+    if lb == -1 or rb == -1 or rb <= lb:
+        return False
+    try:
+        arr = json.loads(txt[lb:rb + 1])
+        return isinstance(arr, list) and len(arr) > 0
+    except Exception:
+        return False
 
 
 def _plan(n_items: int) -> int:
@@ -158,8 +183,7 @@ def _plan(n_items: int) -> int:
 
 
 def main(repo: str) -> None:
-    _load_env()
-    import anthropic
+    import requests
 
     cand = json.loads((OUT / f"graph_spec_candidates_{repo}.json").read_text())
     lang = {"JSSRC": "TypeScript/JavaScript"}.get(cand["lang"], cand["lang"])
@@ -168,7 +192,8 @@ def main(repo: str) -> None:
     batches = [items[i:i + b] for i in range(0, len(items), b)]
     n_calls_planned = len(batches)
     print(f"[spec] 후보 {len(items)}건 (call {sum(1 for x in items if x['kind']=='call')}, "
-          f"param {sum(1 for x in items if x['kind']=='param')}) "
+          f"param {sum(1 for x in items if x['kind']=='param')}, "
+          f"assign {sum(1 for x in items if x['kind']=='assign')}) "
           f"→ 배치 {b}개씩 = LLM 호출 {n_calls_planned}회 (상한 {CALL_CAP})", flush=True)
     if n_calls_planned > CALL_CAP:
         raise SystemExit("배치 계획이 상한을 넘었다 — 중단")
@@ -183,7 +208,6 @@ def main(repo: str) -> None:
                 pass
         print(f"[spec] checkpoint 재개: 배치 {len(done)}개 완료됨")
 
-    client = anthropic.Anthropic()
     lock = threading.Lock()
     state = {"calls": 0, "in_tok": 0, "out_tok": 0, "skipped_deadline": [], "errors": []}
     t0 = time.time()
@@ -202,17 +226,28 @@ def main(repo: str) -> None:
             state["calls"] += 1
         body = "\n".join(fmt_item(x) for x in batches[bi])
         user = USER_TMPL.format(lang=lang, bi=bi + 1, bn=len(batches), items=body)
+        prompt = SYSTEM + "\n\n" + user
         try:
-            msg = client.messages.create(
-                model=MODEL, max_tokens=16000, system=SYSTEM,
-                thinking={"type": "disabled"},
-                messages=[{"role": "user", "content": user}])
-            text = "".join(bl.text for bl in msg.content if bl.type == "text")
+            # 로컬 모델은 배치가 파싱 안 되는 JSON을 낼 때가 있다(실측: maps-js-icoads 배치 5,
+            # createReadStream 항목이 통째로 유실됨). n_predict 를 늘려가며 최대 3회 재시도한다.
+            text, rj, n_pred_used = "", {}, 0
+            for attempt in range(3):
+                n_pred_used = 300 * max(1, len(batches[bi])) * (attempt + 1)
+                r = requests.post(f"{LLAMA}/completion", json={
+                    "prompt": CHATML_TMPL.format(p=prompt),
+                    "n_predict": n_pred_used,
+                    "temperature": 0.0, "stop": ["<|im_end|>"]}, timeout=600)
+                r.raise_for_status()
+                rj = r.json()
+                text = rj.get("content", "")
+                if _parses_as_json_array(text):
+                    break
             rec = {"batch": bi, "n_items": len(batches[bi]),
-                   "ids": [x["id"] for x in batches[bi]], "model": MODEL, "raw": text}
+                   "ids": [x["id"] for x in batches[bi]], "model": MODEL, "raw": text,
+                   "n_predict_used": n_pred_used, "parse_ok": _parses_as_json_array(text)}
             with lock:
-                state["in_tok"] += msg.usage.input_tokens
-                state["out_tok"] += msg.usage.output_tokens
+                state["in_tok"] += rj.get("tokens_evaluated", 0)
+                state["out_tok"] += rj.get("tokens_predicted", 0)
                 with raw_path.open("a") as f:
                     f.write(json.dumps(rec, ensure_ascii=False) + "\n")
                 print(f"  batch {bi+1}/{len(batches)} ok ({len(text)}c)", flush=True)
@@ -227,11 +262,12 @@ def main(repo: str) -> None:
         list(ex.map(work, todo))
 
     meta = {
-        "repo": repo, "spec_model": MODEL, "external_api": True,
-        "api_provider": "Anthropic Messages API",
+        "repo": repo, "spec_model": MODEL, "external_api": False,
+        "api_provider": "local llama-server (Qwen3.5-9B, 어댑터 없음, 127.0.0.1)",
         "n_candidates": len(items),
         "n_call_candidates": sum(1 for x in items if x["kind"] == "call"),
         "n_param_candidates": sum(1 for x in items if x["kind"] == "param"),
+        "n_assign_candidates": sum(1 for x in items if x["kind"] == "assign"),
         "batch_size": b, "n_batches": len(batches),
         "llm_calls_made": state["calls"], "llm_call_cap": CALL_CAP,
         "input_tokens": state["in_tok"], "output_tokens": state["out_tok"],

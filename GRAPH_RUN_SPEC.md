@@ -748,4 +748,89 @@ PLAN.md 2단계 지시("juice-shop G2 도 재실행하지 말고 기존 결과 �
 §16-2/HANDOFF_V4.md §3-1)를 jquery-ui에 돌려 경보 축소 여부만 따로 본다 — 사용자 승인 후.
 
 ---
+
+## §19 대입문 sink 확대 (PLAN.md 4단계, 측정 전 확정, 2026-08-22)
+
+배경: §17-7에서 propagation은 고쳤지만(r2chain) fittr-flickr는 여전히 0/6 — 애초에
+`el.innerHTML = html` 같은 대입문을 sink 후보로 뽑지 않아서(호출 기반 추출만 함) 매칭할 룰
+자체가 없었다. 사용자 승인(2026-08-22, "오탐 필터 정리하고 4단계 ㄱㄱ")으로 착수.
+
+### §19-1 설계 — 기존 파이프라인 그대로 확장 (새 메커니즘 추가 안 함)
+
+1. `dump_candidates.sc`: `<operator>.assignment` 중 LHS가 `<operator>.fieldAccess`인 것만
+   필드명 단위로 dedupe해 `assigns` 배열로 추가 덤프. 동적 인덱스 대입(`obj[x]=`)은 필드명이
+   없어 후보화하지 않는다(범위 밖, 조용히 버리지 않고 여기 기록).
+2. `graph_spec_llm.py`: 새 item kind `"property_write_target"`. 기존 반과적합 규칙(§9)
+   그대로 적용 — 파일 경로·줄번호 프롬프트에 안 넣음. `match` 값에 `"assign_field"` 추가
+   (call 후보에는 금지, assign 후보에만 허용 — `graph_spec_to_joern.py::validate()`에서 강제).
+3. `taint_spec.sc`: specFile `field` 열에 `assign_field` 값 추가. sink 쿼리가
+   `<operator>.assignment`의 LHS fieldAccess 필드명을 정규식으로 매칭 — `name`/`full`(함수
+   호출 매칭)과는 다른 노드 종류를 본다.
+4. `taint_spec.sc`의 4줄 템플릿·R1 arm·`r2chain`(§17)은 건드리지 않는다.
+
+### §19-2 범위 — 좁게 시작
+
+**fittr-flickr 하나로 먼저 검증**(§17-4와 같은 원칙: 최소 수정 → 회귀 확인 → 확대).
+GOAL: fittr-flickr 6건 중 몇 건이 회복되는가. 회복되면 3레포 전체 재측정 + juice-shop 회귀
+확인(경보 폭증 여부, §PLAN.md 4단계 경고: "이전 실험에서 +67% 사례") 후에만 최종 수치로 보고한다.
+
+### §19-3 하지 않는 것
+
+- 정답표(`innerHTML`이 fittr-flickr 정답이라는 사실)를 프롬프트나 후보 필터에 넣기 — LLM은
+  일반 후보 목록만 보고 라벨링한다(§9 그대로).
+- juice-shop 재실행 없이 바로 3레포 전체로 확대 — §19-2 순서를 지킨다.
+
+---
 (그래프 표현력 A, provenance 재계산)의 입력이 된다.
+
+---
+
+## §20 LLM 백엔드를 로컬 모델로 전환 (측정 전 확정, 2026-08-22)
+
+### 배경 — 사용자 지적
+
+§18/§19까지 LLM①(룰 생성, `graph_spec_llm.py`)·LLM②(오탐 필터, `graph_spec_critic_r3.py`) 모두
+Claude API(`claude-opus-5`)를 썼다. R1~R4 결과 문서마다 "외부 API 사용 고지"로 **"제품의
+'소스코드 외부 전송 0' 요구사항을 만족하지 않는다"고 매번 적어뒀으면서도, 연구 각주로만 두고
+계속 API를 썼다.** 사용자가 이 모순을 지적(2026-08-22): "그건 오픈소스 모델로 하는 게 좋아 그래야
+우리 목표였던 코드가 외부로 안 나가는 게 충족되지 외부 API를 쓰면 안 돼." 이후 전면 전환.
+
+### §20-1 모델 선정 — 실측 기반, 부정확한 검색결과 정정함
+
+"최신 코더 특화 모델"을 찾다가 블로그 검색 결과 하나가 "Qwen3.5-Coder 0.5B~72B 7종"을 언급했으나
+**Qwen 공식 HuggingFace/GitHub 재확인 결과 존재하지 않는 모델**이었다(추정 금지, CLAUDE.md 규칙1).
+실존 확인된 코더 특화 모델(Qwen3-Coder-30B-A3B, Q4_K_M 18.6GB)은 이 머신 RAM(16GB)에 안 들어간다.
+**베이스 Qwen3.5-9B(이미 로컬 실행 중, L1과 동일 서버, 어댑터 없음)를 그대로 쓰기로 사용자 확정.**
+
+### §20-2 실측 트레이드오프
+
+| | Claude API | 로컬 Qwen3.5-9B |
+|---|---|---|
+| 소스코드 외부 전송 | 함(위반) | 없음 |
+| 결정성 | claude-opus-5가 temperature 고정 거부 → 재실행마다 라벨 흔들림(maps-js-icoads 4/4→0/4 회귀 실측) | **temperature=0 적용됨 → 완전 재현 가능** |
+| 속도 | 배치(55개)당 수 초 | 항목당 약 9~12초, 배치 크기 키워도 항목당 속도 그대로(실측: 배치6=9.5초/항목, 배치15=12.2초/항목) |
+| 구조화 라벨링 품질 | 높음 | 낮음 — 실측: `response.end()`를 XSS sink로 오판, `fs.readFile`을 sink 대신 source로 오판(maps-js-icoads) |
+| 안정성 | 배치 파싱 실패 거의 없음 | 배치가 사고(`<think>`)만 채우다 미완성 응답을 내는 경우 실측됨 → `<think>\n\n</think>\n\n` 프리필로 억제, 그래도 드물게 파싱 실패 → 3회 재시도 로직 추가 |
+
+### §20-3 조치
+
+1. `graph_spec_llm.py`: `client.messages.create` → `requests.post(LLAMA/completion)`. `BATCH` 기본값
+   55→6(로컬 모델이 큰 배치를 못 버팀). `CHATML_TMPL`에 `<think>\n\n</think>\n\n` 프리필.
+   파싱 실패 시 `n_predict`를 늘려 최대 3회 재시도(`_parses_as_json_array`).
+2. `graph_spec_to_joern.py::parse_raw`: `<think>` 블록 제거 + `[`~`]` 구간만 추출하도록 방어 강화.
+3. `graph_spec_critic_r3.py`(오탐 필터): **아직 전환 안 함** — jquery-ui 룰 생성이 서버를 쓰고
+   있어 순서상 다음(§20-4).
+4. fittr-flickr는 로컬 모델로 재실행해도 strict 5/6로 **Claude 때와 동일** — 작은 레포에서는
+   품질 손실 없음 확인.
+
+### §20-4 남은 일
+
+- jquery-ui(항목 3,258개, 약 9시간) 로컬 라벨링 진행 중 — 배경 실행, 완료 후 스펙 변환·재측정.
+- maps-js-icoads 품질 저하(§20-2)는 jquery-ui 완료 후 프롬프트 개선(일반 규칙만 추가 — 특정
+  API 하드코딩 금지, §9 반과적합 규칙 유지) 시도 후 재측정 예정. **한 번에 한 변수** 원칙상
+  jquery-ui 진행 중에는 프롬프트를 바꾸지 않는다.
+- `graph_spec_critic_r3.py`도 같은 방식(local llama-server)으로 전환 예정.
+- 다국어 지원(Java/Python/PHP/Go/C#/Ruby 등, Joern 프론트엔드는 이미 설치돼 있음 확인)은
+  이번 라운드 범위 밖 — JS/TS 파이프라인이 안정된 뒤 별도 라운드로 제안.
+
+---
