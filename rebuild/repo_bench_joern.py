@@ -35,11 +35,12 @@ JOERN_BIN = str(REPO / ".joern_dist" / "joern-cli" / "joern")
 SCRIPT = str(REPO / "joern" / "queries" / "taint_v4.sc")
 XMX = os.getenv("JOERN_XMX", "4g")
 TIMEOUT = int(os.getenv("JOERN_TIMEOUT", "1200"))   # 20분 (사양 §6-c)
+# PLAN.md 0단계: 명시 안 된 레포는 JSSRC 기본값(지금 다루는 레포가 전부 JS/TS). juice-shop 값은 그대로.
 JLANG = {"juice-shop": "JSSRC"}
 
 
 def run(repo: str, repo_dir: Path) -> None:
-    jl = JLANG[repo]
+    jl = JLANG.get(repo, "JSSRC")
     work = Path(os.getenv("TMPDIR", "/tmp")) / f"scanops_joern_{repo}"
     if work.exists():
         shutil.rmtree(work)

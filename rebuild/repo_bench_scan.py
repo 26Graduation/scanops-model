@@ -53,6 +53,10 @@ def prompt_hash() -> str:
 
 
 # ── 스캔 범위 (사양 §6-d, 세 arm 동일) ────────────────────────────────────────
+# juice-shop 엔트리는 v1(S1)·1~4라운드 arm 재현성 때문에 그대로 둔다 — 값을 바꾸지 않는다.
+# PLAN.md 0단계: SCOPE에 없는 임의 레포는 아래 일반 규칙(GENERIC_EXT/GENERIC_EXCLUDE_DIRS)으로
+# 스캔한다 — 매 레포마다 여기 항목을 손으로 추가하지 않아도 되게. 확장자·제외 디렉터리는
+# `r4_cvefixes_pilot.py::EXT_JS`/`stage()`가 STEP7에서 이미 3레포에 실측으로 검증한 값 그대로다.
 SCOPE = {
     "juice-shop": {
         "include": ["routes/**/*.ts", "lib/**/*.ts", "models/**/*.ts",
@@ -62,9 +66,31 @@ SCOPE = {
     },
 }
 
+GENERIC_EXT = {".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs"}
+GENERIC_EXCLUDE_DIRS = {"node_modules", ".git", "dist", "build", "coverage"}
+GENERIC_LANG = "JavaScript/TypeScript"
+
+
+def _scan_files_generic(repo_dir: Path) -> list[tuple[str, str]]:
+    """SCOPE에 없는 레포용 — 확장자 기반, 흔한 비-소스 디렉터리만 제외."""
+    out = []
+    for p in sorted(repo_dir.rglob("*")):
+        if not p.is_file() or p.suffix.lower() not in GENERIC_EXT:
+            continue
+        rel = p.relative_to(repo_dir)
+        if any(part in GENERIC_EXCLUDE_DIRS for part in rel.parts):
+            continue
+        try:
+            out.append((str(rel), p.read_text(encoding="utf-8", errors="replace")))
+        except OSError:
+            continue
+    return out
+
 
 def scan_files(repo: str, repo_dir: Path) -> list[tuple[str, str]]:
     """(상대경로, 내용) 목록. 정렬 고정."""
+    if repo not in SCOPE:
+        return _scan_files_generic(repo_dir)
     cfg = SCOPE[repo]
     seen: dict[str, Path] = {}
     for pat in cfg["include"]:
