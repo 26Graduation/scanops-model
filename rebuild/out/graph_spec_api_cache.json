@@ -90,6 +90,66 @@
     "role": "sink",
     "why": "Assigning HTML string to a DOM element property is a potential XSS sink."
   },
+  "call:_asyncSanitize": {
+    "_first_seen_repo": "schema-inspector",
+    "_reviewed_by_human": false,
+    "applies_to": [
+      "xss"
+    ],
+    "cat": "xss",
+    "confidence": "med",
+    "cwe": "CWE-79",
+    "match": "full",
+    "pattern": "^_asyncSanitize$",
+    "propagation": [],
+    "role": "sanitizer",
+    "why": "Async sanitizer function neutralizes XSS."
+  },
+  "call:_asyncValidate": {
+    "_first_seen_repo": "schema-inspector",
+    "_reviewed_by_human": false,
+    "applies_to": [
+      "xss"
+    ],
+    "cat": "xss",
+    "confidence": "med",
+    "cwe": "CWE-79",
+    "match": "full",
+    "pattern": "^_asyncValidate$",
+    "propagation": [],
+    "role": "sanitizer",
+    "why": "Async validation neutralizes XSS."
+  },
+  "call:_sanitize": {
+    "_first_seen_repo": "schema-inspector",
+    "_reviewed_by_human": false,
+    "applies_to": [
+      "xss"
+    ],
+    "cat": "xss",
+    "confidence": "med",
+    "cwe": "CWE-79",
+    "match": "full",
+    "pattern": "^_sanitize$",
+    "propagation": [],
+    "role": "sanitizer",
+    "why": "Local sanitizer function neutralizes XSS."
+  },
+  "call:_validate": {
+    "_first_seen_repo": "schema-inspector",
+    "_reviewed_by_human": false,
+    "applies_to": [
+      "xss"
+    ],
+    "cat": "xss",
+    "confidence": "med",
+    "cwe": "CWE-79",
+    "match": "full",
+    "pattern": "^_validate$",
+    "propagation": [],
+    "role": "sanitizer",
+    "why": "Local validation function neutralizes XSS."
+  },
   "call:ajax": {
     "_first_seen_repo": "jquery-ui",
     "_reviewed_by_human": false,
@@ -233,6 +293,19 @@
     "propagation": [],
     "role": "sink",
     "why": "Executes arbitrary code, classic XSS sink."
+  },
+  "call:exec": {
+    "_first_seen_repo": "node-printer",
+    "_reviewed_by_human": false,
+    "applies_to": [],
+    "cat": "cmdi",
+    "confidence": "high",
+    "cwe": "CWE-78",
+    "match": "full",
+    "pattern": "^child_process:exec$",
+    "propagation": [],
+    "role": "sink",
+    "why": "Executes shell commands with user input."
   },
   "call:getAllResponseHeaders": {
     "_first_seen_repo": "jquery-ui",
@@ -391,6 +464,34 @@
     "role": "sink",
     "why": "Sets URL which may be reflected if not validated."
   },
+  "call:parse": {
+    "_first_seen_repo": "angular-test-reporter",
+    "_reviewed_by_human": false,
+    "applies_to": [],
+    "cat": "xss",
+    "confidence": "med",
+    "cwe": "CWE-79",
+    "match": "full",
+    "pattern": "^JSON\\.parse$",
+    "propagation": [],
+    "role": "sink",
+    "why": "Parses untrusted JSON input into objects."
+  },
+  "call:parseFloat": {
+    "_first_seen_repo": "express-param",
+    "_reviewed_by_human": false,
+    "applies_to": [
+      "sqli"
+    ],
+    "cat": "sqli",
+    "confidence": "med",
+    "cwe": "CWE-89",
+    "match": "name",
+    "pattern": "^parseFloat$",
+    "propagation": [],
+    "role": "sanitizer",
+    "why": "Converts string to number, stripping quotes/SQL syntax."
+  },
   "call:parseHTML": {
     "_first_seen_repo": "jquery-ui",
     "_reviewed_by_human": false,
@@ -449,6 +550,19 @@
     "propagation": [],
     "role": "sink",
     "why": "jQuery.parseJSON can execute arbitrary code if input is malicious."
+  },
+  "call:query": {
+    "_first_seen_repo": "angular-test-reporter",
+    "_reviewed_by_human": false,
+    "applies_to": [],
+    "cat": "sqli",
+    "confidence": "high",
+    "cwe": "CWE-89",
+    "match": "full",
+    "pattern": "^mysql:createConnection:<returnValue>:query:$",
+    "propagation": [],
+    "role": "sink",
+    "why": "MySQL query execution; direct string interpolation in snippets indicates SQL injection risk."
   },
   "call:random": {
     "_first_seen_repo": "jquery-ui",
@@ -566,6 +680,34 @@
     "role": "sink",
     "why": "jQuery success callback sets innerHTML with user data."
   },
+  "call:tmpDir": {
+    "_first_seen_repo": "node-printer",
+    "_reviewed_by_human": false,
+    "applies_to": [],
+    "cat": "sensitive",
+    "confidence": "high",
+    "cwe": "CWE-200",
+    "match": "full",
+    "pattern": "^os:tmpDir$",
+    "propagation": [],
+    "role": "source",
+    "why": "Returns OS temp directory path."
+  },
+  "call:toLowerCase": {
+    "_first_seen_repo": "ms",
+    "_reviewed_by_human": false,
+    "applies_to": [
+      "xss"
+    ],
+    "cat": "xss",
+    "confidence": "med",
+    "cwe": "CWE-79",
+    "match": "full",
+    "pattern": "^.*\\.toLowerCase$",
+    "propagation": [],
+    "role": "sanitizer",
+    "why": "String case conversion neutralizes XSS vectors in strings."
+  },
   "call:trim": {
     "_first_seen_repo": "jquery-ui",
     "_reviewed_by_human": false,
@@ -580,6 +722,21 @@
     "propagation": [],
     "role": "sanitizer",
     "why": "Trims whitespace, may reduce XSS payload size."
+  },
+  "call:validate": {
+    "_first_seen_repo": "schema-inspector",
+    "_reviewed_by_human": false,
+    "applies_to": [
+      "xss"
+    ],
+    "cat": "xss",
+    "confidence": "med",
+    "cwe": "CWE-79",
+    "match": "full",
+    "pattern": "^Validation:validate$",
+    "propagation": [],
+    "role": "sanitizer",
+    "why": "Schema-based validation neutralizes XSS."
   },
   "call:window.execScript || function( data ) {\n\t\t\t\twindow[ \"eval\" ].call( window, data );\n\t\t\t}": {
     "_first_seen_repo": "jquery-ui",
@@ -606,5 +763,23 @@
     "propagation": [],
     "role": "sink",
     "why": "DOM write() executes HTML string as code."
+  },
+  "call:writeFileSync": {
+    "_first_seen_repo": "node-printer",
+    "_reviewed_by_human": false,
+    "applies_to": [],
+    "cat": "sensitive",
+    "confidence": "high",
+    "cwe": "CWE-200",
+    "match": "full",
+    "pattern": "^fs:writeFileSync$",
+    "propagation": [
+      {
+        "from": 1,
+        "to": "return"
+      }
+    ],
+    "role": "sink",
+    "why": "Writes sensitive data directly to disk without sanitization."
   }
 }

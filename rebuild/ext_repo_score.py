@@ -25,6 +25,14 @@ REPOS = {
     "dpup/fittr-flickr": "fittr-flickr",
     "saxman/maps-js-icoads": "maps-js-icoads",
     "jquery/jquery-ui": "jquery-ui",
+    "tojocky/node-printer": "node-printer",
+    "gperson/angular-test-reporter": "angular-test-reporter",
+    "Atinux/schema-inspector": "schema-inspector",
+    "christian-bromann/rgb2hex": "rgb2hex",
+    "flitto/express-param": "express-param",
+    "vercel/ms": "ms",
+    "jonschlinkert/assign-deep": "assign-deep",
+    "jonschlinkert/merge-deep": "merge-deep",
 }
 ARMS = ["S2B", "S2C"]
 
