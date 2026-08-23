@@ -60,7 +60,7 @@ CATS = {
 
 SYSTEM = """You are a static-analysis expert writing taint-tracking specifications for the Joern code property graph engine.
 
-You will be given a batch of items extracted from ONE repository: most are API call names (with resolved method-full-names and short usage snippets), some are named function parameters, and some are PROPERTY-WRITE TARGETS (kind="property_write_target") — a field name that appears as the left-hand side of an assignment somewhere in the repo, e.g. for `el.innerHTML = x` the item is the bare field name `innerHTML`, not a call. For each item you decide what role it plays in taint analysis and emit a machine-readable rule.
+You will be given a batch of items extracted from ONE repository: most are API call names (with resolved method-full-names and short usage snippets), and some are PROPERTY-WRITE TARGETS (kind="property_write_target") — a field name that appears as the left-hand side of an assignment somewhere in the repo, e.g. for `el.innerHTML = x` the item is the bare field name `innerHTML`, not a call. For each item you decide what role it plays in taint analysis and emit a machine-readable rule.
 
 HARD RULES — a violation makes the whole answer unusable:
 1. Rules must describe GENERAL framework / library / language API behaviour. Never write a rule that keys on a source-file path, a project-specific file name, a line number, or a one-off local identifier. If an API is only meaningful because of where it happens to appear in this repository, label it "none".
@@ -125,16 +125,11 @@ def build_items(cand: dict) -> list[dict]:
             "n": c["n"],
             "snippets": [strip_locs(x) for x in c["codes"][:2]],
         })
-    # 파라미터: 위치 파라미터(p0/p1/param1_0…)는 이름에 정보가 없어 제외하고
-    # **이름 있는 파라미터만** 이름 단위로 dedupe 한다.
-    pos = re.compile(r"^(p\d+|param\d+(_\d+)?|arg\d+|_+)$")
-    byname: dict[str, int] = {}
-    for p in cand["params"]:
-        if pos.match(p["param"]):
-            continue
-        byname[p["param"]] = byname.get(p["param"], 0) + p["n"]
-    for nm, n in sorted(byname.items(), key=lambda kv: -kv[1]):
-        items.append({"kind": "param", "name": nm, "fulls": [], "n": n, "snippets": []})
+    # 2026-08-22: "param"(함수 파라미터) 후보는 LLM에 보내지 않는다 — taint_spec.sc의
+    # paramSources(모든 파라미터를 무조건 source로 취급, LLM 라벨과 무관)가 이미 처리하고
+    # 있고, 실측(fittr-flickr 26개·maps-js-icoads 29개, 100%)으로 LLM이 항상 role=none을
+    # 반환해 결과에 아무 영향이 없음을 확인했다. 로컬 모델 항목당 ~10초라 순수 낭비다.
+    # `cand["params"]`는 후보 수 기록용으로 메타에만 남긴다(§20).
     # 대입문 sink 후보 (PLAN.md 4단계, joern/queries/dump_candidates.sc 의 assigns)
     for a in cand.get("assigns", []):
         items.append({
@@ -147,9 +142,6 @@ def build_items(cand: dict) -> list[dict]:
 
 
 def fmt_item(it: dict) -> str:
-    if it["kind"] == "param":
-        return (f'{{"id":{it["id"]},"kind":"function_parameter","name":"{it["name"]}",'
-                f'"occurrences":{it["n"]}}}')
     if it["kind"] == "assign":
         return json.dumps({"id": it["id"], "kind": "property_write_target", "name": it["name"],
                            "occurrences": it["n"], "snippets": it["snippets"]}, ensure_ascii=False)
@@ -184,22 +176,29 @@ def _plan(n_items: int) -> int:
 
 def main(repo: str) -> None:
     import requests
+    from graph_spec_to_joern import load_api_cache, cache_key  # noqa: E402 — §21 레포간 캐시
 
     cand = json.loads((OUT / f"graph_spec_candidates_{repo}.json").read_text())
     lang = {"JSSRC": "TypeScript/JavaScript"}.get(cand["lang"], cand["lang"])
     items = build_items(cand)
-    b = _plan(len(items))
-    batches = [items[i:i + b] for i in range(0, len(items), b)]
+
+    api_cache = load_api_cache()
+    cached_items = [it for it in items if cache_key(it["kind"], it["name"]) in api_cache]
+    fresh_items = [it for it in items if cache_key(it["kind"], it["name"]) not in api_cache]
+
+    b = _plan(len(fresh_items))
+    batches = [fresh_items[i:i + b] for i in range(0, len(fresh_items), b)]
     n_calls_planned = len(batches)
     print(f"[spec] 후보 {len(items)}건 (call {sum(1 for x in items if x['kind']=='call')}, "
-          f"param {sum(1 for x in items if x['kind']=='param')}, "
-          f"assign {sum(1 for x in items if x['kind']=='assign')}) "
+          f"assign {sum(1 for x in items if x['kind']=='assign')}, "
+          f"param {len(cand['params'])}건은 LLM 미전송 — taint_spec.sc paramSources가 이미 처리) "
+          f"— 캐시 재사용 {len(cached_items)}건, 신규 라벨링 {len(fresh_items)}건 "
           f"→ 배치 {b}개씩 = LLM 호출 {n_calls_planned}회 (상한 {CALL_CAP})", flush=True)
     if n_calls_planned > CALL_CAP:
         raise SystemExit("배치 계획이 상한을 넘었다 — 중단")
 
     raw_path = OUT / f"graph_spec_raw_{repo}.jsonl"
-    done: set[int] = set()
+    done: set = set()
     if raw_path.exists():
         for line in raw_path.open():
             try:
@@ -207,6 +206,21 @@ def main(repo: str) -> None:
             except Exception:
                 pass
         print(f"[spec] checkpoint 재개: 배치 {len(done)}개 완료됨")
+
+    # §21: 캐시 히트분은 LLM 호출 없이 합성 배치("cache")로 raw_path에 바로 적는다 —
+    # graph_spec_to_joern.py::parse_raw()가 실제 LLM 배치와 똑같이 읽도록.
+    if cached_items and "cache" not in done:
+        cache_arr = []
+        for it in cached_items:
+            entry = dict(api_cache[cache_key(it["kind"], it["name"])])
+            entry["id"] = it["id"]
+            cache_arr.append(entry)
+        rec = {"batch": "cache", "n_items": len(cached_items),
+               "ids": [it["id"] for it in cached_items], "model": "cache",
+               "raw": json.dumps(cache_arr, ensure_ascii=False)}
+        with raw_path.open("a") as f:
+            f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+        print(f"[spec] 캐시에서 {len(cached_items)}건 즉시 채움 (LLM 호출 없음)", flush=True)
 
     lock = threading.Lock()
     state = {"calls": 0, "in_tok": 0, "out_tok": 0, "skipped_deadline": [], "errors": []}
@@ -266,8 +280,10 @@ def main(repo: str) -> None:
         "api_provider": "local llama-server (Qwen3.5-9B, 어댑터 없음, 127.0.0.1)",
         "n_candidates": len(items),
         "n_call_candidates": sum(1 for x in items if x["kind"] == "call"),
-        "n_param_candidates": sum(1 for x in items if x["kind"] == "param"),
+        "n_param_candidates_raw_not_sent_to_llm": len(cand["params"]),
+        "n_param_candidates_note": "taint_spec.sc paramSources가 무조건 source로 처리 — LLM 라벨 불필요(실측 100% none)",
         "n_assign_candidates": sum(1 for x in items if x["kind"] == "assign"),
+        "api_cache_hits": len(cached_items), "api_cache_fresh": len(fresh_items),
         "batch_size": b, "n_batches": len(batches),
         "llm_calls_made": state["calls"], "llm_call_cap": CALL_CAP,
         "input_tokens": state["in_tok"], "output_tokens": state["out_tok"],

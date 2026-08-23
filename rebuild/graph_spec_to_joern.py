@@ -19,6 +19,43 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 OUT = ROOT / "out"
 
+# GRAPH_RUN_SPEC.md §21 — 레포 간 공유 API 판단 캐시. (kind, name) 단위로 한 번 검증된
+# 판단을 저장해 다음 레포부터 재사용한다. "처음 본 판단이 이긴다" — 사람이 캐시 파일을
+# 직접 열어 틀린 항목을 고치는 게 유일한 수정 경로다(자동 덮어쓰기 안 함, §21-2).
+API_CACHE_PATH = OUT / "graph_spec_api_cache.json"
+
+
+def load_api_cache() -> dict:
+    if API_CACHE_PATH.exists():
+        return json.loads(API_CACHE_PATH.read_text())
+    return {}
+
+
+def cache_key(kind: str, name: str) -> str:
+    return f"{kind}:{name}"
+
+
+def update_api_cache(good: list[dict], repo: str) -> dict:
+    cache = load_api_cache()
+    added = 0
+    for r in good:
+        cand = r.get("_candidate")
+        if not cand:
+            continue
+        k = cache_key(cand["kind"], cand["name"])
+        if k in cache:
+            continue  # §21-2: 이미 있는 판단은 자동으로 안 덮어쓴다
+        entry = {kk: r[kk] for kk in ("role", "cat", "cwe", "match", "pattern",
+                                      "applies_to", "propagation", "confidence", "why")
+                 if kk in r}
+        entry["_first_seen_repo"] = repo
+        entry["_reviewed_by_human"] = False
+        cache[k] = entry
+        added += 1
+    if added:
+        API_CACHE_PATH.write_text(json.dumps(cache, ensure_ascii=False, indent=2, sort_keys=True))
+    return {"n_cache_entries_total": len(cache), "n_added_this_run": added}
+
 CATS = {
     "sqli": "CWE-89", "cmdi": "CWE-78", "xss": "CWE-79", "pathtraver": "CWE-22",
     "ssrf": "CWE-918", "deser": "CWE-502", "codei": "CWE-94", "redirect": "CWE-601",
@@ -226,6 +263,34 @@ def main(repo: str) -> None:
     raw, parse_fails = parse_raw(repo)
     repo_toks = repo_path_tokens(repo)
     good, bad = validate(raw, repo_toks)
+    cache_stat = update_api_cache(good, repo)
+
+    # §21-3: 캐시(사람이 고쳤을 수 있음)를 최종 근거로 삼는다. `raw`(role=none 포함, 검증 전
+    # 원본 전체)를 훑어야 한다 — LLM이 "none"이라 답해서 validate()가 애초에 걸러버린 항목도
+    # 사람이 캐시에서 sink/source로 교정했으면 살려내야 하기 때문이다. role=none 으로 고쳐진
+    # 항목은 이번 실행의 LLM 판단과 무관하게 룰에서 뺀다.
+    cache_now = load_api_cache()
+    cached_keys = set()
+    overridden = []
+    for r in raw:
+        cand = r.get("_candidate")
+        if not cand:
+            continue
+        k = cache_key(cand["kind"], cand["name"])
+        c = cache_now.get(k)
+        if not c:
+            continue
+        cached_keys.add(k)
+        if c.get("role") == "none":
+            continue
+        overridden.append({**r, **{kk: c[kk] for kk in
+                           ("role", "cat", "cwe", "match", "pattern",
+                            "applies_to", "propagation", "confidence", "why") if kk in c}})
+    # 캐시에 없는 후보는 이번 실행의 검증된 판단(good)을 그대로 쓴다.
+    good = [r for r in good if not (r.get("_candidate") and
+            cache_key(r["_candidate"]["kind"], r["_candidate"]["name"]) in cached_keys)] + overridden
+    good = overridden
+
     llm = dedupe_rules(good)
     for o in llm:
         o["_src"] = "llm"
@@ -247,6 +312,7 @@ def main(repo: str) -> None:
 
     summary = {
         "repo": repo,
+        "api_cache": cache_stat,
         "n_llm_labels_returned": len(raw),
         "n_role_not_none": len(good) + len(bad),
         "n_rules_valid": len(good),

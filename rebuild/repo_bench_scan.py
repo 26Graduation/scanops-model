@@ -67,7 +67,12 @@ SCOPE = {
 }
 
 GENERIC_EXT = {".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs"}
-GENERIC_EXCLUDE_DIRS = {"node_modules", ".git", "dist", "build", "coverage"}
+# 2026-08-22 갱신: jquery-ui 실측(237개 JS 파일 중 129개=54%가 tests/external/demos)으로
+# 발견 — 테스트·서드파티 번들·데모 코드는 "이 레포의 취약점"이 아니라 후보만 부풀린다.
+# 특정 레포 이름이 아니라 일반적인 디렉터리 관례라서 벤치 과적합(CLAUDE.md 규칙4)이 아니다.
+GENERIC_EXCLUDE_DIRS = {"node_modules", ".git", "dist", "build", "coverage",
+                        "test", "tests", "spec", "specs", "external", "demo", "demos",
+                        "vendor", "third_party", "__tests__"}
 GENERIC_LANG = "JavaScript/TypeScript"
 
 

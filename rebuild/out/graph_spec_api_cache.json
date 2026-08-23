@@ -1,0 +1,610 @@
+{
+  "assign:contenteditable": {
+    "_first_seen_repo": "jquery-ui",
+    "_reviewed_by_human": false,
+    "applies_to": [],
+    "cat": "xss",
+    "confidence": "high",
+    "cwe": "CWE-79",
+    "match": "assign_field",
+    "pattern": "^contenteditable$",
+    "propagation": [],
+    "role": "sink",
+    "why": "Setting contenteditable to user input can enable XSS."
+  },
+  "assign:getProgramInfoLog": {
+    "_first_seen_repo": "maps-js-icoads",
+    "_reviewed_by_human": false,
+    "applies_to": [],
+    "cat": "sensitive",
+    "confidence": "med",
+    "cwe": "CWE-200",
+    "match": "full",
+    "pattern": "ShaderProgram\\.prototype\\.getProgramInfoLog",
+    "propagation": [],
+    "role": "source",
+    "why": "Returns compiler error logs which may contain sensitive info."
+  },
+  "assign:href": {
+    "_first_seen_repo": "fittr-flickr",
+    "_reviewed_by_human": false,
+    "applies_to": [],
+    "cat": "xss",
+    "confidence": "med",
+    "cwe": "CWE-79",
+    "match": "assign_field",
+    "pattern": "^href$",
+    "propagation": [],
+    "role": "sink",
+    "why": "Setting href can lead to XSS if the URL contains script tags."
+  },
+  "assign:innerHTML": {
+    "_first_seen_repo": "fittr-flickr",
+    "_reviewed_by_human": false,
+    "applies_to": [],
+    "cat": "xss",
+    "confidence": "high",
+    "cwe": "CWE-79",
+    "match": "assign_field",
+    "pattern": "^innerHTML$",
+    "propagation": [],
+    "role": "sink",
+    "why": "innerHTML is a classic XSS sink for untrusted content."
+  },
+  "assign:outerHTML": {
+    "_first_seen_repo": "jquery-ui",
+    "_reviewed_by_human": false,
+    "applies_to": [],
+    "cat": "xss",
+    "confidence": "high",
+    "cwe": "CWE-79",
+    "match": "assign_field",
+    "pattern": "^outerHTML$",
+    "propagation": [],
+    "role": "sink",
+    "why": "DOM property assignment to outerHTML is a known XSS sink."
+  },
+  "assign:value": {
+    "_first_seen_repo": "fittr-flickr",
+    "_reviewed_by_human": false,
+    "applies_to": [],
+    "cat": "xss",
+    "confidence": "high",
+    "cwe": "CWE-79",
+    "match": "assign_field",
+    "pattern": "^value$",
+    "propagation": [],
+    "role": "sink",
+    "why": "Setting input value can reflect XSS if not sanitized."
+  },
+  "assign:valueDiv": {
+    "_first_seen_repo": "jquery-ui",
+    "_reviewed_by_human": false,
+    "applies_to": [],
+    "cat": "xss",
+    "confidence": "med",
+    "cwe": "CWE-79",
+    "match": "assign_field",
+    "pattern": "^valueDiv$",
+    "propagation": [],
+    "role": "sink",
+    "why": "Assigning HTML string to a DOM element property is a potential XSS sink."
+  },
+  "call:ajax": {
+    "_first_seen_repo": "jquery-ui",
+    "_reviewed_by_human": false,
+    "applies_to": [],
+    "cat": "xss",
+    "confidence": "high",
+    "cwe": "CWE-79",
+    "match": "full",
+    "pattern": "^jQuery:ajax$",
+    "propagation": [],
+    "role": "sink",
+    "why": "jQuery ajax can execute scripts if response is not sanitized."
+  },
+  "call:ajaxTransport": {
+    "_first_seen_repo": "jquery-ui",
+    "_reviewed_by_human": false,
+    "applies_to": [],
+    "cat": "xss",
+    "confidence": "med",
+    "cwe": "CWE-79",
+    "match": "full",
+    "pattern": "jQuery:ajaxTransport",
+    "propagation": [],
+    "role": "sink",
+    "why": "jQuery AJAX transport can execute scripts if CORS is misconfigured."
+  },
+  "call:createReadStream": {
+    "_first_seen_repo": "maps-js-icoads",
+    "_reviewed_by_human": true,
+    "applies_to": [],
+    "cat": "pathtraver",
+    "confidence": "high",
+    "cwe": "CWE-22",
+    "match": "full",
+    "pattern": "^fs:createReadStream$",
+    "propagation": [],
+    "role": "sink",
+    "why": "인간 교정: readFile과 동일한 path traversal sink(모델이 source로 오판함)."
+  },
+  "call:createServer": {
+    "_first_seen_repo": "maps-js-icoads",
+    "_reviewed_by_human": false,
+    "applies_to": [
+      "*"
+    ],
+    "cat": "nosqli",
+    "confidence": "high",
+    "cwe": "CWE-943",
+    "match": "full",
+    "pattern": "^http:createServer$",
+    "propagation": [
+      {
+        "from": 1,
+        "to": "return"
+      },
+      {
+        "from": 2,
+        "to": "return"
+      }
+    ],
+    "role": "source",
+    "why": "HTTP server request object contains user-controlled URL data."
+  },
+  "call:encodeURIComponent": {
+    "_first_seen_repo": "fittr-flickr",
+    "_reviewed_by_human": false,
+    "applies_to": [
+      "xss"
+    ],
+    "cat": "xss",
+    "confidence": "high",
+    "cwe": "CWE-79",
+    "match": "full",
+    "pattern": "^encodeURIComponent$",
+    "propagation": [
+      {
+        "from": 0,
+        "to": "return"
+      }
+    ],
+    "role": "sanitizer",
+    "why": "URL encoding neutralizes XSS in strings."
+  },
+  "call:end": {
+    "_first_seen_repo": "maps-js-icoads",
+    "_reviewed_by_human": true,
+    "applies_to": [],
+    "cat": "",
+    "confidence": "high",
+    "cwe": "",
+    "match": "name",
+    "pattern": "",
+    "propagation": [],
+    "role": "none",
+    "why": "인간 교정: 인자 없는 response.end()는 taint sink가 아니다(연결 종료일 뿐)."
+  },
+  "call:escape": {
+    "_first_seen_repo": "jquery-ui",
+    "_reviewed_by_human": false,
+    "applies_to": [
+      "xss"
+    ],
+    "cat": "xss",
+    "confidence": "med",
+    "cwe": "CWE-79",
+    "match": "name",
+    "pattern": "^escape$",
+    "propagation": [],
+    "role": "sanitizer",
+    "why": "Escapes special characters to prevent XSS injection."
+  },
+  "call:escapeRegex": {
+    "_first_seen_repo": "jquery-ui",
+    "_reviewed_by_human": false,
+    "applies_to": [
+      "xss"
+    ],
+    "cat": "xss",
+    "confidence": "med",
+    "cwe": "CWE-79",
+    "match": "full",
+    "pattern": "^\\$\\.ui\\.autocomplete\\.escapeRegex$",
+    "propagation": [
+      {
+        "from": 1,
+        "to": "return"
+      }
+    ],
+    "role": "sanitizer",
+    "why": "Escapes regex special chars, neutralizing XSS in autocomplete."
+  },
+  "call:eval": {
+    "_first_seen_repo": "jquery-ui",
+    "_reviewed_by_human": false,
+    "applies_to": [],
+    "cat": "xss",
+    "confidence": "high",
+    "cwe": "CWE-79",
+    "match": "name",
+    "pattern": "^eval$",
+    "propagation": [],
+    "role": "sink",
+    "why": "Executes arbitrary code, classic XSS sink."
+  },
+  "call:getAllResponseHeaders": {
+    "_first_seen_repo": "jquery-ui",
+    "_reviewed_by_human": false,
+    "applies_to": [],
+    "cat": "sensitive",
+    "confidence": "high",
+    "cwe": "CWE-200",
+    "match": "name",
+    "pattern": "^getAllResponseHeaders$",
+    "propagation": [],
+    "role": "source",
+    "why": "Returns raw HTTP headers potentially containing sensitive data."
+  },
+  "call:getUserForUrl": {
+    "_first_seen_repo": "fittr-flickr",
+    "_reviewed_by_human": false,
+    "applies_to": [],
+    "cat": "sqli",
+    "confidence": "med",
+    "cwe": "CWE-89",
+    "match": "full",
+    "pattern": ".*:getUserForUrl",
+    "propagation": [],
+    "role": "source",
+    "why": "Fetches user data from URL, potentially exposing user-controlled input."
+  },
+  "call:globalEval": {
+    "_first_seen_repo": "jquery-ui",
+    "_reviewed_by_human": false,
+    "applies_to": [],
+    "cat": "xss",
+    "confidence": "high",
+    "cwe": "CWE-79",
+    "match": "full",
+    "pattern": "jQuery:globalEval",
+    "propagation": [],
+    "role": "sink",
+    "why": "Executes arbitrary JavaScript code from tainted input."
+  },
+  "call:html": {
+    "_first_seen_repo": "jquery-ui",
+    "_reviewed_by_human": true,
+    "applies_to": [],
+    "cat": "xss",
+    "confidence": "high",
+    "cwe": "CWE-79",
+    "match": "name",
+    "pattern": "^html$",
+    "propagation": [],
+    "role": "sink",
+    "why": "인간 교정: jQuery .html(x)는 인자가 있으면 DOM에 HTML을 주입하는 XSS sink(모델이 read-only로 오판)."
+  },
+  "call:isNaN": {
+    "_first_seen_repo": "jquery-ui",
+    "_reviewed_by_human": false,
+    "applies_to": [
+      "sqli",
+      "cmdi",
+      "xss",
+      "pathtraver",
+      "ssrf",
+      "deser",
+      "codei",
+      "redirect",
+      "nosqli",
+      "logforge",
+      "sensitive",
+      "accesscontrol",
+      "weakcrypto",
+      "proto"
+    ],
+    "cat": "sqli",
+    "confidence": "high",
+    "cwe": "CWE-943",
+    "match": "name",
+    "pattern": "^isNaN$",
+    "propagation": [],
+    "role": "sanitizer",
+    "why": "Global JS function that coerces input to boolean, neutralizing injection vectors."
+  },
+  "call:listen": {
+    "_first_seen_repo": "maps-js-icoads",
+    "_reviewed_by_human": false,
+    "applies_to": [],
+    "cat": "ssrf",
+    "confidence": "med",
+    "cwe": "CWE-918",
+    "match": "full",
+    "pattern": "^http:createServer:<returnValue>:listen$",
+    "propagation": [],
+    "role": "sink",
+    "why": "Server.listen binds to port; potential SSRF if port logic is flawed."
+  },
+  "call:loadXML": {
+    "_first_seen_repo": "jquery-ui",
+    "_reviewed_by_human": false,
+    "applies_to": [],
+    "cat": "xss",
+    "confidence": "med",
+    "cwe": "CWE-79",
+    "match": "full",
+    "pattern": "^ActiveXObject:loadXML$",
+    "propagation": [
+      {
+        "from": 0,
+        "to": "return"
+      }
+    ],
+    "role": "sink",
+    "why": "ActiveXObject loadXML parses untrusted XML into DOM, potential XSS via innerHTML."
+  },
+  "call:makeApiRequest": {
+    "_first_seen_repo": "fittr-flickr",
+    "_reviewed_by_human": false,
+    "applies_to": [],
+    "cat": "xss",
+    "confidence": "med",
+    "cwe": "CWE-79",
+    "match": "full",
+    "pattern": "^makeApiRequest$",
+    "propagation": [],
+    "role": "sink",
+    "why": "Callback receives data used to construct HTML strings."
+  },
+  "call:new Function( \"return \" + data )": {
+    "_first_seen_repo": "jquery-ui",
+    "_reviewed_by_human": false,
+    "applies_to": [],
+    "cat": "codei",
+    "confidence": "high",
+    "cwe": "CWE-94",
+    "match": "full",
+    "pattern": "^new Function\\(.*\\)$",
+    "propagation": [],
+    "role": "sink",
+    "why": "Dynamic function creation executes injected code."
+  },
+  "call:open": {
+    "_first_seen_repo": "jquery-ui",
+    "_reviewed_by_human": false,
+    "applies_to": [
+      "xss"
+    ],
+    "cat": "xss",
+    "confidence": "med",
+    "cwe": "CWE-79",
+    "match": "full",
+    "pattern": "^XMLHttpRequest:open$|^XMLHttpRequest.prototype:open$",
+    "propagation": [
+      {
+        "from": 1,
+        "to": "return"
+      }
+    ],
+    "role": "sink",
+    "why": "Sets URL which may be reflected if not validated."
+  },
+  "call:parseHTML": {
+    "_first_seen_repo": "jquery-ui",
+    "_reviewed_by_human": false,
+    "applies_to": [],
+    "cat": "xss",
+    "confidence": "med",
+    "cwe": "CWE-79",
+    "match": "full",
+    "pattern": "^jQuery:parseHTML$",
+    "propagation": [],
+    "role": "sink",
+    "why": "jQuery parseHTML can return HTML string if not sanitized."
+  },
+  "call:parseInt": {
+    "_first_seen_repo": "jquery-ui",
+    "_reviewed_by_human": false,
+    "applies_to": [
+      "sqli",
+      "cmdi",
+      "xss",
+      "pathtraver",
+      "ssrf",
+      "deser",
+      "codei",
+      "redirect",
+      "nosqli",
+      "logforge",
+      "sensitive",
+      "accesscontrol",
+      "weakcrypto",
+      "proto"
+    ],
+    "cat": "sqli",
+    "confidence": "high",
+    "cwe": "CWE-89",
+    "match": "name",
+    "pattern": "^parseInt$",
+    "propagation": [
+      {
+        "from": 0,
+        "to": "return"
+      }
+    ],
+    "role": "sanitizer",
+    "why": "parseInt coerces input to number, neutralizing injection vectors."
+  },
+  "call:parseJSON": {
+    "_first_seen_repo": "jquery-ui",
+    "_reviewed_by_human": false,
+    "applies_to": [],
+    "cat": "xss",
+    "confidence": "med",
+    "cwe": "CWE-79",
+    "match": "full",
+    "pattern": "^jQuery:parseJSON$",
+    "propagation": [],
+    "role": "sink",
+    "why": "jQuery.parseJSON can execute arbitrary code if input is malicious."
+  },
+  "call:random": {
+    "_first_seen_repo": "jquery-ui",
+    "_reviewed_by_human": false,
+    "applies_to": [],
+    "cat": "sensitive",
+    "confidence": "high",
+    "cwe": "CWE-200",
+    "match": "full",
+    "pattern": "__ecma.Math:random",
+    "propagation": [],
+    "role": "source",
+    "why": "Returns unpredictable values suitable as entropy sources."
+  },
+  "call:read": {
+    "_first_seen_repo": "jquery-ui",
+    "_reviewed_by_human": false,
+    "applies_to": [],
+    "cat": "sensitive",
+    "confidence": "high",
+    "cwe": "CWE-200",
+    "match": "full",
+    "pattern": "^grunt\\.file\\.read$",
+    "propagation": [
+      {
+        "from": 0,
+        "to": "return"
+      }
+    ],
+    "role": "source",
+    "why": "Reads file contents, potentially exposing sensitive data."
+  },
+  "call:readFile": {
+    "_first_seen_repo": "maps-js-icoads",
+    "_reviewed_by_human": true,
+    "applies_to": [],
+    "cat": "pathtraver",
+    "confidence": "high",
+    "cwe": "CWE-22",
+    "match": "full",
+    "pattern": "^fs:readFile$",
+    "propagation": [],
+    "role": "sink",
+    "why": "인간 교정: 공격자 제어 경로로 파일을 읽으면 path traversal sink(모델이 source로 오판함)."
+  },
+  "call:readJSON": {
+    "_first_seen_repo": "jquery-ui",
+    "_reviewed_by_human": false,
+    "applies_to": [],
+    "cat": "sensitive",
+    "confidence": "high",
+    "cwe": "CWE-200",
+    "match": "full",
+    "pattern": "^__ecma.String:readJSON$",
+    "propagation": [],
+    "role": "source",
+    "why": "Reads JSON from file, potentially exposing sensitive config."
+  },
+  "call:require": {
+    "_first_seen_repo": "maps-js-icoads",
+    "_reviewed_by_human": false,
+    "applies_to": [],
+    "cat": "sensitive",
+    "confidence": "med",
+    "cwe": "CWE-200",
+    "match": "name",
+    "pattern": "^require$",
+    "propagation": [],
+    "role": "source",
+    "why": "Loads modules; if user-controlled, leads to SSRF or code execution."
+  },
+  "call:round": {
+    "_first_seen_repo": "maps-js-icoads",
+    "_reviewed_by_human": false,
+    "applies_to": [
+      "xss"
+    ],
+    "cat": "xss",
+    "confidence": "high",
+    "cwe": "CWE-79",
+    "match": "full",
+    "pattern": "^__ecma.Math:round$",
+    "propagation": [
+      {
+        "from": 0,
+        "to": "return"
+      }
+    ],
+    "role": "sanitizer",
+    "why": "Math.round coerces input to number, stripping XSS."
+  },
+  "call:showAnim || 'show'": {
+    "_first_seen_repo": "jquery-ui",
+    "_reviewed_by_human": false,
+    "applies_to": [],
+    "cat": "xss",
+    "confidence": "med",
+    "cwe": "CWE-79",
+    "match": "name",
+    "pattern": "^(showAnim|show)$",
+    "propagation": [],
+    "role": "sink",
+    "why": "jQuery show/showAnim methods can execute arbitrary HTML."
+  },
+  "call:success": {
+    "_first_seen_repo": "jquery-ui",
+    "_reviewed_by_human": false,
+    "applies_to": [],
+    "cat": "xss",
+    "confidence": "high",
+    "cwe": "CWE-79",
+    "match": "full",
+    "pattern": "jQuery.*\\.success.*\\(.*response.*\\)",
+    "propagation": [],
+    "role": "sink",
+    "why": "jQuery success callback sets innerHTML with user data."
+  },
+  "call:trim": {
+    "_first_seen_repo": "jquery-ui",
+    "_reviewed_by_human": false,
+    "applies_to": [
+      "xss"
+    ],
+    "cat": "xss",
+    "confidence": "med",
+    "cwe": "CWE-79",
+    "match": "full",
+    "pattern": "jQuery:trim",
+    "propagation": [],
+    "role": "sanitizer",
+    "why": "Trims whitespace, may reduce XSS payload size."
+  },
+  "call:window.execScript || function( data ) {\n\t\t\t\twindow[ \"eval\" ].call( window, data );\n\t\t\t}": {
+    "_first_seen_repo": "jquery-ui",
+    "_reviewed_by_human": false,
+    "applies_to": [],
+    "cat": "codei",
+    "confidence": "high",
+    "cwe": "CWE-94",
+    "match": "name",
+    "pattern": "^window\\.execScript$",
+    "propagation": [],
+    "role": "sink",
+    "why": "Executes arbitrary code from string input, leading to code injection."
+  },
+  "call:write": {
+    "_first_seen_repo": "jquery-ui",
+    "_reviewed_by_human": false,
+    "applies_to": [],
+    "cat": "xss",
+    "confidence": "high",
+    "cwe": "CWE-79",
+    "match": "name",
+    "pattern": "^write$",
+    "propagation": [],
+    "role": "sink",
+    "why": "DOM write() executes HTML string as code."
+  }
+}
