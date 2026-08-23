@@ -236,6 +236,14 @@ def hand_rules() -> list[dict]:
            for c, w, f, p in HAND_JSSRC]
     out.append({"role": "source", "match": HAND_SRC[0], "pattern": HAND_SRC[1],
                 "confidence": "hand", "why": "taint_v4.sc srcCalls", "_src": "hand"})
+    # 2026-08-23: taint_v4.sc 에 없던 새 손 룰(§23). `obj[key] = val` 처럼 키 자체가 변수인
+    # 대입 — 프로토타입 오염(CWE-1321)의 전형적 sink 모양. API 이름 판단이 아니라 구조
+    # 패턴이라 LLM 라벨링이 필요 없다(assign_field 와 달리 pattern 규칙이 없다 — 구조만 본다).
+    # 실측 근거: jonschlinkert/assign-deep:40, merge-deep:41,43,45 이 전부 이 모양이었다.
+    out.append({"role": "sink", "cat": "proto", "cwe": "CWE-1321",
+                "match": "dynamic_index", "pattern": "",
+                "confidence": "hand", "why": "동적 키 프로퍼티 대입 — 프로토타입 오염 sink 패턴",
+                "_src": "hand"})
     return out
 
 

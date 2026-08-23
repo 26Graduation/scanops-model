@@ -17,7 +17,7 @@
  * 그 외 sanitizer 처리·path 출력·에러 처리는 taint_v4.sc 와 같은 방식을 따른다.
  *
  * specFile 형식 (TSV, 한 줄 = 룰 하나):
- *   sink<TAB>cat<TAB>cwe<TAB>field(name|full|assign_field)<TAB>regex
+ *   sink<TAB>cat<TAB>cwe<TAB>field(name|full|assign_field|dynamic_index)<TAB>regex
  *   source<TAB>-<TAB>-<TAB>field(name|full)<TAB>regex
  * field=assign_field (PLAN.md 4단계): `el.innerHTML = x` 같은 프로퍼티 대입을 sink 로 본다.
  * regex 는 대입 LHS 의 필드명(예: innerHTML)에 매칭한다 — 함수 호출이 아니므로 name/full 과는
@@ -33,6 +33,7 @@ import io.joern.dataflowengineoss.queryengine.EngineContext
 import io.joern.dataflowengineoss.semanticsloader.{FlowSemantic, FullNameSemantics}
 import io.joern.dataflowengineoss.DefaultSemantics
 import io.shiftleft.codepropertygraph.generated.nodes.Call
+import io.shiftleft.codepropertygraph.generated.nodes.Literal
 
 case class Rule(cat: String, cwe: String, sink: String, field: String)
 case class SrcRule(field: String, re: String)
@@ -222,6 +223,16 @@ def readLines(p: String): List[String] =
             a.argument.l.headOption.exists { lhs =>
               lhs.isInstanceOf[Call] && lhs.asInstanceOf[Call].name == "<operator>.fieldAccess" &&
               lhs.asInstanceOf[Call].astChildren.l.lastOption.exists(fc => fc.code.matches(r.sink))
+            }
+          }
+        else if (r.field == "dynamic_index")
+          // 2026-08-23 새 손 룰(§23): `obj[key] = val` — LHS 가 <operator>.indexAccess 이고
+          // 인덱스가 리터럴이 아닌(=변수/표현식인) 대입. 프로토타입 오염(CWE-1321) sink 모양.
+          // API 이름 판단이 아니라 구조 패턴이라 pattern 정규식이 없다 — r.sink 를 안 쓴다.
+          cpg.call.name("<operator>.assignment").filter { a =>
+            a.argument.l.headOption.exists { lhs =>
+              lhs.isInstanceOf[Call] && lhs.asInstanceOf[Call].name == "<operator>.indexAccess" &&
+              lhs.asInstanceOf[Call].astChildren.l.lastOption.exists(idx => !idx.isInstanceOf[Literal])
             }
           }
         else cpg.call.name(r.sink)
