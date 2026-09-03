@@ -29,7 +29,13 @@ def judge(sinkNodes: List[io.shiftleft.codepropertygraph.generated.nodes.CfgNode
     println("  sink 또는 source 후보 없음 → 스킵")
     return
   }
-  val flows = sinkNodes.reachableByFlows(sourceNodes).l
+  // 2026-09-03 수정: sink를 콜 노드 자체가 아니라 .argument로 잡아야 함.
+  // 콜 노드 자체로 잡으면 반환값 없는 함수(void)일 때 흐름을 못 찾아 false-safe 위험.
+  // (조원이 println 사례로 발견, 우리 sequelize.query/runInContext에서도 재검증함 —
+  //  우리 케이스는 0건까지는 아니었지만 .argument 방식보다 적게 잡고 있었음)
+  val sinkArgs = sinkNodes.collect { case c: io.shiftleft.codepropertygraph.generated.nodes.Call => c }
+    .flatMap(_.argument)
+  val flows = sinkArgs.reachableByFlows(sourceNodes).l
   if (flows.isEmpty) {
     println(s"  판정: UNKNOWN (source→sink 경로 자체가 없음)")
     return

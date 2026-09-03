@@ -29,6 +29,22 @@ Joern(진짜 CPG 엔진) 기반 접근을 로컬에서 테스트해보는 프로
    판정했는데, 경로 중간에 안전처리 함수가 있으면 safe로 바꾸는 판정 함수를 만듦.
    **단, 한계 발견**: `redirect.ts`의 `isRedirectAllowed()`처럼 값을 안 바꾸고 if문으로만 막는
    "제어흐름 가드"는 이 방식으로 못 잡음 (값 자체를 세탁하는 sanitizer만 잡힘). 별도 보완 필요.
+6. **★★ 쿼리 버그 발견·수정 (조원 제보, 2026-09-03 검증).** `sink.reachableByFlows(source)`처럼
+   **sink를 콜 노드 자체로 잡으면**, 그 함수가 반환값을 안 쓰는(void) 경우 흐름을 아예 못 찾고
+   조용히 0건이 나올 수 있음 (`println` 사례로 재현 확인, `verify_argument_bug.sc`).
+   **`sink.argument`로 인자를 직접 잡아야 정확함.** 우리 V1/V2/V3(sequelize.query, runInContext)는
+   0건까지는 아니었지만(4/11/15건), `.argument` 방식으로 재검증하니 실제로는 더 많은 흐름(6/22/35건)이
+   있었음 — 즉 우리가 쓰던 방식은 **과소탐지(누락) 위험이 있었음.** `judge_with_sanitizer.sc`의
+   `judge()` 함수를 `.argument` 기준으로 수정 완료. **아직 안 고친 것**: `taint_test.sc`,
+   `taint_test2_dbschema.sc`, `taint_test3_crossfile_xxe.sc`, `crossfile_full_eval.sc`는
+   구버전 방식 그대로라 다음에 다 같이 고쳐야 함.
+7. **cross-file 131건 전수 자동 판정 시도 → 방법 자체 결함으로 실패.** `crossfile_full_eval.sc`로
+   131건을 자동 필터링했더니 44건이 통과됐는데, **이 44건은 신뢰 불가.** 이유: 필터가 "호출하는
+   파일 안에 source처럼 생긴 글자가 있나 + 불려가는 파일 안에 sink처럼 생긴 글자가 있나"만
+   파일 단위로 봤지, 그 특정 호출의 인자가 실제로 연결되는지(`reachableByFlows`)는 확인 안 함.
+   실제로 `server.ts → routes/login.ts::login()` 같은 게 걸렸는데 이건 Express 라우터 등록 코드일
+   뿐 진짜 taint 흐름이 아님. **131건 전체를 개별 `reachableByFlows`(+ 위 6번 argument 수정 반영)로
+   다시 돌리는 게 다음 작업.**
 
 ## 폴더 구조
 
