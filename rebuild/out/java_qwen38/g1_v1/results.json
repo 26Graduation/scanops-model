@@ -1,0 +1,521 @@
+{
+  "run": {
+    "timestamp_utc": "2026-09-05T12:22:44.716468+00:00",
+    "model": "qwen3.8-max",
+    "temperature": 0.0,
+    "golden_view": "v1 + v2 overrides",
+    "item_count": 41,
+    "batch_size": 6,
+    "workers": 6,
+    "system_prompt_sha256": "5a0de790a39f06355dd11eb80f596b7540b481d5dfefe97061da9dfc787b038f",
+    "base_sha256": "26d63d468086063814b16d1f59b076854c7a8aa53ab84a2838b1a964adda6bd8",
+    "overrides_sha256": "3ad91c4d7133be93ee6f4ea4f058ee405429358dbc5536f249597740d3179e6e",
+    "usage": {
+      "calls": 21,
+      "retries": 14,
+      "hard_failures": 7,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "total_tokens": 0,
+      "wall_seconds": 9100.0
+    }
+  },
+  "metrics": {
+    "role_macro_f1": 0.0,
+    "sink_role_recall": 0.0,
+    "sink_exact_recall": 0.0,
+    "missing_or_invalid": 41,
+    "high_impact_source_sink_reversals": [],
+    "prediction_counts": {
+      "invalid": 41
+    },
+    "per_role": {
+      "source": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 18,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "sink": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 9,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "sanitizer": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "none": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 13,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      }
+    },
+    "gate_pass": false
+  },
+  "rows": [
+    {
+      "id": 0,
+      "api": "getParameter",
+      "expected_role": "source",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 1,
+      "api": "getParameterValues",
+      "expected_role": "source",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 2,
+      "api": "getParameterNames",
+      "expected_role": "source",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 3,
+      "api": "getParameterMap",
+      "expected_role": "source",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 4,
+      "api": "getHeader",
+      "expected_role": "source",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 5,
+      "api": "getHeaders",
+      "expected_role": "source",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 6,
+      "api": "getHeaderNames",
+      "expected_role": "source",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 7,
+      "api": "getCookies",
+      "expected_role": "source",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 8,
+      "api": "getQueryString",
+      "expected_role": "source",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 9,
+      "api": "getRequestURL",
+      "expected_role": "source",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 10,
+      "api": "getRemoteUser",
+      "expected_role": "source",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 11,
+      "api": "getAuthType",
+      "expected_role": "source",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 12,
+      "api": "getScheme",
+      "expected_role": "source",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 13,
+      "api": "getProtocol",
+      "expected_role": "source",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 14,
+      "api": "getInputStream",
+      "expected_role": "source",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 15,
+      "api": "getInitParameter",
+      "expected_role": "source",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 16,
+      "api": "getInitParameterNames",
+      "expected_role": "source",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 17,
+      "api": "MultipartRequest.getParameter",
+      "expected_role": "source",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 18,
+      "api": "println",
+      "expected_role": "sink",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": false,
+      "cwe_ok": false,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 19,
+      "api": "prepareStatement",
+      "expected_role": "sink",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": false,
+      "cwe_ok": false,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 20,
+      "api": "execute",
+      "expected_role": "sink",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": false,
+      "cwe_ok": false,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 21,
+      "api": "executeUpdate",
+      "expected_role": "sink",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": false,
+      "cwe_ok": false,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 22,
+      "api": "executeQuery",
+      "expected_role": "sink",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": false,
+      "cwe_ok": false,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 23,
+      "api": "createNewFile",
+      "expected_role": "sink",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": false,
+      "cwe_ok": false,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 24,
+      "api": "FileWriter",
+      "expected_role": "sink",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": false,
+      "cwe_ok": false,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 25,
+      "api": "FileInputStream",
+      "expected_role": "sink",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": false,
+      "cwe_ok": false,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 26,
+      "api": "sendRedirect",
+      "expected_role": "sink",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": false,
+      "cwe_ok": false,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 27,
+      "api": "URLEncoder.encode",
+      "expected_role": "sanitizer",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": false,
+      "prediction": null
+    },
+    {
+      "id": 28,
+      "api": "URLDecoder.decode",
+      "expected_role": "none",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 29,
+      "api": "clean",
+      "expected_role": "none",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 30,
+      "api": "toString",
+      "expected_role": "none",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 31,
+      "api": "toLowerCase",
+      "expected_role": "none",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 32,
+      "api": "nextToken",
+      "expected_role": "none",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 33,
+      "api": "nextElement",
+      "expected_role": "none",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 34,
+      "api": "get",
+      "expected_role": "none",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 35,
+      "api": "getLast",
+      "expected_role": "none",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 36,
+      "api": "getValue",
+      "expected_role": "none",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 37,
+      "api": "getContents",
+      "expected_role": "none",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 38,
+      "api": "getData",
+      "expected_role": "none",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 39,
+      "api": "setAttribute / getAttribute",
+      "expected_role": "none",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": null
+    },
+    {
+      "id": 40,
+      "api": "invoke / forName / getMethods / getField / newInstance",
+      "expected_role": "none",
+      "predicted_role": "invalid",
+      "operationally_valid": false,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": null
+    }
+  ]
+}

@@ -72,3 +72,8 @@ rebuild/data/dw_*.jsonl
 rebuild/data/gate_*.jsonl
 rebuild/data/train_v5.jsonl
 rebuild/data/val_v5.jsonl
+# Downloaded upstream benchmark checkout (repro script fetches it separately).
+benchmarks/securibench-micro/source/
+benchmarks/cwe-bench-java/upstream/
+benchmarks/cwe-bench-java/project-sources/
+benchmarks/juliet-java/out_g2_*/

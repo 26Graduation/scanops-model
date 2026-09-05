@@ -27,9 +27,10 @@ source→sink 경로를 탐색하는 제품 경로를 완성한다. 최종 원�
 
 ## 3. 데이터 분리
 
-1. **룰 생성 골든셋**: `benchmarks/golden-sets/java/rule_golden_set_v1.json` 41개.
-   사람 검토가 필요한 7개 항목을 먼저 실제 소스와 대조하고, 검토 결과를 별도 v2 파일에
-   기록한다. 이 데이터는 룰 생성 단계 평가에만 쓴다.
+1. **룰 생성 골든셋**: `benchmarks/golden-sets/java/rule_golden_set_v1.json`에
+   `rule_golden_set_v2_overrides.json`을 적용한 41개 감사 뷰. 코퍼스의 dataflow 관습과
+   재사용 가능한 API 의미가 충돌하는 항목은 실제 소스와 위협 모델을 대조해 v2에 기록한다.
+   이 데이터는 룰 생성 단계 평가에만 쓴다.
 2. **개발/회귀**: Juliet Java Tier A+B 38개 CWE. 엔진 기능과 회귀 확인용이며 최종 외부
    성능 주장에는 쓰지 않는다.
 3. **최종 held-out**: CWE-Bench-Java 또는 동등한 실제 Java 프로젝트 기반 벤치. 결과를 본 뒤

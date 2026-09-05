@@ -17,12 +17,27 @@
  * 그 외 sanitizer 처리·path 출력·에러 처리는 taint_v4.sc 와 같은 방식을 따른다.
  *
  * specFile 형식 (TSV, 한 줄 = 룰 하나):
- *   sink<TAB>cat<TAB>cwe<TAB>field(name|full|assign_field|dynamic_index)<TAB>regex
+ *   sink<TAB>cat<TAB>cwe<TAB>field(name|full|code|assign_field|dynamic_index|exists|exists_full|arg_literal|arg_literal_full|arg_count|arg_count_full)<TAB>regex[<TAB>argRegex]
  *   source<TAB>-<TAB>-<TAB>field(name|full)<TAB>regex
  * field=assign_field (PLAN.md 4단계): `el.innerHTML = x` 같은 프로퍼티 대입을 sink 로 본다.
  * regex 는 대입 LHS 의 필드명(예: innerHTML)에 매칭한다 — 함수 호출이 아니므로 name/full 과는
  * 다른 노드(<operator>.assignment)를 쿼리한다. 후보는 dump_candidates.sc 의 assigns, 라벨은
  * graph_spec_llm.py 가 다른 후보와 같은 반과적합 규칙으로 생성한다.
+ * field=exists / exists_full (2026-09-04, §1-11): "danger가 데이터 흐름이 아니라 API 자체에
+ * 있는" sink(예: System.loadLibrary, new Random()) — reachableByFlows 없이, 콜이 CPG 안에
+ * 존재하면 그 자체로 finding. exists 는 cpg.call.name(regex), exists_full 은
+ * cpg.call.methodFullName(regex) 로 콜을 고른다. source 표시는 "N/A (call-site-only)".
+ * field=arg_literal / arg_literal_full (2026-09-04, §1-11): 인자 값 자체가 위험 신호인
+ * sink(예: Cipher.getInstance("DES"), Cookie.setMaxAge(양수)) — regex(5번째 열)로 콜을
+ * 고르는 건 exists 와 같고(arg_literal 은 name, arg_literal_full 은 full), 거기에 6번째 열
+ * argRegex 를 추가로 요구해 그 콜의 argumentIndex>0 인자 중 하나의 .code 가 argRegex 와
+ * 매칭될 때만 finding. reachableByFlows 는 쓰지 않는다(source 표시는 "N/A (arg-literal-only)").
+ * field=arg_count / arg_count_full (2026-09-05, 3라운드 §5): bad/good 이 같은 이름의 서로
+ * 다른 오버로드(인자 개수만 다름, 예: String.getBytes(4-인자) vs getBytes("UTF-8"))일 때 —
+ * 콜 선택은 arg_literal 과 같고(name/full), 6번째 열을 여기선 정규식이 아니라 "요구하는
+ * argumentIndex>0 개수"(정수 문자열)로 재해석해서, 그 개수와 정확히 같은 콜만 finding.
+ * reachableByFlows 안 씀(source 표시는 "N/A (arg-count-only)").
+ * 6번째 열은 옵션이라 기존 5열짜리 스펙 행은 그대로 호환된다.
  * sanFile 형식은 taint_v4.sc 와 동일 (3열: 블록카테고리 / applies_to / regex)
  * propFile 형식 (TSV):
  *   methodFullNameRegex<TAB>src,dst;src,dst;...      (src/dst: 정수 또는 "return")
@@ -35,7 +50,7 @@ import io.joern.dataflowengineoss.DefaultSemantics
 import io.shiftleft.codepropertygraph.generated.nodes.Call
 import io.shiftleft.codepropertygraph.generated.nodes.Literal
 
-case class Rule(cat: String, cwe: String, sink: String, field: String)
+case class Rule(cat: String, cwe: String, sink: String, field: String, argRe: String = "")
 case class SrcRule(field: String, re: String)
 
 def esc(s: String): String = {
@@ -82,9 +97,14 @@ def readLines(p: String): List[String] =
   var rules = List.empty[Rule]
   var srcRules = List.empty[SrcRule]
   for (ln <- readLines(specFile)) {
-    val p = ln.split("\t", 5)
-    if (p.length == 5) {
-      if (p(0) == "sink") rules = rules :+ Rule(p(1), p(2), p(4), p(3))
+    // limit=6: arg_literal(_full) 룰은 6번째 열(argRegex)을 쓴다. 기존 5열 행은 limit 을 늘려도
+    // 탭이 4개뿐이라 그대로 5개짜리 배열이 나와 호환된다(2026-09-04, §1-11).
+    val p = ln.split("\t", 6)
+    if (p.length >= 5) {
+      if (p(0) == "sink") {
+        val argRe = if (p.length >= 6) p(5) else ""
+        rules = rules :+ Rule(p(1), p(2), p(4), p(3), argRe)
+      }
       else if (p(0) == "source") srcRules = srcRules :+ SrcRule(p(3), p(4))
     }
   }
@@ -182,8 +202,14 @@ def readLines(p: String): List[String] =
                      rulePat: String, ruleField: String)
   var findings = List.empty[Finding]
 
-  // source = 명시적 파라미터(암묵 수신자 제외) + 스펙이 지정한 source 호출
-  val paramSources = cpg.method.parameter.nameNot("self", "this", "cls").l
+  // source = 명시적 파라미터(암묵 수신자 제외) + 스펙이 지정한 source 호출.
+  // srcMode="calls"는 source API call만 사용한다. Java 제품 경로에서 모든 메서드
+  // 파라미터를 attacker input으로 보니 HttpServletResponse까지 source가 되어 sink receiver
+  // 쪽 가짜 경로가 실제 cross-file 경로를 덮는 문제가 있어 추가했다. 기존 params/r2/r2chain
+  // 동작은 그대로 유지한다.
+  val paramSources =
+    if (srcMode == "calls") Nil
+    else cpg.method.parameter.nameNot("self", "this", "cls").l
   val callSources = srcRules.flatMap { s =>
     try { if (s.field == "full") cpg.call.methodFullName(s.re).l else cpg.call.name(s.re).l }
     catch { case _: Throwable => Nil }
@@ -212,11 +238,93 @@ def readLines(p: String): List[String] =
 
   val sources = paramSources ++ callSources ++ faSources
 
+  // 2026-09-04 dangerous-call-only 확장(§1-11) 전용 헬퍼: exists/arg_literal 은 flow path 가
+  // 없어 콜 노드 하나만 보고 sanitizer 근접 여부를 판단한다. 기존 reachability 분기(아래 else)의
+  // hits 계산과는 별개 코드 경로 — 기존 로직은 손대지 않는다.
+  def sanHitsForCall(c: Call, pats: List[java.util.regex.Pattern]): List[SanHit] = {
+    val cands = enclosingCodes(c)
+    pats.flatMap { p =>
+      cands.find(cc => try p.matcher(cc).find() catch { case _: Throwable => false })
+           .map(cc => SanHit(lineOf(c), cc.take(200), "sink", p.pattern))
+    }
+  }
+
   var ruleErrors = List.empty[String]
   for (r <- rules) {
     try {
+      if (r.field == "exists" || r.field == "exists_full") {
+        // (a) 순수 존재확인: source→sink 데이터 흐름이 아니라 API 호출 자체가 위험 신호인 sink
+        // (System.loadLibrary, new Random() 등). reachableByFlows 없이 콜이 CPG 에 있으면 finding.
+        val calls = if (r.field == "exists_full") cpg.call.methodFullName(r.sink).l else cpg.call.name(r.sink).l
+        val pats = sanPatternsFor(r.cat)
+        for (c <- calls) {
+          val fileName = fileOf(c)
+          if (fileName.nonEmpty) {
+            val hits = sanHitsForCall(c, pats)
+            findings ::= Finding(
+              fileName, r.cat, r.cwe,
+              "N/A (call-site-only)", c.code.take(160), lineOf(c),
+              fileName, lineOf(c),
+              List(Step(fileName, lineOf(c), c.code.take(200), "sink")),
+              hits.nonEmpty, hits.take(6), r.sink, r.field)
+          }
+        }
+      } else if (r.field == "arg_literal" || r.field == "arg_literal_full") {
+        // (b) 인자 리터럴 정규식: 콜은 존재확인과 같은 방식(name/full)으로 고르되, argumentIndex>0
+        // 인자 중 하나의 .code 가 argRe 와 매칭될 때만 finding. reachableByFlows 는 안 쓴다.
+        val calls = if (r.field == "arg_literal_full") cpg.call.methodFullName(r.sink).l else cpg.call.name(r.sink).l
+        val argPat = try Some(java.util.regex.Pattern.compile(r.argRe)) catch { case _: Throwable => None }
+        val pats = sanPatternsFor(r.cat)
+        argPat.foreach { ap =>
+          for (c <- calls) {
+            val hasMatchingArg = c.argument.filter(_.argumentIndex > 0).l
+              .exists(a => try ap.matcher(a.code).find() catch { case _: Throwable => false })
+            if (hasMatchingArg) {
+              val fileName = fileOf(c)
+              if (fileName.nonEmpty) {
+                val hits = sanHitsForCall(c, pats)
+                findings ::= Finding(
+                  fileName, r.cat, r.cwe,
+                  "N/A (arg-literal-only)", c.code.take(160), lineOf(c),
+                  fileName, lineOf(c),
+                  List(Step(fileName, lineOf(c), c.code.take(200), "sink")),
+                  hits.nonEmpty, hits.take(6), r.sink, r.field)
+              }
+            }
+          }
+        }
+      } else if (r.field == "arg_count" || r.field == "arg_count_full") {
+        // (c) 인자 개수(arity) 매칭: 2026-09-05 3라운드 §5(CWE-477) -- bad/good 이 같은 클래스·
+        // 같은 메서드 이름의 서로 다른 오버로드일 때(예: String.getBytes(4-인자) vs
+        // getBytes("UTF-8"), URLEncoder.encode(1-인자) vs encode(2-인자)), 이름/인자값만으론
+        // 못 가르고 인자 "개수"로만 구분된다(실측: exists 로 하면 안전한 오버로드까지 전부
+        // 걸림 -- SUMMARY 참고). 콜 선택은 exists/arg_literal 과 동일(name/full), argRe 열은
+        // 여기선 정규식이 아니라 "요구하는 정확한 argumentIndex>0 개수"(정수 문자열)로 재해석.
+        // reachableByFlows 안 씀.
+        val calls = if (r.field == "arg_count_full") cpg.call.methodFullName(r.sink).l else cpg.call.name(r.sink).l
+        val wantCount = try Some(r.argRe.trim.toInt) catch { case _: Throwable => None }
+        val pats = sanPatternsFor(r.cat)
+        wantCount.foreach { n =>
+          for (c <- calls) {
+            val argCount = c.argument.filter(_.argumentIndex > 0).size
+            if (argCount == n) {
+              val fileName = fileOf(c)
+              if (fileName.nonEmpty) {
+                val hits = sanHitsForCall(c, pats)
+                findings ::= Finding(
+                  fileName, r.cat, r.cwe,
+                  "N/A (arg-count-only)", c.code.take(160), lineOf(c),
+                  fileName, lineOf(c),
+                  List(Step(fileName, lineOf(c), c.code.take(200), "sink")),
+                  hits.nonEmpty, hits.take(6), r.sink, r.field)
+              }
+            }
+          }
+        }
+      } else {
       val sinks =
-        if (r.field == "full") cpg.call.methodFullName(r.sink)
+        if (r.field == "full") cpg.call.methodFullName(r.sink).argument.filter(_.argumentIndex > 0)
+        else if (r.field == "code") cpg.call.code(r.sink).argument.filter(_.argumentIndex > 0)
         else if (r.field == "assign_field")
           // PLAN.md 4단계: 대입문 LHS 가 <operator>.fieldAccess 이고 그 필드명이 규칙에 매칭될 때.
           cpg.call.name("<operator>.assignment").filter { a =>
@@ -235,13 +343,19 @@ def readLines(p: String): List[String] =
               lhs.asInstanceOf[Call].astChildren.l.lastOption.exists(idx => !idx.isInstanceOf[Literal])
             }
           }
-        else cpg.call.name(r.sink)
+        else cpg.call.name(r.sink).argument.filter(_.argumentIndex > 0)
       val flows = sinks.reachableByFlows(sources).l
       val pats = sanPatternsFor(r.cat)
       for (f <- flows) {
         val elems = f.elements
         if (elems.nonEmpty) {
           val lastNode = elems.last
+          // 2026-09-02 sink-argument-fix: lastNode가 인자 노드면 부모 CALL의 코드를
+          // 대신 보여준다 (void 반환 sink 버그 수정의 표시용 보정, §10 로그 참고)
+          val sinkDisplayCode: String = try {
+            val p = lastNode.astParent
+            if (p != null && p.isInstanceOf[Call]) p.code else lastNode.code
+          } catch { case _: Throwable => lastNode.code }
           val fileName = fileOf(lastNode)
           if (fileName.nonEmpty) {
             val n = elems.size
@@ -259,17 +373,28 @@ def readLines(p: String): List[String] =
             }.toList
             findings ::= Finding(
               fileName, r.cat, r.cwe,
-              elems.head.code.take(160), lastNode.code.take(160), lineOf(lastNode),
+              elems.head.code.take(160), sinkDisplayCode.take(160), lineOf(lastNode),
               fileOf(elems.head), lineOf(elems.head),
               steps, hits.nonEmpty, hits.take(6), r.sink, r.field)
           }
         }
+      }
       }
     } catch {
       case e: Throwable =>
         ruleErrors = ruleErrors :+ s"${r.cat}|${r.sink.take(60)}|${e.toString.take(120)}"
     }
   }
+
+  val dedupedFindings = findings
+    .groupBy(f => (f.file, f.cat, f.cwe, f.line))
+    .map(_._2.head)
+    .toList
+  // 2026-09-02 sink-argument-fix: argument 단위로 sink를 잡으면 콜 하나(예: println(str))가
+  // 인자 여러 개(receiver 포함) 각각에서 중복 검출될 수 있어 (file,cat,cwe,line) 기준으로 합친다.
+  // 2026-09-02 sink-argument-fix(추가): receiver(argumentIndex=0, 예: writer.println()의 writer)는
+  // "sink 로 값이 들어가는 인자"가 아니라 "메서드를 호출하는 객체"라 sink 후보에서 제외한다
+  // (필터 전: writer 자체가 오염된 것처럼 잘못 표시되는 flow 가 섞여 나왔다, §10 로그 참고).
 
   val sb = new StringBuilder
   sb.append(s"""{"arm":"${esc(arm)}","n_rules":${rules.size},"n_source_rules":${srcRules.size},""")
@@ -283,7 +408,7 @@ def readLines(p: String): List[String] =
   sb.append("],\"rule_errors\":[")
   sb.append(ruleErrors.take(50).map(x => "\"" + esc(x) + "\"").mkString(","))
   sb.append("],\"findings\":[")
-  sb.append(findings.map { f =>
+  sb.append(dedupedFindings.map { f =>
     val pathJson = f.path.map(s =>
       s"""{"file":"${esc(s.file)}","line":${s.line},"code":"${esc(s.code)}","role":"${esc(s.role)}"}""")
       .mkString(",")

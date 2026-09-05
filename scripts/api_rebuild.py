@@ -41,6 +41,7 @@ from pydantic import BaseModel, Field
 from scanops.core.llm_client import (chat as llm_chat, completion as llm_completion,
                                      completion_logprobs, tokenize, use_runpod)
 from scanops.core import hybrid as hybrid_mod
+from scanops.core import graph_spec_prod
 from scanops.core.logprob_score import PREFIX as SCORE_PREFIX, score_from_probs, verify_token_ids
 
 META_ENABLED = os.getenv("SCANOPS_META", "on").lower() != "off"
@@ -532,11 +533,14 @@ def _joern(language: str, code: str, file_path: Optional[str]) -> Optional[dict]
 
 
 def _analyze_one(language: str, code: str, file_path: Optional[str],
-                 prompt_code: Optional[str] = None) -> AnalyzeResponse:
+                 prompt_code: Optional[str] = None,
+                 joern_override: Optional[dict] = None) -> AnalyzeResponse:
+    """joern_override: 레포단위 그래프 보강 결과(analyze_batch가 미리 계산)가 있으면
+    스니펫 단위 _joern() 호출을 건너뛰고 그걸 쓴다. None이면 기존 동작(단일 호출) 그대로."""
     t0 = time.time()
     r = _detect(language, code, prompt_code)
     r["score"] = _score(language, code)
-    joern = _joern(language, code, file_path)
+    joern = joern_override if joern_override is not None else _joern(language, code, file_path)
     agg = hybrid_mod.aggregate(r, joern, None, HYBRID_POLICY)
     r = {**r, "detected": agg["detected"]}
     if agg["detected"] and agg["source"] in ("joern", "graph") and r["vulnerability"] == "NONE":
@@ -580,7 +584,9 @@ def health():
     return {"status": "ok", "version": "rebuild-1",
             "parse_stats": dict(_PARSE_STATS),
             "model": "scanops-rebuild-9b (Qwen3.5-9B QLoRA, CVEfixes F1 80.5)",
-            "llm_backend": "runpod" if use_runpod() else "llama-local"}
+            "llm_backend": "runpod" if use_runpod() else "llama-local",
+            "graph_rule_model": graph_spec_prod.LLM_MODEL,
+            "graph_critic_enabled": graph_spec_prod.CRITIC_ENABLED}
 
 
 @app.post("/analyze", response_model=AnalyzeResponse)
@@ -596,12 +602,52 @@ def analyze(req: AnalyzeRequest, _=Security(_require_api_key)):
 @app.post("/analyze/batch", response_model=BatchResponse)
 def analyze_batch(req: BatchRequest, _=Security(_require_api_key)):
     t0 = time.time()
+
+    # ── 레포단위 그래프+taint 보강 (Java + JS/TS) ──
+    # GithubScanService.java가 레포 전체 파일을 한 배치로 보내므로 여기서 한 번만 돈다.
+    # 완전히 실패해도(RunPod 타임아웃 등) v1 LLM 단독 결과로 그대로 나간다 —
+    # 절대 배치 전체를 막지 않는다.
+    graph_by_file: dict[str, dict] = {}
+    if not req.stop_on_first:
+        # Joern CPG 하나에는 frontend 하나만 들어갈 수 있다. Java/JSSRC가 섞인 배치를
+        # 첫 파일 언어로 통째로 import하던 기존 JSTS 변수/배선을 없애고 frontend별로 분리한다.
+        graph_groups: dict[str, dict] = {}
+        for f in req.files:
+            if not (f.file_path and f.code.strip() and
+                    graph_spec_prod.is_supported_lang(f.language)):
+                continue
+            frontend, _ = graph_spec_prod.language_context(f.language)
+            group = graph_groups.setdefault(frontend, {"language": f.language, "files": []})
+            group["files"].append({"path": f.file_path, "content": f.code})
+
+        for frontend, group in graph_groups.items():
+            try:
+                graph_files = group["files"]
+                findings = graph_spec_prod.analyze_repo(graph_files, group["language"])
+                # 성공한 그룹에만 safe override를 만든다. 예외 난 그룹은 기존 v1/스니펫
+                # Joern 경로로 내려가며, 다른 언어 그룹의 성공 결과는 보존한다.
+                for x in graph_files:
+                    graph_by_file[x["path"]] = {
+                        "verdict": "safe", "categories": [], "path": []}
+                for gf in findings:
+                    entry = graph_by_file.setdefault(
+                        gf["file"], {"verdict": "safe", "categories": [], "path": []})
+                    entry["verdict"] = "vuln"
+                    if gf["category"] not in entry["categories"]:
+                        entry["categories"].append(gf["category"])
+                    if not entry["path"]:
+                        entry["path"] = gf.get("path") or []
+            except Exception as e:  # noqa: BLE001
+                print(f"[graph_spec] {frontend} 레포 보강 실패(무시, v1 단독으로 진행): {e}",
+                      flush=True)
+
     results: list[AnalyzeResponse] = []
     for f in req.files:
         if not f.code.strip():
             continue
         try:
-            r = _analyze_one(f.language, f.code, f.file_path)
+            r = _analyze_one(f.language, f.code, f.file_path,
+                             joern_override=graph_by_file.get(f.file_path))
         except Exception:  # noqa: BLE001 — 한 파일 실패가 배치 전체를 죽이지 않게
             continue
         results.append(r)

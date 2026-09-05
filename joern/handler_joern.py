@@ -315,6 +315,123 @@ def _code_of(chunk: list[tuple[str, str]], cid: str) -> str:
     return ""
 
 
+# ── 엔진 2: 레포 전체를 CPG 1개로 (2026-08-23, 베타 배포) ────────────────────
+# analyze_batch/_pass 는 서로 독립된 벤치 케이스를 25건씩 쪼개 CPG를 여러 개 만든다
+# (케이스 간 cross-file 참조가 없다는 전제). 실제 서비스의 레포 스캔은 그 반대 —
+# 파일 사이 taint 흐름을 봐야 하므로 레포 전체를 한 CPG로 만들어야 한다
+# (CLAUDE.md: "그래프 입력 단위: 함수 조각 → 레포 전체"). 기존 엔진은 건드리지
+# 않고(연구/벤치 스크립트가 계속 씀) 완전히 별도 함수로 추가한다.
+
+CANDIDATES_SCRIPT = os.getenv(
+    "JOERN_CANDIDATES_SCRIPT", str(Path(__file__).resolve().parent / "queries" / "dump_candidates.sc"))
+TAINT_SPEC_SCRIPT = os.getenv(
+    "JOERN_TAINT_SPEC_SCRIPT", str(Path(__file__).resolve().parent / "queries" / "taint_spec.sc"))
+REPO_TIMEOUT = int(os.getenv("JOERN_REPO_TIMEOUT", "600"))
+
+
+def run_repo_script(job_id: str, mode: str, language: str, files: list[dict],
+                     spec_text: str = "", san_file: str = "", san_text: str = "",
+                     prop_file: str = "",
+                     src_mode: str = "params", arm: str = "S2C",
+                     timeout: int | None = None) -> dict:
+    """레포 파일 전체를 한 디렉터리에 써서 Joern을 **한 번만** 돌린다.
+
+    mode="candidates" → dump_candidates.sc (룰 생성 대상 후보 추출)
+    mode="taint"       → taint_spec.sc (LLM이 만든 spec_text로 taint 쿼리, line 단위 findings)
+    """
+    if mode not in ("candidates", "taint"):
+        return {"error": f"unknown mode: {mode}"}
+    resolved = resolve(language)
+    if resolved is None:
+        return {"error": f"unsupported_lang: {language}"}
+    _ext, joern_lang = resolved
+
+    with _ACTIVE_LOCK:
+        if job_id in _ACTIVE_JOBS:
+            raise ValueError(f"duplicate job_id: {job_id}")
+        _ACTIVE_JOBS.add(job_id)
+    root = WORK_ROOT / f"scanops_repo_{_SAFE.sub('_', job_id)}"
+    if root.exists():
+        raise ValueError(f"work dir already exists (duplicate job_id): {root}")
+    in_dir = root / "repo"
+    in_dir.mkdir(parents=True)
+    out_file = root / "out.json"
+
+    try:
+        n_written = 0
+        for f in files:
+            rel = (f.get("path") or "").lstrip("/") or f"file{n_written}"
+            # 경로 이탈(../) 방지 — 서비스 입력이라 방어적으로 처리
+            dest = (in_dir / rel).resolve()
+            if not str(dest).startswith(str(in_dir.resolve())):
+                continue
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            dest.write_text(f.get("content", ""), errors="replace")
+            n_written += 1
+
+        env = dict(os.environ)
+        env["JAVA_OPTS"] = f"-Xmx{XMX} {env.get('JAVA_OPTS', '')}".strip()
+        env["_JAVA_OPTIONS"] = f"-Xmx{XMX}"
+
+        if mode == "candidates":
+            cmd = [JOERN_BIN, "--script", CANDIDATES_SCRIPT,
+                   "--param", f"inDir={in_dir}", "--param", f"lang={joern_lang}",
+                   "--param", f"outFile={out_file}"]
+        else:  # taint
+            spec_path = root / "spec.tsv"
+            spec_path.write_text(spec_text, errors="replace")
+            cmd = [JOERN_BIN, "--script", TAINT_SPEC_SCRIPT,
+                   "--param", f"inDir={in_dir}", "--param", f"lang={joern_lang}",
+                   "--param", f"outFile={out_file}", "--param", f"specFile={spec_path}",
+                   "--param", f"arm={arm}", "--param", f"srcMode={src_mode}"]
+            effective_san_file = san_file
+            if san_text:
+                san_path = root / "sanitizers.tsv"
+                san_path.write_text(san_text, errors="replace")
+                effective_san_file = str(san_path)
+            if effective_san_file:
+                cmd += ["--param", f"sanFile={effective_san_file}"]
+            if prop_file:
+                cmd += ["--param", f"propFile={prop_file}"]
+
+        _log(f"RUN_REPO mode={mode} lang={joern_lang} n_files={n_written} cmd={' '.join(cmd)}")
+        t0 = time.time()
+        proc = subprocess.Popen(cmd, env=env, cwd=str(root), stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT, text=True)
+        rss: dict = {"peak_rss_mb": 0}
+        stop = threading.Event()
+        th = threading.Thread(target=_peak_rss_mb, args=(proc, stop, rss), daemon=True)
+        th.start()
+        timed_out = False
+        try:
+            stdout, _ = proc.communicate(timeout=timeout or REPO_TIMEOUT)
+        except subprocess.TimeoutExpired:
+            timed_out = True
+            proc.kill()
+            stdout, _ = proc.communicate()
+        finally:
+            stop.set()
+            th.join(timeout=5)
+        elapsed = round(time.time() - t0, 2)
+        data: dict = {}
+        if out_file.exists():
+            try:
+                data = json.loads(out_file.read_text() or "{}")
+            except Exception as e:  # noqa: BLE001
+                data = {"error": f"bad_json: {e}"}
+        if timed_out:
+            data = {"error": "timeout"}
+        return {"mode": mode, "n_files": n_written, "data": data, "elapsed": elapsed,
+                "timed_out": timed_out, "rc": proc.returncode,
+                "peak_rss_mb": rss.get("peak_rss_mb", 0),
+                "stdout_tail": (stdout or "")[-2000:]}
+    finally:
+        shutil.rmtree(root, ignore_errors=True)
+        _log(f"CLEANUP rm -rf {root} exists_after={root.exists()}")
+        with _ACTIVE_LOCK:
+            _ACTIVE_JOBS.discard(job_id)
+
+
 # ── 진입점 1: RunPod serverless ─────────────────────────────────────────────
 
 def handler(job: dict) -> dict:
@@ -324,6 +441,25 @@ def handler(job: dict) -> dict:
     files = inp.get("files") or []
     if not files:
         return {"error": "files required"}
+
+    mode = inp.get("mode")
+    if mode in ("candidates", "taint"):
+        try:
+            return run_repo_script(
+                job_id, mode, language, files,
+                spec_text=inp.get("spec_text", ""),
+                san_file=inp.get("san_file", ""),
+                san_text=inp.get("san_text", ""),
+                prop_file=inp.get("prop_file", ""),
+                src_mode=inp.get("src_mode", "params"),
+                arm=inp.get("arm", "S2C"),
+                timeout=inp.get("timeout"),
+            )
+        except ValueError as e:
+            return {"error": str(e)}
+        except Exception as e:  # noqa: BLE001
+            return {"error": f"joern worker error: {e}"}
+
     try:
         r = analyze_batch(job_id, language, files)
     except ValueError as e:
@@ -352,8 +488,20 @@ try:  # 요청 모델은 **모듈 레벨**이어야 한다.
         job_id: str
         language: str
         files: list[FileIn]
+
+    class JoernRepoRequest(BaseModel):
+        job_id: str
+        mode: str
+        language: str
+        files: list[FileIn]
+        spec_text: str = ""
+        san_file: str = ""
+        san_text: str = ""
+        prop_file: str = ""
+        src_mode: str = "params"
+        arm: str = "S2C"
 except ImportError:  # pydantic 없이 CLI/RunPod 로만 쓸 때
-    FileIn = JoernRequest = None  # type: ignore[assignment,misc]
+    FileIn = JoernRequest = JoernRepoRequest = None  # type: ignore[assignment,misc]
 
 
 def _build_app():
@@ -396,6 +544,20 @@ def _build_app():
     def analyze_sync(req: JoernRequest):
         return analyze_batch(req.job_id, req.language,
                              [{"path": f.path, "content": f.content} for f in req.files])
+
+    @api.post("/joern/repo")
+    def repo_sync(req: JoernRepoRequest):
+        """레포단위(§24, 2026-08-23) — RunPod 서버리스 워커 디스패치 문제로 온프레미스
+        HTTP 모드(항상 켜진 Pod)를 대신 쓴다. 동기 호출, 클라이언트가 넉넉한 타임아웃을 준다."""
+        try:
+            return run_repo_script(
+                req.job_id, req.mode, req.language,
+                [{"path": f.path, "content": f.content} for f in req.files],
+                spec_text=req.spec_text, san_file=req.san_file, san_text=req.san_text,
+                prop_file=req.prop_file,
+                src_mode=req.src_mode, arm=req.arm)
+        except ValueError as e:
+            raise HTTPException(409, str(e))
 
     return api
 
