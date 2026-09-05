@@ -41,6 +41,20 @@ class Safe { void doGet(HttpServletRequest req, HttpServletResponse resp) throws
   resp.getWriter().println(escaped);
 } }
 """},
+    {"path": "demo/Library.java", "content": """package demo;
+import java.io.IOException;
+public class Library {
+  public void run(String command) throws IOException { Runtime.getRuntime().exec(command); }
+}
+"""},
+    {"path": "demo/Stateful.java", "content": """package demo;
+import java.io.IOException;
+public class Stateful {
+  private final String command;
+  public Stateful(String command) { this.command = command; }
+  public void run() throws IOException { Runtime.getRuntime().exec(this.command); }
+}
+"""},
 ]
 
 
@@ -50,11 +64,12 @@ def main() -> None:
     args = parser.parse_args()
     candidates = run_repo_script("java-smoke-candidates", "candidates", "Java", FILES, timeout=300)
     spec = "source\t-\t-\tname\t^getParameter$\n" \
-           "sink\txss\tCWE-79\tname\t^println$\n"
+           "sink\txss\tCWE-79\tname\t^println$\n" \
+           "sink\tcmdi\tCWE-78\tname\t^exec$\n"
     sanitizers = "JAVASRC.xss\txss\tHtmlUtils\\.htmlEscape\\s*\\(\n"
     taint = run_repo_script(
         "java-smoke-taint", "taint", "Java", FILES,
-        spec_text=spec, san_text=sanitizers, src_mode="calls", arm="S2C", timeout=300)
+        spec_text=spec, san_text=sanitizers, src_mode="java", arm="S2C", timeout=300)
 
     cdata = candidates.get("data") or {}
     findings = (taint.get("data") or {}).get("findings") or []
@@ -68,6 +83,14 @@ def main() -> None:
         "vulnerable_sink_line": any(x.get("file") == "demo/App.java" and x.get("line") == 7
                                     for x in vulnerable),
         "cross_file_path": bool(cross_file),
+        "public_data_boundary": any(
+            x.get("file") == "demo/Library.java" and "String command" in x.get("source", "")
+            for x in vulnerable),
+        "java_state_boundary": any(
+            x.get("file") == "demo/Stateful.java" and "this.command" in x.get("source", "")
+            for x in vulnerable),
+        "response_context_not_source": not any(
+            "HttpServletResponse" in x.get("source", "") for x in findings),
         "sanitizer_hit": any(x.get("file") == "demo/Safe.java" for x in safe),
         "no_rule_errors": not (taint.get("data") or {}).get("rule_errors"),
     }

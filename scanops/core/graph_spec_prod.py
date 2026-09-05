@@ -65,7 +65,9 @@ JOERN_HTTP_URL = os.getenv("JOERN_HTTP_URL", "")
 RUNPOD_POLL_INTERVAL = float(os.getenv("RUNPOD_POLL_INTERVAL", "2.0"))
 JOERN_TIMEOUT = int(os.getenv("GRAPH_SPEC_JOERN_TIMEOUT", "600"))
 RULEGEN_TIMEOUT = int(os.getenv("GRAPH_SPEC_RULEGEN_TIMEOUT", "300"))
-MAX_FRESH_ITEMS = int(os.getenv("GRAPH_SPEC_MAX_FRESH_ITEMS", "150"))   # 베타 안전판 — 첫 스캔 예산 상한
+# Accuracy-first default: do not silently discard rare APIs in a large Java repository.
+# Operators may set a positive emergency cap, but the default processes every cache miss.
+MAX_FRESH_ITEMS = int(os.getenv("GRAPH_SPEC_MAX_FRESH_ITEMS", "0"))
 RULEGEN_BATCH = int(os.getenv("GRAPH_SPEC_RULEGEN_BATCH", "6"))
 CRITIC_BATCH = int(os.getenv("GRAPH_SPEC_CRITIC_BATCH", "4"))
 LLM_MAX_WORKERS = max(1, int(os.getenv("GRAPH_SPEC_LLM_MAX_WORKERS", "6")))
@@ -289,7 +291,7 @@ def strip_locs(code: str) -> str:
 
 def build_items(cand: dict) -> list[dict]:
     """dump_candidates.sc 출력 → LLM 입력 항목. params kind는 보내지 않는다
-    (taint_spec.sc의 paramSources가 이미 무조건 source로 처리 — §20 실측)."""
+    (taint_spec.sc가 frontend별 trust-boundary 정책으로 직접 처리한다)."""
     items = []
     for c in cand.get("calls", []):
         items.append({"kind": "call", "name": c["name"],
@@ -335,17 +337,24 @@ def label_items(items: list[dict], lang_label: str) -> list[dict]:
 
     def run_batch(bi_batch):
         bi, batch = bi_batch
-        body = "\n\n".join(fmt_item(it) for it in batch)
-        user = RULEGEN_USER_TMPL.format(lang=lang_label, bi=bi + 1, bn=len(batches), items=body)
+        pending = list(batch)
+        returned: dict[int, dict] = {}
         for attempt in range(3):
+            body = "\n\n".join(fmt_item(it) for it in pending)
+            user = RULEGEN_USER_TMPL.format(
+                lang=lang_label, bi=bi + 1, bn=len(batches), items=body)
             try:
-                text = call_rulegen(RULEGEN_SYSTEM, user, 200 * len(batch) * (attempt + 1))
+                text = call_rulegen(RULEGEN_SYSTEM, user, 200 * len(pending) * (attempt + 1))
             except Exception:  # noqa: BLE001
                 continue
             arr = _extract_json_array(text)
-            if arr:
-                return arr
-        return []
+            for obj in arr or []:
+                if isinstance(obj, dict) and obj.get("id") in {it["id"] for it in pending}:
+                    returned[obj["id"]] = obj
+            pending = [it for it in pending if it["id"] not in returned]
+            if not pending:
+                break
+        return list(returned.values())
 
     # Qwen3.8-Max API 대기시간이 전체 레포 지연을 지배하므로 독립 배치를 병렬 호출한다.
     with ThreadPoolExecutor(max_workers=min(LLM_MAX_WORKERS, max(1, len(batches)))) as ex:
@@ -427,8 +436,8 @@ def language_context(language: str) -> tuple[str, str]:
 
 
 def source_mode(frontend: str) -> str:
-    """Java uses explicit source API rules; legacy JS keeps its measured parameter-root mode."""
-    return "calls" if frontend == "JAVASRC" else "params"
+    """Java adds public data-carrier trust boundaries; legacy JS keeps its measured mode."""
+    return "java" if frontend == "JAVASRC" else "params"
 
 
 def repo_path_tokens_from_files(files: list[dict]) -> set[str]:
@@ -762,8 +771,9 @@ def analyze_repo(files: list[dict], language: str, repo_tag: str = "prod") -> li
             fresh_items.append(it)
         else:
             cached_items.append((it, entry))
-    if len(fresh_items) > MAX_FRESH_ITEMS:
-        fresh_items = fresh_items[:MAX_FRESH_ITEMS]   # §CLAUDE.md 규칙: 자른 건 조용히 안 버림
+    if MAX_FRESH_ITEMS > 0 and len(fresh_items) > MAX_FRESH_ITEMS:
+        # Explicit operator override only.  Accuracy-first product default is unlimited (0).
+        fresh_items = fresh_items[:MAX_FRESH_ITEMS]
 
     # 캐시 히트 → 룰로 직접 변환 (재검증 없음 — 캐시 진입 시점에 이미 validate()를
     # 통과했거나 사람이 교정한 값이다. role="none"도 반복 Qwen 호출 방지를 위해 보존하며

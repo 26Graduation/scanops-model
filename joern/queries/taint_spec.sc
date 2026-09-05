@@ -207,13 +207,36 @@ def readLines(p: String): List[String] =
   // 파라미터를 attacker input으로 보니 HttpServletResponse까지 source가 되어 sink receiver
   // 쪽 가짜 경로가 실제 cross-file 경로를 덮는 문제가 있어 추가했다. 기존 params/r2/r2chain
   // 동작은 그대로 유지한다.
+  val allExplicitParams = cpg.method.parameter.nameNot("self", "this", "cls").l
+  def isDataCarrierType(t: String): Boolean =
+    t.matches("(?i).*(String|CharSequence|byte\\[\\]|char\\[\\]|Path|File|URI|URL|InputStream|Reader|Map|List|Collection|Object).*")
+  def isFrameworkContextType(t: String): Boolean =
+    t.matches("(?i).*(HttpServletResponse|ServletResponse|HttpServletRequest|ServletRequest|ApplicationContext|SecurityContext|Logger).*")
+  def isPublicDataParam(p: io.shiftleft.codepropertygraph.generated.nodes.MethodParameterIn): Boolean = {
+    // Joern's Java frontend stores visibility in MODIFIER.modifierType ("PUBLIC");
+    // MODIFIER.code is the sentinel "<empty>" and must not be used here.
+    val publicMethod = try p.method.modifier.modifierType.l.exists(_.toString.equalsIgnoreCase("PUBLIC"))
+                       catch { case _: Throwable => false }
+    val t = try p.typeFullName catch { case _: Throwable => "" }
+    publicMethod && isDataCarrierType(t) && !isFrameworkContextType(t)
+  }
   val paramSources =
     if (srcMode == "calls") Nil
-    else cpg.method.parameter.nameNot("self", "this", "cls").l
+    else if (srcMode == "java") allExplicitParams.filter(isPublicDataParam)
+    else allExplicitParams
   val callSources = srcRules.flatMap { s =>
     try { if (s.field == "full") cpg.call.methodFullName(s.re).l else cpg.call.name(s.re).l }
     catch { case _: Throwable => Nil }
   }.distinct
+  // Java frontends do not connect constructor/setter parameter writes to later reads of
+  // the same instance field.  Treat data-carrying `this.field` reads as trust-boundary
+  // continuations; sink reachability still has to hold, so the field read alone is not a finding.
+  val javaStateSources =
+    if (srcMode != "java") Nil
+    else try cpg.call.name("<operator>.fieldAccess").l.filter { c =>
+      val t = try c.typeFullName catch { case _: Throwable => "" }
+      c.code.trim.startsWith("this.") && isDataCarrierType(t) && !isFrameworkContextType(t)
+    } catch { case _: Throwable => Nil }
 
   /* srcMode="r2": 파라미터에 뿌리내린 fieldAccess 를 source 에 더한다.
    * 뿌리 = 노드 code 의 맨 앞 식별자. `req.query.q` -> `req`.
@@ -236,7 +259,7 @@ def readLines(p: String): List[String] =
       }
     } catch { case _: Throwable => Nil }
 
-  val sources = paramSources ++ callSources ++ faSources
+  val sources = paramSources ++ callSources ++ faSources ++ javaStateSources
 
   // 2026-09-04 dangerous-call-only 확장(§1-11) 전용 헬퍼: exists/arg_literal 은 flow path 가
   // 없어 콜 노드 하나만 보고 sanitizer 근접 여부를 판단한다. 기존 reachability 분기(아래 else)의
@@ -400,6 +423,7 @@ def readLines(p: String): List[String] =
   sb.append(s"""{"arm":"${esc(arm)}","n_rules":${rules.size},"n_source_rules":${srcRules.size},""")
   sb.append(s""""n_prop_rules":${propFlows.size},"n_sanitizer_patterns":${sanAll.size},""")
   sb.append(s""""n_call_sources":${callSources.size},"n_param_sources":${paramSources.size},""")
+  sb.append(s""""n_java_state_sources":${javaStateSources.size},""")
   sb.append(s""""src_mode":"${esc(srcMode)}","n_fieldaccess_sources":${faSources.size},""")
   sb.append("\"parsed\":[")
   sb.append(methodFiles.toList.sorted.map(f => "\"" + esc(f) + "\"").mkString(","))

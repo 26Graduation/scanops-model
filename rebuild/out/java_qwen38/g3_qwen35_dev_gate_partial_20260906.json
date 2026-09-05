@@ -1,0 +1,232 @@
+{
+  "summary": {
+    "schema": "scanops.cwe-bench-java.g3-llm.v1",
+    "model": "Qwen3.5-9B-Q4_K_M + adapter_v1_fix",
+    "external_transfer": false,
+    "prompt_sha256_16": "d91fa59450be5f4f",
+    "n_files": 15,
+    "n_expected_files": 266,
+    "complete": false,
+    "n_truth_files": 6,
+    "binary": {
+      "tp": 4,
+      "fp": 8,
+      "fn": 2,
+      "tn": 1,
+      "precision": 0.3333333333333333,
+      "recall": 0.6666666666666666,
+      "f1": 0.4444444444444444
+    },
+    "exact_cwe": {
+      "tp": 3,
+      "fp": 2,
+      "fn": 3,
+      "tn": 7,
+      "precision": 0.6,
+      "recall": 0.5,
+      "f1": 0.5454545454545454
+    },
+    "parse_failures": 0,
+    "elapsed_this_run": 0.0,
+    "checkpoint": "rebuild/out/java_qwen38/g3_qwen35_v2_resumable_20260906.jsonl",
+    "label_caveat": "non-fix main files are treated as negative and may contain unrelated unlabeled flaws"
+  },
+  "rows": [
+    {
+      "project_slug": "perwendel__spark_CVE-2018-9159_2.7.1",
+      "file": "src/main/java/spark/Access.java",
+      "truth": false,
+      "expected_cwe": "CWE-22",
+      "label": "vuln",
+      "cwe": "CWE-20",
+      "chunks": 1,
+      "raws": [
+        "<think>\n\n</think>\n\nVULNERABILITY: CWE-20 (Improper Input Validation)\nSEVERITY: MEDIUM\nCVSS: 5.3\nREASON: The manipulation leads to improper input validation."
+      ],
+      "elapsed": 18.043
+    },
+    {
+      "project_slug": "perwendel__spark_CVE-2018-9159_2.7.1",
+      "file": "src/main/java/spark/CustomErrorPages.java",
+      "truth": false,
+      "expected_cwe": "CWE-22",
+      "label": "vuln",
+      "cwe": "CWE-79",
+      "chunks": 1,
+      "raws": [
+        "<think>\n\n</think>\n\nVULNERABILITY: CWE-79 (Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting'))\nSEVERITY: MEDIUM\nCVSS: 6.1\nREASON: The manipulation leads to cross site scripting."
+      ],
+      "elapsed": 21.766
+    },
+    {
+      "project_slug": "perwendel__spark_CVE-2018-9159_2.7.1",
+      "file": "src/main/java/spark/ExceptionHandler.java",
+      "truth": false,
+      "expected_cwe": "CWE-22",
+      "label": "vuln",
+      "cwe": "CWE-200",
+      "chunks": 1,
+      "raws": [
+        "<think>\n\n</think>\n\nVULNERABILITY: CWE-200 (Exposure of Sensitive Information to an Unauthorized Actor)\nSEVERITY: MEDIUM\nCVSS: 5.3\nREASON: The product exposes sensitive information to an actor that is not explicitly authorized to have access to that information."
+      ],
+      "elapsed": 17.895
+    },
+    {
+      "project_slug": "perwendel__spark_CVE-2018-9159_2.7.1",
+      "file": "src/main/java/spark/ExceptionHandlerImpl.java",
+      "truth": false,
+      "expected_cwe": "CWE-22",
+      "label": "vuln",
+      "cwe": "CWE-22",
+      "chunks": 1,
+      "raws": [
+        "<think>\n\n</think>\n\nVULNERABILITY: CWE-22 (Improper Limitation of a Special Permission)\nSEVERITY: HIGH\nCVSS: 7.5\nREASON: The product does not properly restrict a special permission that has been assigned to an entity, such as a file or executable."
+      ],
+      "elapsed": 26.222
+    },
+    {
+      "project_slug": "perwendel__spark_CVE-2018-9159_2.7.1",
+      "file": "src/main/java/spark/Experimental.java",
+      "truth": false,
+      "expected_cwe": "CWE-22",
+      "label": "safe",
+      "cwe": "",
+      "chunks": 1,
+      "raws": [
+        "<think>\n\n</think>\n\nVULNERABILITY: NONE\nSEVERITY: NONE\nCVSS: 0.0\nREASON: NONE"
+      ],
+      "elapsed": 13.494
+    },
+    {
+      "project_slug": "perwendel__spark_CVE-2018-9159_2.7.1",
+      "file": "src/main/java/spark/ExceptionMapper.java",
+      "truth": false,
+      "expected_cwe": "CWE-22",
+      "label": "vuln",
+      "cwe": "CWE-200",
+      "chunks": 1,
+      "raws": [
+        "<think>\n\n</think>\n\nVULNERABILITY: CWE-200 (Exposure of Sensitive Information to an Unauthorized Actor)\nSEVERITY: MEDIUM\nCVSS: 5.3\nREASON: The product exposes sensitive information to an actor that is not explicitly authorized to have access to that information."
+      ],
+      "elapsed": 37.957
+    },
+    {
+      "project_slug": "perwendel__spark_CVE-2018-9159_2.7.1",
+      "file": "src/main/java/spark/Filter.java",
+      "truth": false,
+      "expected_cwe": "CWE-22",
+      "label": "vuln",
+      "cwe": "CWE-20",
+      "chunks": 1,
+      "raws": [
+        "<think>\n\n</think>\n\nVULNERABILITY: CWE-20 (Improper Input Validation)\nSEVERITY: MEDIUM\nCVSS: 5.3\nREASON: The manipulation leads to improper input validation."
+      ],
+      "elapsed": 38.734
+    },
+    {
+      "project_slug": "perwendel__spark_CVE-2018-9159_2.7.1",
+      "file": "src/main/java/spark/HaltException.java",
+      "truth": false,
+      "expected_cwe": "CWE-22",
+      "label": "vuln",
+      "cwe": "CWE-200",
+      "chunks": 1,
+      "raws": [
+        "<think>\n\n</think>\n\nVULNERABILITY: CWE-200 (Exposure of Sensitive Information to an Unauthorized Actor)\nSEVERITY: MEDIUM\nCVSS: 5.3\nREASON: The product exposes sensitive information to an actor that is not explicitly authorized to have access to that information."
+      ],
+      "elapsed": 29.818
+    },
+    {
+      "project_slug": "perwendel__spark_CVE-2018-9159_2.7.1",
+      "file": "src/main/java/spark/FilterImpl.java",
+      "truth": false,
+      "expected_cwe": "CWE-22",
+      "label": "vuln",
+      "cwe": "CWE-22",
+      "chunks": 1,
+      "raws": [
+        "<think>\n\n</think>\n\nVULNERABILITY: CWE-22 (Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal'))\nSEVERITY: HIGH\nCVSS: 7.5\nREASON: The product uses external input to construct a pathname that is intended to identify a file or directory that is located underneath a restricted parent directory, but the product does not properly neutralize special elements within the pathname that can cause the pathname to resolve to a location that is outside of the restricted directory."
+      ],
+      "elapsed": 66.873
+    },
+    {
+      "project_slug": "codehaus-plexus__plexus-utils_CVE-2017-1000487_3.0.15",
+      "file": "src/main/java/org/codehaus/plexus/util/cli/shell/BourneShell.java",
+      "truth": true,
+      "expected_cwe": "CWE-78",
+      "label": "safe",
+      "cwe": "",
+      "chunks": 1,
+      "raws": [
+        "<think>\n\n</think>\n\nVULNERABILITY: NONE\nSEVERITY: NONE\nCVSS: 0.0\nREASON: NONE"
+      ],
+      "elapsed": 35.25
+    },
+    {
+      "project_slug": "codehaus-plexus__plexus-utils_CVE-2017-1000487_3.0.15",
+      "file": "src/main/java/org/codehaus/plexus/util/cli/shell/Shell.java",
+      "truth": true,
+      "expected_cwe": "CWE-78",
+      "label": "vuln",
+      "cwe": "CWE-78",
+      "chunks": 1,
+      "raws": [
+        "<think>\n\n</think>\n\nVULNERABILITY: CWE-78 (Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection'))\nSEVERITY: CRITICAL\nCVSS: 9.8\nREASON: The product constructs all or part of an OS command using externally-influenced input from an upstream component, but it does not neutralize or incorrectly neutralizes special elements that could modify the intended OS command when it is interpreted by a downstream component."
+      ],
+      "elapsed": 209.19
+    },
+    {
+      "project_slug": "codehaus-plexus__plexus-utils_CVE-2017-1000487_3.0.15",
+      "file": "src/main/java/org/codehaus/plexus/util/cli/Commandline.java",
+      "truth": true,
+      "expected_cwe": "CWE-78",
+      "label": "vuln",
+      "cwe": "CWE-78",
+      "chunks": 2,
+      "raws": [
+        "<think>\n\n</think>\n\nVULNERABILITY: CWE-78 (Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection'))\nSEVERITY: HIGH\nCVSS: 8.8\nREASON: The product constructs all or part of an OS command using externally-influenced input from an upstream component, but it does not neutralize or incorrectly neutralizes special elements that could modify the intended OS command when it is interpreted by a downstream component.",
+        "<think>\n\n</think>\n\nVULNERABILITY: CWE-78 (Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection'))\nSEVERITY: CRITICAL\nCVSS: 9.8\nREASON: The product constructs all or part of an OS command using externally-influenced input from an upstream component, but it does not neutralize or incorrectly neutralizes special elements that could modify the intended OS command when it is sent to a downstream component."
+      ],
+      "elapsed": 342.938
+    },
+    {
+      "project_slug": "jmrozanec__cron-utils_CVE-2021-41269_9.1.5",
+      "file": "src/main/java/com/cronutils/parser/CronParser.java",
+      "truth": true,
+      "expected_cwe": "CWE-94",
+      "label": "vuln",
+      "cwe": "CWE-1321",
+      "chunks": 1,
+      "raws": [
+        "<think>\n\n</think>\n\nVULNERABILITY: CWE-1321 (Improperly Controlled Modification of Object Prototype Attributes ('Prototype Pollution'))\nSEVERITY: CRITICAL\nCVSS: 9.8\nREASON: The product receives input from an upstream component that specifies attributes that are to be initialized or updated in an object prototype, but it does not properly control modifications of those attributes."
+      ],
+      "elapsed": 152.9
+    },
+    {
+      "project_slug": "jmrozanec__cron-utils_CVE-2021-41269_9.1.5",
+      "file": "src/main/java/com/cronutils/validation/CronValidator.java",
+      "truth": true,
+      "expected_cwe": "CWE-94",
+      "label": "safe",
+      "cwe": "",
+      "chunks": 1,
+      "raws": [
+        "<think>\n\n</think>\n\nVULNERABILITY: NONE\nSEVERITY: NONE\nCVSS: 0.0\nREASON: NONE"
+      ],
+      "elapsed": 67.399
+    },
+    {
+      "project_slug": "perwendel__spark_CVE-2018-9159_2.7.1",
+      "file": "src/main/java/spark/resource/ClassPathResource.java",
+      "truth": true,
+      "expected_cwe": "CWE-22",
+      "label": "vuln",
+      "cwe": "CWE-22",
+      "chunks": 1,
+      "raws": [
+        "<think>\n\n</think>\n\nVULNERABILITY: CWE-22 (Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal'))\nSEVERITY: HIGH\nCVSS: 7.5\nREASON: The product uses external input to construct a pathname that is intended to identify a file or directory that is located underneath a restricted parent directory, but the product does not properly neutralize special elements within the pathname that can cause the pathname to resolve to a location that is outside of the restricted directory."
+      ],
+      "elapsed": 198.369
+    }
+  ]
+}

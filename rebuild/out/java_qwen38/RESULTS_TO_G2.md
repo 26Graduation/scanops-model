@@ -1,20 +1,24 @@
-# Java CPG + Qwen3.8-Max results through G2
+# Java CPG + Qwen3.8-Max results through G3 development gate
 
-Date: 2026-09-05
+Date: 2026-09-06
 
 ## G0 — product wiring: pass
 
-- Python unit tests: 9/9 pass.
+- Python unit tests: 10/10 pass.
 - Java routes to `JAVASRC` and the prompt label is `Java`; JS/TS stays `JSSRC`.
 - CPG rule generation uses DashScope `qwen3.8-max` only. The returned API model field was
   `qwen3.8-max`; the separate Qwen3.5-9B classifier remains unchanged.
 - Java and JS caches are namespaced. Valid `none` results are cached as well as active rules.
-- Java uses `srcMode=calls`; this prevents `HttpServletResponse` and arbitrary internal method
-  parameters from becoming attacker sources. Existing JS/Juliet `params` behavior is unchanged.
+- Java uses `srcMode=java`: explicit source API calls, public data-carrier parameters, and
+  data-carrier `this.field` reads, while
+  servlet response/request and framework context objects are excluded. This prevents
+  `HttpServletResponse` receiver false paths without losing library public-API trust boundaries.
+  Existing JS/Juliet `params` behavior is unchanged.
 - The Java product fixed spec is curated separately from Juliet. Context-free Juliet-only
   `println -> CWE-319/CWE-526` rules were removed after they caused two reproducible safe-file
   false positives.
-- Worker smoke v2: all seven checks pass, including a cross-file source-to-sink path and an
+- Worker smoke v6: all ten checks pass, including a cross-file source-to-sink path, public API
+  input, constructor-to-instance-state continuation, framework-context exclusion, and an
   `HtmlUtils.htmlEscape` sanitizer hit.
 - Product orchestrator v3: one cross-file vulnerable finding, zero safe-file findings, sink line
   and path present, critic off.
@@ -59,22 +63,24 @@ python3 benchmarks/golden-sets/java/eval_rulegen.py \
 
 ## G2 — Juliet query regression: pass
 
-All 38 CWE runs exited 0. The line-level totals exactly match the pre-change `out_v4` baseline:
+All 38 CWE runs with the product `srcMode=java` exited 0. Compared with the prior `params`
+baseline, raw recall decreases only 0.9 percentage points (within the preregistered 2-point
+limit), while false positives fall substantially:
 
 | unit | TP | FP | FN | precision | recall | F1 |
 |---|---:|---:|---:|---:|---:|---:|
-| raw line | 9,261 | 12,217 | 1,086 | 0.431185 | 0.895042 | 0.581995 |
-| method/CWE instance, raw | 9,258 | 10,810 | 906 | 0.461331 | 0.910862 | 0.612464 |
-| method/CWE instance, sanitized excluded | 9,206 | 10,220 | 958 | 0.473901 | 0.905746 | 0.622237 |
+| raw line | 9,168 | 8,636 | 1,179 | 0.514940 | 0.886054 | 0.651345 |
+| method/CWE instance, raw | 9,165 | 7,289 | 999 | 0.557007 | 0.901712 | 0.688632 |
+| method/CWE instance, sanitized excluded | 9,115 | 5,451 | 1,049 | 0.625772 | 0.896793 | 0.737161 |
 
-The sanitizer filter removes 590 FP but also 52 TP at instance level. It remains enabled in the
-product because it improves F1, but the lost-TP cases must be audited before any final claim.
+The sanitizer filter removes 1,838 FP and 50 TP at instance level. It remains enabled because it
+improves F1 by 4.9 points; the final held-out still decides whether this transfers.
 
 Reproduce the 38-CWE run without overwriting prior output:
 
 ```bash
 JULIET_OUT="$PWD/benchmarks/juliet-java/out_g2_reproduction" \
-JULIET_SRC_MODE=params bash benchmarks/juliet-java/run_all_cwes.sh
+JULIET_SRC_MODE=java bash benchmarks/juliet-java/run_all_cwes.sh
 python3 benchmarks/juliet-java/grade_all.py out_g2_reproduction
 python3 benchmarks/juliet-java/grade_instances.py \
   benchmarks/juliet-java/out_g2_reproduction \
@@ -83,3 +89,55 @@ python3 benchmarks/juliet-java/grade_instances.py \
 
 The raw 38-CWE output is intentionally local (about 209 MB); the compact instance reports and
 timing table are retained separately.
+
+## G3 — three real Java development repositories: CPG gate pass, legacy LLM gate fail
+
+The repository URLs were frozen before runs and are excluded from the 12-project held-out. The
+fixed Java CPG detects at least one manually vetted fix method, with the expected CWE, in all three
+projects: Spark CWE-22, Plexus-utils CWE-78, and Cron-utils CWE-94. Project recall is 3/3. At the
+strict method unit, it has TP=5/FP=4/FN=39 when only the project's target CWE is scored
+(precision 0.556, recall 0.114). The low method recall is expected in part because `fix_info.csv`
+contains supporting and test methods, while the CPG reports dangerous sink locations; the alert
+burden (78 active findings, 65 for other CWEs) is retained rather than relabelled as truth.
+
+Two general Java gaps were fixed from development evidence, without repository/function names:
+
+- data stored from a public API input and read later as `this.field` continues the trust boundary;
+- classpath resource access and validation-template construction are standard sinks, and exception
+  messages may carry attacker-controlled parser text.
+
+The deployed Qwen3.5-9B QLoRA classifier was separately tested locally on all six main-source fix
+files plus the first nine negative main-source files. This fail-fast sample is deliberately marked
+incomplete (15/266): binary F1 0.444 and exact-CWE F1 0.545. It produced 8/9 negative alerts and
+missed 2/6 positive files, so the historical CVEfixes F1=0.805 does not transfer to this development
+sample and must not be used as the final Java claim.
+
+Reproduce without any external model call:
+
+```bash
+python3 benchmarks/cwe-bench-java/collect_g3_candidates.py \
+  --out rebuild/out/java_qwen38/my_g3_candidates.json
+python3 benchmarks/cwe-bench-java/run_g3_local.py \
+  --out rebuild/out/java_qwen38/my_g3_cpg.json
+
+./llama.cpp/build/bin/llama-server \
+  -m models/Qwen3.5-9B-Q4_K_M.gguf --lora models/adapter_v1_fix.gguf \
+  -c 32768 --parallel 2 --host 127.0.0.1 --port 8080 -ngl 99
+python3 benchmarks/cwe-bench-java/run_g3_llm.py \
+  --out rebuild/out/java_qwen38/my_g3_llm.json --workers 2
+```
+
+The LLM runner writes an append-only `.jsonl` checkpoint and resumes completed files. Four local
+slots were rejected after a measured Metal out-of-memory failure; two slots are the verified
+configuration on this host.
+
+## Remaining gates / no-push status
+
+- A larger Qwen3.8-Max rule-generation batch must re-pass G1 before changing the production batch
+  size. The attempted call was stopped before transmission because explicit authorization is
+  required to send Java API signatures/snippets to DashScope.
+- G3 full dynamic Qwen rule generation and G4 Claude/GPT comparison require the same external-code
+  transfer authorization. Anthropic and DashScope credentials exist locally; no OpenAI API key is
+  configured, so GPT is currently `BLOCKED_NO_KEY`.
+- No remote push is allowed until the frozen held-out G4 F1 and recall are each within 5 percentage
+  points of the best available GPT/Claude result.

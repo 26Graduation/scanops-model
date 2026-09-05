@@ -8,15 +8,40 @@ from scanops.core import graph_spec_prod as g
 
 
 class GraphSpecJavaTests(unittest.TestCase):
+    def test_fresh_candidate_default_is_unlimited(self):
+        self.assertEqual(0, g.MAX_FRESH_ITEMS)
+
+    def test_partial_rulegen_response_retries_only_missing_ids(self):
+        items = [
+            {"id": 0, "kind": "call", "name": "first", "fulls": [], "n": 1,
+             "snippets": []},
+            {"id": 1, "kind": "call", "name": "second", "fulls": [], "n": 1,
+             "snippets": []},
+        ]
+        responses = [
+            '[{"id":0,"role":"none","match":"name","pattern":"^first$"}]',
+            '[{"id":1,"role":"none","match":"name","pattern":"^second$"}]',
+        ]
+        with patch.object(g, "RULEGEN_BATCH", 20), \
+             patch.object(g, "LLM_MAX_WORKERS", 1), \
+             patch.object(g, "call_rulegen", side_effect=responses) as call:
+            result = g.label_items(items, "Java")
+        self.assertEqual({0, 1}, {x["id"] for x in result})
+        self.assertEqual(2, call.call_count)
+        self.assertIn('"id": 1', call.call_args.args[1])
+        self.assertNotIn('"id": 0', call.call_args.args[1])
+
     def test_language_context_is_not_jsts_for_java(self):
         self.assertEqual(("JAVASRC", "Java"), g.language_context("Java Spring Boot"))
         self.assertEqual(("JSSRC", "TypeScript/JavaScript"), g.language_context("Node.js / Express"))
-        self.assertEqual("calls", g.source_mode("JAVASRC"))
+        self.assertEqual("java", g.source_mode("JAVASRC"))
         self.assertEqual("params", g.source_mode("JSSRC"))
 
     def test_java_uses_java_base_spec_not_jsts_hand_rules(self):
         spec = g.base_spec_text("JAVASRC")
         self.assertIn("ProcessBuilder\\.<init>", spec)
+        self.assertIn("ClassLoader|Class", spec)
+        self.assertIn("buildConstraintViolationWithTemplate", spec)
         self.assertIn("\tCWE-327\targ_literal\t^getInstance$\t(?i)DES|DESede", spec)
         self.assertIn("sink\txss\tCWE-79\tcode", spec)
         self.assertNotIn("sink\tsensitive\tCWE-319\tname\tprintln", spec)
