@@ -197,7 +197,7 @@ def readLines(p: String): List[String] =
   case class Step(file: String, line: Int, code: String, role: String)
   case class SanHit(line: Int, code: String, role: String, pattern: String)
   case class Finding(file: String, cat: String, cwe: String, src: String, snk: String,
-                     line: Int, srcFile: String, srcLine: Int,
+                     line: Int, srcFile: String, srcLine: Int, srcKind: String,
                      path: List[Step], sanitized: Boolean, sanHits: List[SanHit],
                      rulePat: String, ruleField: String)
   var findings = List.empty[Finding]
@@ -287,7 +287,7 @@ def readLines(p: String): List[String] =
             findings ::= Finding(
               fileName, r.cat, r.cwe,
               "N/A (call-site-only)", c.code.take(160), lineOf(c),
-              fileName, lineOf(c),
+              fileName, lineOf(c), "call_site_only",
               List(Step(fileName, lineOf(c), c.code.take(200), "sink")),
               hits.nonEmpty, hits.take(6), r.sink, r.field)
           }
@@ -309,7 +309,7 @@ def readLines(p: String): List[String] =
                 findings ::= Finding(
                   fileName, r.cat, r.cwe,
                   "N/A (arg-literal-only)", c.code.take(160), lineOf(c),
-                  fileName, lineOf(c),
+                  fileName, lineOf(c), "argument_literal",
                   List(Step(fileName, lineOf(c), c.code.take(200), "sink")),
                   hits.nonEmpty, hits.take(6), r.sink, r.field)
               }
@@ -337,7 +337,7 @@ def readLines(p: String): List[String] =
                 findings ::= Finding(
                   fileName, r.cat, r.cwe,
                   "N/A (arg-count-only)", c.code.take(160), lineOf(c),
-                  fileName, lineOf(c),
+                  fileName, lineOf(c), "argument_count",
                   List(Step(fileName, lineOf(c), c.code.take(200), "sink")),
                   hits.nonEmpty, hits.take(6), r.sink, r.field)
               }
@@ -394,10 +394,16 @@ def readLines(p: String): List[String] =
                      .map(c => SanHit(lineOf(e), c.take(200), role, p.pattern))
               }
             }.toList
+            val srcKind =
+              if (paramSources.exists(_.id == elems.head.id)) "public_parameter"
+              else if (callSources.exists(_.id == elems.head.id)) "explicit_source_api"
+              else if (javaStateSources.exists(_.id == elems.head.id)) "instance_state"
+              else if (faSources.exists(_.id == elems.head.id)) "parameter_field_access"
+              else "unknown"
             findings ::= Finding(
               fileName, r.cat, r.cwe,
               elems.head.code.take(160), sinkDisplayCode.take(160), lineOf(lastNode),
-              fileOf(elems.head), lineOf(elems.head),
+              fileOf(elems.head), lineOf(elems.head), srcKind,
               steps, hits.nonEmpty, hits.take(6), r.sink, r.field)
           }
         }
@@ -442,6 +448,7 @@ def readLines(p: String): List[String] =
     s"""{"file":"${esc(f.file)}","category":"${esc(f.cat)}","cwe":"${esc(f.cwe)}",""" +
     s""""source":"${esc(f.src)}","sink":"${esc(f.snk)}","line":${f.line},""" +
     s""""source_file":"${esc(f.srcFile)}","source_line":${f.srcLine},""" +
+    s""""source_kind":"${esc(f.srcKind)}",""" +
     s""""rule_pattern":"${esc(f.rulePat)}","rule_field":"${esc(f.ruleField)}",""" +
     s""""sanitized":${f.sanitized},"sanitizer_hits":[${hitsJson}],""" +
     s""""path":[${pathJson}]}"""

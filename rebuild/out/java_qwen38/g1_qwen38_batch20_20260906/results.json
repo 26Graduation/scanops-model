@@ -1,0 +1,966 @@
+{
+  "run": {
+    "timestamp_utc": "2026-09-06T10:14:36.066157+00:00",
+    "model": "qwen3.8-max",
+    "temperature": 0.0,
+    "golden_view": "v1 + v2 overrides",
+    "item_count": 41,
+    "batch_size": 20,
+    "workers": 2,
+    "system_prompt_sha256": "5a0de790a39f06355dd11eb80f596b7540b481d5dfefe97061da9dfc787b038f",
+    "base_sha256": "26d63d468086063814b16d1f59b076854c7a8aa53ab84a2838b1a964adda6bd8",
+    "overrides_sha256": "80adfbd4623cb55da9d9ee828b24dab090843e1a8c0112c99b90e972d8d6195c",
+    "usage": {
+      "calls": 5,
+      "retries": 2,
+      "hard_failures": 0,
+      "prompt_tokens": 7255,
+      "completion_tokens": 36683,
+      "total_tokens": 43938,
+      "wall_seconds": 1613.36
+    }
+  },
+  "metrics": {
+    "role_macro_f1": 1.0,
+    "sink_role_recall": 1.0,
+    "sink_exact_recall": 1.0,
+    "missing_or_invalid": 0,
+    "high_impact_source_sink_reversals": [],
+    "prediction_counts": {
+      "source": 13,
+      "none": 17,
+      "sink": 10,
+      "sanitizer": 1
+    },
+    "per_role": {
+      "source": {
+        "tp": 13,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "sink": {
+        "tp": 10,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "sanitizer": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "none": {
+        "tp": 17,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      }
+    },
+    "gate_pass": true
+  },
+  "rows": [
+    {
+      "id": 0,
+      "api": "getParameter",
+      "expected_role": "source",
+      "predicted_role": "source",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 0,
+        "role": "source",
+        "match": "full",
+        "pattern": "^javax\\.servlet\\.http\\.HttpServletRequest\\.getParameter\\(.*\\)$",
+        "applies_to": [],
+        "propagation": [],
+        "confidence": "high",
+        "why": "HTTP request parameter value is attacker-controlled."
+      }
+    },
+    {
+      "id": 1,
+      "api": "getParameterValues",
+      "expected_role": "source",
+      "predicted_role": "source",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 1,
+        "role": "source",
+        "match": "full",
+        "pattern": "^javax\\.servlet\\.http\\.HttpServletRequest\\.getParameterValues\\(.*\\)$",
+        "applies_to": [],
+        "propagation": [],
+        "confidence": "high",
+        "why": "HTTP request parameter values are attacker-controlled."
+      }
+    },
+    {
+      "id": 2,
+      "api": "getParameterNames",
+      "expected_role": "source",
+      "predicted_role": "source",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 2,
+        "role": "source",
+        "match": "full",
+        "pattern": "^javax\\.servlet\\.http\\.HttpServletRequest\\.getParameterNames\\(.*\\)$",
+        "applies_to": [],
+        "propagation": [],
+        "confidence": "med",
+        "why": "HTTP request parameter names can be attacker-controlled."
+      }
+    },
+    {
+      "id": 3,
+      "api": "getParameterMap",
+      "expected_role": "source",
+      "predicted_role": "source",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 3,
+        "role": "source",
+        "match": "full",
+        "pattern": "^javax\\.servlet\\.http\\.HttpServletRequest\\.getParameterMap\\(.*\\)$",
+        "applies_to": [],
+        "propagation": [],
+        "confidence": "high",
+        "why": "HTTP request parameter map contains attacker-controlled data."
+      }
+    },
+    {
+      "id": 4,
+      "api": "getHeader",
+      "expected_role": "source",
+      "predicted_role": "source",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 4,
+        "role": "source",
+        "match": "full",
+        "pattern": "^javax\\.servlet\\.http\\.HttpServletRequest\\.getHeader\\(.*\\)$",
+        "applies_to": [],
+        "propagation": [],
+        "confidence": "high",
+        "why": "HTTP request header value is attacker-controlled."
+      }
+    },
+    {
+      "id": 5,
+      "api": "getHeaders",
+      "expected_role": "source",
+      "predicted_role": "source",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 5,
+        "role": "source",
+        "match": "full",
+        "pattern": "^javax\\.servlet\\.http\\.HttpServletRequest\\.getHeaders\\(.*\\)$",
+        "applies_to": [],
+        "propagation": [],
+        "confidence": "high",
+        "why": "HTTP request header values are attacker-controlled."
+      }
+    },
+    {
+      "id": 6,
+      "api": "getHeaderNames",
+      "expected_role": "source",
+      "predicted_role": "source",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 6,
+        "role": "source",
+        "match": "full",
+        "pattern": "^javax\\.servlet\\.http\\.HttpServletRequest\\.getHeaderNames\\(.*\\)$",
+        "applies_to": [],
+        "propagation": [],
+        "confidence": "med",
+        "why": "HTTP request header names can be attacker-controlled."
+      }
+    },
+    {
+      "id": 7,
+      "api": "getCookies",
+      "expected_role": "source",
+      "predicted_role": "source",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 7,
+        "role": "source",
+        "match": "full",
+        "pattern": "^javax\\.servlet\\.http\\.HttpServletRequest\\.getCookies\\(.*\\)$",
+        "applies_to": [],
+        "propagation": [],
+        "confidence": "high",
+        "why": "HTTP cookies are client-controlled request data."
+      }
+    },
+    {
+      "id": 8,
+      "api": "getQueryString",
+      "expected_role": "source",
+      "predicted_role": "source",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 8,
+        "role": "source",
+        "match": "full",
+        "pattern": "^javax\\.servlet\\.http\\.HttpServletRequest\\.getQueryString\\(.*\\)$",
+        "applies_to": [],
+        "propagation": [],
+        "confidence": "high",
+        "why": "Query string is direct attacker-controlled request data."
+      }
+    },
+    {
+      "id": 9,
+      "api": "getRequestURL",
+      "expected_role": "source",
+      "predicted_role": "source",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 9,
+        "role": "source",
+        "match": "full",
+        "pattern": "^javax\\.servlet\\.http\\.HttpServletRequest\\.getRequestURL\\(.*\\)$",
+        "applies_to": [],
+        "propagation": [],
+        "confidence": "med",
+        "why": "Request URL can include attacker-controlled path/host."
+      }
+    },
+    {
+      "id": 10,
+      "api": "getRemoteUser",
+      "expected_role": "source",
+      "predicted_role": "source",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 10,
+        "role": "source",
+        "match": "full",
+        "pattern": "^javax\\.servlet\\.http\\.HttpServletRequest\\.getRemoteUser\\(.*\\)$",
+        "applies_to": [],
+        "propagation": [],
+        "confidence": "med",
+        "why": "Authenticated user name may be attacker-controlled."
+      }
+    },
+    {
+      "id": 11,
+      "api": "getAuthType",
+      "expected_role": "none",
+      "predicted_role": "none",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 11,
+        "role": "none",
+        "match": "full",
+        "pattern": "^javax\\.servlet\\.http\\.HttpServletRequest\\.getAuthType\\(.*\\)$",
+        "applies_to": [],
+        "propagation": [],
+        "confidence": "high",
+        "why": "Authentication type is container metadata, not user content."
+      }
+    },
+    {
+      "id": 12,
+      "api": "getScheme",
+      "expected_role": "none",
+      "predicted_role": "none",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 12,
+        "role": "none",
+        "match": "full",
+        "pattern": "^javax\\.servlet\\.http\\.HttpServletRequest\\.getScheme\\(.*\\)$",
+        "applies_to": [],
+        "propagation": [],
+        "confidence": "high",
+        "why": "Scheme is connection metadata, not attacker-controlled input."
+      }
+    },
+    {
+      "id": 13,
+      "api": "getProtocol",
+      "expected_role": "none",
+      "predicted_role": "none",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 13,
+        "role": "none",
+        "match": "full",
+        "pattern": "^javax\\.servlet\\.http\\.HttpServletRequest\\.getProtocol\\(.*\\)$",
+        "applies_to": [],
+        "propagation": [],
+        "confidence": "high",
+        "why": "Protocol is connection metadata, not attacker-controlled input."
+      }
+    },
+    {
+      "id": 14,
+      "api": "getInputStream",
+      "expected_role": "source",
+      "predicted_role": "source",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 14,
+        "role": "source",
+        "match": "full",
+        "pattern": "^javax\\.servlet\\.http\\.HttpServletRequest\\.getInputStream\\(.*\\)$",
+        "applies_to": [],
+        "propagation": [],
+        "confidence": "high",
+        "why": "Request body input stream is attacker-controlled."
+      }
+    },
+    {
+      "id": 15,
+      "api": "getInitParameter",
+      "expected_role": "none",
+      "predicted_role": "none",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 15,
+        "role": "none",
+        "match": "full",
+        "pattern": "^(?:javax\\.servlet\\.ServletConfig|javax\\.servlet\\.ServletContext)\\.getInitParameter\\(.*\\)$",
+        "applies_to": [],
+        "propagation": [],
+        "confidence": "high",
+        "why": "Init parameters are deployment configuration, not attacker-controlled."
+      }
+    },
+    {
+      "id": 16,
+      "api": "getInitParameterNames",
+      "expected_role": "none",
+      "predicted_role": "none",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 16,
+        "role": "none",
+        "match": "full",
+        "pattern": "^(?:javax\\.servlet\\.ServletConfig|javax\\.servlet\\.ServletContext)\\.getInitParameterNames\\(.*\\)$",
+        "applies_to": [],
+        "propagation": [],
+        "confidence": "high",
+        "why": "Init parameter names are deployment configuration."
+      }
+    },
+    {
+      "id": 17,
+      "api": "MultipartRequest.getParameter",
+      "expected_role": "source",
+      "predicted_role": "source",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 17,
+        "role": "source",
+        "match": "full",
+        "pattern": "^com\\.oreilly\\.servlet\\.MultipartRequest\\.getParameter\\(.*\\)$",
+        "applies_to": [],
+        "propagation": [],
+        "confidence": "high",
+        "why": "Multipart request parameter is attacker-controlled upload form input."
+      }
+    },
+    {
+      "id": 18,
+      "api": "println",
+      "expected_role": "sink",
+      "predicted_role": "sink",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 18,
+        "role": "sink",
+        "cat": "xss",
+        "cwe": "CWE-79",
+        "match": "full",
+        "pattern": "^java\\.io\\.PrintWriter\\.println\\(.*\\)$",
+        "applies_to": [
+          "xss"
+        ],
+        "propagation": [],
+        "confidence": "low",
+        "why": "PrintWriter output can reflect tainted data in HTTP response."
+      }
+    },
+    {
+      "id": 19,
+      "api": "prepareStatement",
+      "expected_role": "sink",
+      "predicted_role": "sink",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 19,
+        "role": "sink",
+        "cat": "sqli",
+        "cwe": "CWE-89",
+        "match": "full",
+        "pattern": "^java\\.sql\\.Connection\\.prepareStatement\\(.*\\)$",
+        "applies_to": [
+          "sqli"
+        ],
+        "propagation": [],
+        "confidence": "med",
+        "why": "SQL text passed to prepareStatement can be attacker-controlled."
+      }
+    },
+    {
+      "id": 20,
+      "api": "execute",
+      "expected_role": "sink",
+      "predicted_role": "sink",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 20,
+        "role": "sink",
+        "cat": "sqli",
+        "cwe": "CWE-89",
+        "match": "full",
+        "pattern": "^java\\.sql\\.Statement\\.execute\\b.*$",
+        "applies_to": [
+          "sqli"
+        ],
+        "propagation": [],
+        "confidence": "high",
+        "why": "Executes SQL; tainted SQL string enables injection."
+      }
+    },
+    {
+      "id": 21,
+      "api": "executeUpdate",
+      "expected_role": "sink",
+      "predicted_role": "sink",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 21,
+        "role": "sink",
+        "cat": "sqli",
+        "cwe": "CWE-89",
+        "match": "full",
+        "pattern": "^java\\.sql\\.Statement\\.executeUpdate\\b.*$",
+        "applies_to": [
+          "sqli"
+        ],
+        "propagation": [],
+        "confidence": "high",
+        "why": "Executes SQL update; tainted SQL string enables injection."
+      }
+    },
+    {
+      "id": 22,
+      "api": "executeQuery",
+      "expected_role": "sink",
+      "predicted_role": "sink",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 22,
+        "role": "sink",
+        "cat": "sqli",
+        "cwe": "CWE-89",
+        "match": "full",
+        "pattern": "^java\\.sql\\.Statement\\.executeQuery\\b.*$",
+        "applies_to": [
+          "sqli"
+        ],
+        "propagation": [],
+        "confidence": "high",
+        "why": "Executes SQL query; tainted SQL string enables injection."
+      }
+    },
+    {
+      "id": 23,
+      "api": "createNewFile",
+      "expected_role": "sink",
+      "predicted_role": "sink",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 23,
+        "role": "sink",
+        "cat": "pathtraver",
+        "cwe": "CWE-22",
+        "match": "full",
+        "pattern": "^java\\.io\\.File\\.createNewFile\\b.*$",
+        "applies_to": [
+          "pathtraver"
+        ],
+        "propagation": [],
+        "confidence": "med",
+        "why": "Creates file at receiver path; tainted path can traverse."
+      }
+    },
+    {
+      "id": 24,
+      "api": "FileWriter",
+      "expected_role": "sink",
+      "predicted_role": "sink",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 24,
+        "role": "sink",
+        "cat": "pathtraver",
+        "cwe": "CWE-22",
+        "match": "full",
+        "pattern": "^java\\.io\\.FileWriter(\\.<init>.*|\\(.*\\).*)$",
+        "applies_to": [
+          "pathtraver"
+        ],
+        "propagation": [],
+        "confidence": "high",
+        "why": "Opens file for writing; tainted filename can traverse paths."
+      }
+    },
+    {
+      "id": 25,
+      "api": "FileInputStream",
+      "expected_role": "sink",
+      "predicted_role": "sink",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 25,
+        "role": "sink",
+        "cat": "pathtraver",
+        "cwe": "CWE-22",
+        "match": "full",
+        "pattern": "^java\\.io\\.FileInputStream(\\.<init>.*|\\(.*\\).*)$",
+        "applies_to": [
+          "pathtraver"
+        ],
+        "propagation": [],
+        "confidence": "high",
+        "why": "Opens file for reading; tainted filename can traverse paths."
+      }
+    },
+    {
+      "id": 26,
+      "api": "sendRedirect",
+      "expected_role": "sink",
+      "predicted_role": "sink",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 26,
+        "role": "sink",
+        "cat": "redirect",
+        "cwe": "CWE-601",
+        "match": "full",
+        "pattern": "^javax\\.servlet\\.http\\.HttpServletResponse\\.sendRedirect\\b.*$",
+        "applies_to": [
+          "redirect"
+        ],
+        "propagation": [],
+        "confidence": "high",
+        "why": "Sends HTTP redirect; tainted location enables open redirect."
+      }
+    },
+    {
+      "id": 27,
+      "api": "URLEncoder.encode",
+      "expected_role": "sanitizer",
+      "predicted_role": "sanitizer",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 27,
+        "role": "sanitizer",
+        "cat": "",
+        "cwe": "",
+        "match": "full",
+        "pattern": "^java\\.net\\.URLEncoder\\.encode\\b.*$",
+        "applies_to": [
+          "redirect"
+        ],
+        "propagation": [
+          {
+            "from": 1,
+            "to": "return"
+          }
+        ],
+        "confidence": "med",
+        "why": "Percent-encodes value before redirect; can neutralize URL manipulation."
+      }
+    },
+    {
+      "id": 28,
+      "api": "URLDecoder.decode",
+      "expected_role": "none",
+      "predicted_role": "none",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 28,
+        "role": "none",
+        "cat": "",
+        "cwe": "",
+        "match": "full",
+        "pattern": "^java\\.net\\.URLDecoder\\.decode\\b.*$",
+        "applies_to": [],
+        "propagation": [],
+        "confidence": "high",
+        "why": "URL decoding transformation; no direct source/sink/sanitizer."
+      }
+    },
+    {
+      "id": 29,
+      "api": "clean",
+      "expected_role": "none",
+      "predicted_role": "none",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 29,
+        "role": "none",
+        "cat": "",
+        "cwe": "",
+        "match": "name",
+        "pattern": "^clean$",
+        "applies_to": [],
+        "propagation": [],
+        "confidence": "high",
+        "why": "Local/project-specific helper; no general framework behaviour."
+      }
+    },
+    {
+      "id": 30,
+      "api": "toString",
+      "expected_role": "none",
+      "predicted_role": "none",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 30,
+        "role": "none",
+        "cat": "",
+        "cwe": "",
+        "match": "full",
+        "pattern": "^java\\.lang\\.Object\\.toString\\b.*$",
+        "applies_to": [],
+        "propagation": [],
+        "confidence": "high",
+        "why": "Generic conversion; no security source/sink/sanitizer."
+      }
+    },
+    {
+      "id": 31,
+      "api": "toLowerCase",
+      "expected_role": "none",
+      "predicted_role": "none",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 31,
+        "role": "none",
+        "cat": "",
+        "cwe": "",
+        "match": "full",
+        "pattern": "^java\\.lang\\.String\\.toLowerCase\\b.*$",
+        "applies_to": [],
+        "propagation": [],
+        "confidence": "high",
+        "why": "Case conversion; not a security sanitizer/sink/source."
+      }
+    },
+    {
+      "id": 32,
+      "api": "nextToken",
+      "expected_role": "none",
+      "predicted_role": "none",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 32,
+        "role": "none",
+        "cat": "",
+        "cwe": "",
+        "match": "full",
+        "pattern": "^java\\.util\\.StringTokenizer\\.nextToken\\b.*$",
+        "applies_to": [],
+        "propagation": [],
+        "confidence": "high",
+        "why": "Iterator access; no direct security role."
+      }
+    },
+    {
+      "id": 33,
+      "api": "nextElement",
+      "expected_role": "none",
+      "predicted_role": "none",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 33,
+        "role": "none",
+        "cat": "",
+        "cwe": "",
+        "match": "full",
+        "pattern": "^java\\.util\\.Enumeration\\.nextElement\\b.*$",
+        "applies_to": [],
+        "propagation": [],
+        "confidence": "high",
+        "why": "Enumeration access; no direct security role."
+      }
+    },
+    {
+      "id": 34,
+      "api": "get",
+      "expected_role": "none",
+      "predicted_role": "none",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 34,
+        "role": "none",
+        "cat": "",
+        "cwe": "",
+        "match": "full",
+        "pattern": "^java\\.util\\.(List|Map)\\.get\\b.*$",
+        "applies_to": [],
+        "propagation": [],
+        "confidence": "high",
+        "why": "Generic collection accessor; no direct security role."
+      }
+    },
+    {
+      "id": 35,
+      "api": "getLast",
+      "expected_role": "none",
+      "predicted_role": "none",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 35,
+        "role": "none",
+        "cat": "",
+        "cwe": "",
+        "match": "full",
+        "pattern": "^java\\.util\\.LinkedList\\.getLast\\b.*$",
+        "applies_to": [],
+        "propagation": [],
+        "confidence": "high",
+        "why": "LinkedList accessor; no direct security role."
+      }
+    },
+    {
+      "id": 36,
+      "api": "getValue",
+      "expected_role": "none",
+      "predicted_role": "none",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 36,
+        "role": "none",
+        "cat": "",
+        "cwe": "",
+        "match": "full",
+        "pattern": "^java\\.util\\.Map\\.Entry\\.getValue\\b.*$",
+        "applies_to": [],
+        "propagation": [],
+        "confidence": "high",
+        "why": "Map entry accessor; no direct security role."
+      }
+    },
+    {
+      "id": 37,
+      "api": "getContents",
+      "expected_role": "none",
+      "predicted_role": "none",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 37,
+        "role": "none",
+        "cat": "",
+        "cwe": "",
+        "match": "name",
+        "pattern": "^getContents$",
+        "applies_to": [],
+        "propagation": [],
+        "confidence": "high",
+        "why": "Local/project-specific getter; no general framework behaviour."
+      }
+    },
+    {
+      "id": 38,
+      "api": "getData",
+      "expected_role": "none",
+      "predicted_role": "none",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 38,
+        "role": "none",
+        "cat": "",
+        "cwe": "",
+        "match": "name",
+        "pattern": "^getData$",
+        "applies_to": [],
+        "propagation": [],
+        "confidence": "high",
+        "why": "Local/project-specific getter; no general framework behaviour."
+      }
+    },
+    {
+      "id": 39,
+      "api": "setAttribute / getAttribute",
+      "expected_role": "none",
+      "predicted_role": "none",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 39,
+        "role": "none",
+        "cat": "",
+        "cwe": "",
+        "match": "full",
+        "pattern": "^javax\\.servlet\\.http\\.HttpSession\\.(setAttribute|getAttribute)\\b.*$",
+        "applies_to": [],
+        "propagation": [],
+        "confidence": "high",
+        "why": "Session attribute storage/retrieval; not direct attacker source/sink."
+      }
+    },
+    {
+      "id": 40,
+      "api": "invoke / forName / getMethods / getField / newInstance",
+      "expected_role": "sink",
+      "predicted_role": "sink",
+      "operationally_valid": true,
+      "category_ok": true,
+      "cwe_ok": true,
+      "applies_to_ok": true,
+      "prediction": {
+        "id": 40,
+        "role": "sink",
+        "cat": "reflection",
+        "cwe": "CWE-470",
+        "match": "full",
+        "pattern": "^java\\.lang\\.reflect\\.Method\\.invoke.*$|^java\\.lang\\.Class\\.forName.*$|^java\\.lang\\.Class\\.getMethods.*$|^java\\.lang\\.Class\\.getField.*$|^java\\.lang\\.Class\\.newInstance.*$|^java\\.lang\\.reflect\\.Constructor\\.newInstance.*$",
+        "applies_to": [
+          "reflection"
+        ],
+        "propagation": [],
+        "confidence": "med",
+        "why": "Reflection can load or invoke attacker-selected classes/methods."
+      }
+    }
+  ]
+}

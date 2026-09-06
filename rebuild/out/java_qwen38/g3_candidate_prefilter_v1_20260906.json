@@ -1,0 +1,38 @@
+{
+  "schema": "scanops.java-cpg.candidate-prefilter.v1",
+  "date": "2026-09-06",
+  "input": "rebuild/out/java_qwen38/g3_candidates_v1.json",
+  "policy": {
+    "frontend": "JAVASRC",
+    "drop_property_writes": true,
+    "drop_resolved_repository_local_calls": true,
+    "retain_standard_third_party_and_unresolved_calls": true
+  },
+  "projects": [
+    {
+      "project_slug": "perwendel__spark_CVE-2018-9159_2.7.1",
+      "before": 601,
+      "after": 216,
+      "removed": 385
+    },
+    {
+      "project_slug": "codehaus-plexus__plexus-utils_CVE-2017-1000487_3.0.15",
+      "before": 1056,
+      "after": 208,
+      "removed": 848
+    },
+    {
+      "project_slug": "jmrozanec__cron-utils_CVE-2021-41269_9.1.5",
+      "before": 484,
+      "after": 136,
+      "removed": 348
+    }
+  ],
+  "total": {
+    "before": 2141,
+    "after": 560,
+    "removed": 1581,
+    "reduction_fraction": 0.73844
+  },
+  "claim_scope": "Latency/cost candidate reduction only; detection impact requires a full Qwen3.8-Max rerun."
+}

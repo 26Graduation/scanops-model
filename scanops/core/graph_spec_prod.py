@@ -12,7 +12,8 @@ API 요청 하나 안에서 전부 메모리로 처리한다(레포 파일이 �
   3) 검증(§9 반과적합) + hand_rules 병합 + 캐시로 최종 override → spec.tsv 조립
   4) Joern 워커 mode=taint — 조립한 spec으로 실제 taint 쿼리, line 단위 findings
   5) evidence 검증 통과분만 오탐필터(critic, 같은 룰생성 모델) 호출
-  6) §23 PRODUCTION_failsafe: TRUE/UNCERTAIN/unjudged/evidence_mismatch 전부 살리고 FALSE만 제거
+  6) §23 PRODUCTION_failsafe: TRUE/UNCERTAIN/unjudged/evidence_mismatch를 살리고,
+     실제 제시 문맥의 line을 근거로 든 high-confidence FALSE만 제거
 
 **절대 스캔 전체를 죽이지 않는다.** 이 모듈의 모든 외부 호출은 개별로 감싸여 있고,
 실패하면 그 레포는 그냥 그래프 보강 없이(v1 LLM 단독) 나간다 — `api_rebuild.py`가
@@ -64,14 +65,23 @@ LLM_MODEL = os.getenv("GRAPH_SPEC_LLM_MODEL", "qwen3.8-max")
 JOERN_HTTP_URL = os.getenv("JOERN_HTTP_URL", "")
 RUNPOD_POLL_INTERVAL = float(os.getenv("RUNPOD_POLL_INTERVAL", "2.0"))
 JOERN_TIMEOUT = int(os.getenv("GRAPH_SPEC_JOERN_TIMEOUT", "600"))
-RULEGEN_TIMEOUT = int(os.getenv("GRAPH_SPEC_RULEGEN_TIMEOUT", "300"))
+# Batch-20 G1 needed a 600-second retry window; a 300-second production timeout caused all first
+# G3 batches to be discarded despite the same payload eventually succeeding in the evaluator.
+RULEGEN_TIMEOUT = int(os.getenv("GRAPH_SPEC_RULEGEN_TIMEOUT", "600"))
 # Accuracy-first default: do not silently discard rare APIs in a large Java repository.
 # Operators may set a positive emergency cap, but the default processes every cache miss.
 MAX_FRESH_ITEMS = int(os.getenv("GRAPH_SPEC_MAX_FRESH_ITEMS", "0"))
-RULEGEN_BATCH = int(os.getenv("GRAPH_SPEC_RULEGEN_BATCH", "6"))
+# G1 41-item full rerun at 20: macro-F1/sink recall/exact-CWE recall all 1.0,
+# missing 0 (2026-09-06). Larger batches cut repository-scale request count.
+RULEGEN_BATCH = int(os.getenv("GRAPH_SPEC_RULEGEN_BATCH", "20"))
 CRITIC_BATCH = int(os.getenv("GRAPH_SPEC_CRITIC_BATCH", "4"))
 LLM_MAX_WORKERS = max(1, int(os.getenv("GRAPH_SPEC_LLM_MAX_WORKERS", "6")))
 CRITIC_ENABLED = os.getenv("GRAPH_SPEC_CRITIC_ENABLED", "off").lower() == "on"
+CRITIC_FALSE_CONFIDENCE = os.getenv(
+    "GRAPH_SPEC_CRITIC_FALSE_CONFIDENCE", "high").strip().lower()
+DYNAMIC_RULE_MODE = os.getenv("GRAPH_SPEC_DYNAMIC_RULE_MODE", "shadow").strip().lower()
+if DYNAMIC_RULE_MODE not in ("shadow", "enforce"):
+    DYNAMIC_RULE_MODE = "shadow"
 
 API_CACHE_PATH = Path(os.getenv("GRAPH_SPEC_API_CACHE", str(ROOT / "rebuild" / "out" / "graph_spec_api_cache.json")))
 
@@ -289,17 +299,37 @@ def strip_locs(code: str) -> str:
     return PATH_RE.sub("<path>", code)[:160]
 
 
-def build_items(cand: dict) -> list[dict]:
+PACKAGE_RE = re.compile(r"(?m)^\s*package\s+([A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*)\s*;")
+
+
+def java_local_packages(files: list[dict] | None) -> set[str]:
+    return {match.group(1) for item in (files or [])
+            for match in PACKAGE_RE.finditer(item.get("content", ""))}
+
+
+def _all_full_names_are_local(fulls: list[dict], packages: set[str]) -> bool:
+    names = [str(item.get("full") or "") for item in fulls]
+    resolved = [name for name in names if name and not name.startswith("<")]
+    return bool(resolved) and len(resolved) == len(names) and all(
+        any(name.startswith(package + ".") for package in packages) for name in resolved)
+
+
+def build_items(cand: dict, frontend: str | None = None,
+                files: list[dict] | None = None) -> list[dict]:
     """dump_candidates.sc 출력 → LLM 입력 항목. params kind는 보내지 않는다
     (taint_spec.sc가 frontend별 trust-boundary 정책으로 직접 처리한다)."""
     items = []
+    local_packages = java_local_packages(files) if frontend == "JAVASRC" else set()
     for c in cand.get("calls", []):
+        if frontend == "JAVASRC" and _all_full_names_are_local(c.get("fulls", []), local_packages):
+            continue
         items.append({"kind": "call", "name": c["name"],
                       "fulls": list(dict.fromkeys(norm_full(f["full"]) for f in c["fulls"]))[:3],
                       "n": c["n"], "snippets": [strip_locs(x) for x in c["codes"][:2]]})
-    for a in cand.get("assigns", []):
-        items.append({"kind": "assign", "name": a["field"], "fulls": [], "n": a["n"],
-                      "snippets": [strip_locs(x) for x in a["codes"][:2]]})
+    if frontend != "JAVASRC":
+        for a in cand.get("assigns", []):
+            items.append({"kind": "assign", "name": a["field"], "fulls": [], "n": a["n"],
+                          "snippets": [strip_locs(x) for x in a["codes"][:2]]})
     for i, it in enumerate(items):
         it["id"] = i
     return items
@@ -422,6 +452,12 @@ def sanitizer_spec_text(frontend: str) -> str:
     if frontend == "JAVASRC":
         return JAVA_SANITIZER_SPEC_PATH.read_text()
     return ""
+
+
+def compose_spec_text(frontend: str, dynamic_rules: list[dict]) -> str:
+    """Only benchmark-promoted deployments may let repository-generated rules affect verdicts."""
+    base = base_spec_text(frontend).rstrip() + "\n"
+    return base + (to_tsv(dynamic_rules) if DYNAMIC_RULE_MODE == "enforce" else "")
 
 
 def language_context(language: str) -> tuple[str, str]:
@@ -653,7 +689,8 @@ def _fmt_finding(f: dict, content_by_path: dict[str, str]) -> str:
     obj = {"id": f["_uid"], "category": f["category"], "cwe": f["cwe"],
            "sink": {"file": f["file"], "line": f.get("line"), "code": (f.get("sink") or "")[:200]},
            "source": {"file": f.get("source_file", ""), "line": f.get("source_line"),
-                      "code": (f.get("source") or "")[:200]},
+                      "code": (f.get("source") or "")[:200],
+                      "kind": f.get("source_kind", "unknown")},
            "flow": steps,
            "sanitizer_hits": [h.get("pattern") for h in (f.get("sanitizer_hits") or [])][:4],
            "duplicate_flows_at_same_location": f["_dup_count"]}
@@ -696,13 +733,33 @@ def _evidence_ok(f: dict, rendered: str) -> bool:
     return True
 
 
-def filter_findings(findings: list[dict], content_by_path: dict[str, str], lang_label: str) -> list[dict]:
-    """§23 PRODUCTION_failsafe: FALSE만 제거. TRUE/UNCERTAIN/unjudged/evidence_mismatch는 유지."""
+def _critic_false_is_grounded(finding: dict, verdict: dict) -> bool:
+    """Only allow a FALSE to suppress when its cited line was actually shown to the model."""
+    if verdict.get("verdict") != "FALSE":
+        return False
+    if str(verdict.get("confidence", "")).lower() != CRITIC_FALSE_CONFIDENCE:
+        return False
+    try:
+        basis = int(verdict["basis_line"])
+    except (KeyError, TypeError, ValueError):
+        return False
+    shown = set()
+    for line in (finding.get("line"), finding.get("source_line")):
+        if isinstance(line, int) and line > 0:
+            shown.update(range(max(1, line - CTX), line + CTX + 1))
+    return basis in shown and bool(str(verdict.get("reason") or "").strip())
+
+
+def review_findings(findings: list[dict], content_by_path: dict[str, str],
+                    lang_label: str) -> tuple[list[dict], dict]:
+    """Review findings and return both kept findings and a reproducible critic audit."""
     if not findings:
-        return []
+        return [], {"enabled": CRITIC_ENABLED, "input": 0, "kept": 0, "removed": 0,
+                    "verdicts": [], "raw_batches": []}
     uniq = _dedupe([f for f in findings if not f.get("sanitized")])
     if not CRITIC_ENABLED:
-        return uniq
+        return uniq, {"enabled": False, "input": len(uniq), "kept": len(uniq),
+                      "removed": 0, "verdicts": [], "raw_batches": []}
     sendable, quarantined_uids = [], set()
     for f in uniq:
         rendered = _fmt_finding(f, content_by_path)
@@ -712,6 +769,7 @@ def filter_findings(findings: list[dict], content_by_path: dict[str, str], lang_
             quarantined_uids.add(f["_uid"])   # evidence 불일치 — FALSE 아님, 그대로 살린다
 
     verdicts: dict[int, dict] = {}
+    raw_batches: list[dict] = []
     batches = [sendable[i:i + CRITIC_BATCH] for i in range(0, len(sendable), CRITIC_BATCH)]
     def run_batch(batch):
         body = "\n\n".join(_fmt_finding(f, content_by_path) for f in batch)
@@ -723,26 +781,49 @@ def filter_findings(findings: list[dict], content_by_path: dict[str, str], lang_
                 continue
             arr = _extract_json_array(text)
             if arr:
-                return arr
-        return []
+                return arr, text
+        return [], ""
 
     with ThreadPoolExecutor(max_workers=min(LLM_MAX_WORKERS, max(1, len(batches)))) as ex:
-        for arr in ex.map(run_batch, batches):
+        for batch_index, (arr, raw) in enumerate(ex.map(run_batch, batches)):
+            raw_batches.append({"batch": batch_index,
+                                "ids": [f["_uid"] for f in batches[batch_index]],
+                                "raw": raw})
             for o in arr:
                 if isinstance(o, dict) and "id" in o:
                     verdicts[o["id"]] = o
 
     keep = []
+    audit_verdicts = []
     for f in uniq:
         if f["_uid"] in quarantined_uids:
+            f["_critic"] = {"verdict": "UNJUDGED", "reason": "evidence mismatch",
+                              "suppressed": False}
             keep.append(f)
+            audit_verdicts.append({"id": f["_uid"], **f["_critic"]})
             continue
-        v = verdicts.get(f["_uid"])
-        vd = (v or {}).get("verdict")
-        if vd == "FALSE":
+        v = dict(verdicts.get(f["_uid"]) or {})
+        grounded_false = _critic_false_is_grounded(f, v)
+        if v.get("verdict") == "FALSE" and not grounded_false:
+            v["original_verdict"] = "FALSE"
+            v["verdict"] = "UNCERTAIN"
+            v["validation_note"] = "FALSE lacked a shown high-confidence basis line"
+        v["suppressed"] = grounded_false
+        f["_critic"] = v or {"verdict": "UNJUDGED", "suppressed": False}
+        audit_verdicts.append({"id": f["_uid"], **f["_critic"]})
+        if grounded_false:
             continue   # 확신 있는 안전 판정만 제거
         keep.append(f)   # TRUE / UNCERTAIN / unjudged(파싱실패, v is None) 전부 유지
-    return keep
+    return keep, {"enabled": True, "input": len(uniq), "kept": len(keep),
+                  "removed": len(uniq) - len(keep),
+                  "evidence_mismatch_ids": sorted(quarantined_uids),
+                  "verdicts": audit_verdicts, "raw_batches": raw_batches}
+
+
+def filter_findings(findings: list[dict], content_by_path: dict[str, str],
+                    lang_label: str) -> list[dict]:
+    """§23 failsafe: only evidence-grounded high-confidence FALSE is removed."""
+    return review_findings(findings, content_by_path, lang_label)[0]
 
 
 # ── 오케스트레이션 ───────────────────────────────────────────────────────────
@@ -768,7 +849,7 @@ def analyze_repo(files: list[dict], language: str, repo_tag: str = "prod",
             raise RuntimeError(f"candidate extraction failed: {cand.get('error') or 'timeout'}")
         return []
 
-    items = build_items(cand)
+    items = build_items(cand, frontend, files)
     api_cache = load_api_cache()
     cached_items: list[tuple[dict, dict]] = []
     fresh_items = []
@@ -794,8 +875,10 @@ def analyze_repo(files: list[dict], language: str, repo_tag: str = "prod",
     good = validate(labeled, repo_toks)
     update_api_cache(good, repo_tag, frontend)
 
-    dynamic_spec = to_tsv(cached_rules + good)
-    spec_text = base_spec_text(frontend).rstrip() + "\n" + dynamic_spec
+    # G3 dynamic arm preserved recall but increased active alerts 78→116 and strict FP 69→107.
+    # Keep Qwen3.8 proposals/cache in shadow by default; enforcement requires an explicit,
+    # benchmark-approved deployment setting.
+    spec_text = compose_spec_text(frontend, cached_rules + good)
 
     taint_out = call_joern_repo(
         "taint", language, files, spec_text=spec_text,

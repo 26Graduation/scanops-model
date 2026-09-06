@@ -11,6 +11,20 @@ class GraphSpecJavaTests(unittest.TestCase):
     def test_fresh_candidate_default_is_unlimited(self):
         self.assertEqual(0, g.MAX_FRESH_ITEMS)
 
+    def test_rulegen_default_uses_g1_verified_batch_size(self):
+        self.assertEqual(20, g.RULEGEN_BATCH)
+        self.assertEqual(600, g.RULEGEN_TIMEOUT)
+
+    def test_unpromoted_dynamic_rules_are_shadow_only(self):
+        rule = {"role": "sink", "cat": "cmdi", "cwe": "CWE-78",
+                "match": "name", "pattern": "^danger$"}
+        with patch.object(g, "DYNAMIC_RULE_MODE", "shadow"):
+            shadow = g.compose_spec_text("JAVASRC", [rule])
+        with patch.object(g, "DYNAMIC_RULE_MODE", "enforce"):
+            enforced = g.compose_spec_text("JAVASRC", [rule])
+        self.assertNotIn("^danger$", shadow)
+        self.assertIn("^danger$", enforced)
+
     def test_partial_rulegen_response_retries_only_missing_ids(self):
         items = [
             {"id": 0, "kind": "call", "name": "first", "fulls": [], "n": 1,
@@ -30,6 +44,27 @@ class GraphSpecJavaTests(unittest.TestCase):
         self.assertEqual(2, call.call_count)
         self.assertIn('"id": 1', call.call_args.args[1])
         self.assertNotIn('"id": 0', call.call_args.args[1])
+
+    def test_java_rulegen_drops_property_writes_and_resolved_local_calls(self):
+        candidates = {
+            "calls": [
+                {"name": "localRun", "n": 1,
+                 "fulls": [{"full": "demo.Service.localRun:void()", "n": 1}],
+                 "codes": ["service.localRun()"]},
+                {"name": "exec", "n": 1,
+                 "fulls": [{"full": "java.lang.Runtime.exec:java.lang.Process(java.lang.String)",
+                             "n": 1}], "codes": ["runtime.exec(cmd)"]},
+                {"name": "mystery", "n": 1,
+                 "fulls": [{"full": "<unresolvedNamespace>.mystery:ANY()", "n": 1}],
+                 "codes": ["mystery(value)"]},
+            ],
+            "assigns": [{"field": "body", "n": 1, "codes": ["this.body = body"]}],
+        }
+        files = [{"path": "Service.java", "content": "package demo; class Service {}"}]
+        java_items = g.build_items(candidates, "JAVASRC", files)
+        self.assertEqual({"exec", "mystery"}, {item["name"] for item in java_items})
+        js_items = g.build_items(candidates, "JSSRC", files)
+        self.assertEqual(4, len(js_items))
 
     def test_language_context_is_not_jsts_for_java(self):
         self.assertEqual(("JAVASRC", "Java"), g.language_context("Java Spring Boot"))
@@ -117,6 +152,21 @@ class GraphSpecJavaTests(unittest.TestCase):
             self.assertEqual([], g.analyze_repo(files, "Java"))
             with self.assertRaisesRegex(RuntimeError, "runtime is not ready"):
                 g.analyze_repo(files, "Java", strict=True)
+
+    def test_critic_false_requires_high_confidence_shown_basis_line(self):
+        finding = {"line": 20, "source_line": 5}
+        self.assertTrue(g._critic_false_is_grounded(finding, {
+            "verdict": "FALSE", "confidence": "high", "basis_line": 18,
+            "reason": "allow-list check rejects unsafe input",
+        }))
+        self.assertFalse(g._critic_false_is_grounded(finding, {
+            "verdict": "FALSE", "confidence": "med", "basis_line": 18,
+            "reason": "allow-list check rejects unsafe input",
+        }))
+        self.assertFalse(g._critic_false_is_grounded(finding, {
+            "verdict": "FALSE", "confidence": "high", "basis_line": 100,
+            "reason": "line was not in the supplied evidence",
+        }))
 
 
 if __name__ == "__main__":

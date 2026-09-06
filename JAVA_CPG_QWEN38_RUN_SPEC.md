@@ -72,6 +72,12 @@ Juliet FLAW 마커 주변의 모든 sink를 새 GT로 확장하지 않는다. �
 - 다대다 카테고리의 LLM 세부 CWE가 검증 후 보존됨.
 - `exists`, `arg_literal`, `arg_count` 전체가 프롬프트→검증→캐시→TSV로 전달됨.
 - critic 기본값은 off. 연구 비교에서만 on.
+- repository-generated dynamic rule의 기본값은 `shadow`; G3/G4 승격 근거 없이 verdict에
+  합치려면 안 된다. `enforce`는 실험 arm에서만 명시적으로 사용한다.
+- Java rulegen 입력은 JS 전용 property-write와 저장소 내부 package로 완전히 해석된 호출을
+  제외하며, 표준/제3자/unresolved 호출은 보존한다.
+- finding은 `source_kind`를 보존한다. critic의 FALSE는 high confidence, 비어 있지 않은 이유,
+  실제 제시 문맥 안의 `basis_line`을 모두 만족할 때만 억제에 사용할 수 있다.
 
 ### G1 — 골든 룰
 
@@ -92,6 +98,10 @@ Juliet FLAW 마커 주변의 모든 sink를 새 GT로 확장하지 않는다. �
 - 최소 3개 레포에서 후보 추출→Qwen 룰→spec→taint→API 응답 전체 경로 성공.
 - 결과 파일, 생성 룰, 경로, 비용/시간을 보존한다.
 - 프로젝트별 실패 원인을 source/sink/CPG/build/CWE-label/critic으로 분류한다.
+- 후보 prefilter 전후 항목 수와 감소율을 기록한다. 이는 속도/비용 지표이며 동적 규칙을 같은
+  조건으로 재실행하기 전에는 탐지 성능 개선으로 계산하지 않는다.
+- critic 비교는 raw 응답과 검증 판정을 함께 보존하고, recall이 2%p 넘게 하락하면 F1이
+  상승해도 채택하지 않는다.
 
 ### G4 — 오픈웨이트 모델 블라인드 비교
 

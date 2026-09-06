@@ -59,6 +59,20 @@ class JavaCpgPrimaryApiTests(unittest.TestCase):
                 api.analyze_pr(request, None)
         self.assertEqual(503, raised.exception.status_code)
 
+    def test_java_api_chooses_strongest_cpg_evidence_deterministically(self):
+        files = [{"path": "Demo.java", "content": "class Demo {}"}]
+        weak = {"file": "Demo.java", "line": 30, "cwe": "CWE-78",
+                "source_kind": "instance_state",
+                "path": [{"line": 30, "role": "sink", "code": "exec(state)"}]}
+        strong = {"file": "Demo.java", "line": 10, "cwe": "CWE-89",
+                  "source_kind": "explicit_source_api",
+                  "path": [{"line": 4, "role": "source", "code": "getParameter()"},
+                           {"line": 10, "role": "sink", "code": "execute(input)"}]}
+        result = api._findings_to_overrides(files, [weak, strong])["Demo.java"]
+        self.assertEqual(["CWE-89", "CWE-78"], result["categories"])
+        self.assertEqual(strong["path"][0]["code"], result["path"][0]["code"])
+        self.assertEqual("explicit_source_api", result["path"][0]["source_kind"])
+
 
 if __name__ == "__main__":
     unittest.main()

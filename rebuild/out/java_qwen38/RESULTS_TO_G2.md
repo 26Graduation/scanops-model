@@ -17,9 +17,11 @@ Date: 2026-09-06
 - The Java product fixed spec is curated separately from Juliet. Context-free Juliet-only
   `println -> CWE-319/CWE-526` rules were removed after they caused two reproducible safe-file
   false positives.
-- Worker smoke v6: all ten checks pass, including a cross-file source-to-sink path, public API
+- Worker smoke v8: all ten checks pass, including a cross-file source-to-sink path, public API
   input, constructor-to-instance-state continuation, framework-context exclusion, and an
-  `HtmlUtils.htmlEscape` sanitizer hit.
+  `HtmlUtils.htmlEscape` sanitizer hit. Findings now also preserve the trust-boundary provenance as
+  `source_kind` (`explicit_source_api`, `public_parameter`, `instance_state`, or a structural mode),
+  so later ranking and critic decisions remain auditable.
 - Product orchestrator v3: one cross-file vulnerable finding, zero safe-file findings, sink line
   and path present, critic off.
 
@@ -60,6 +62,14 @@ Reproduce:
 python3 benchmarks/golden-sets/java/eval_rulegen.py \
   --out rebuild/out/java_qwen38/my_g1_run
 ```
+
+A production-size batch of 20 was then rerun on all 41 items and also passed with role macro-F1,
+sink recall, and exact-CWE sink recall all 1.000, zero missing/invalid items, and zero reversals.
+It used 5 API calls including 2 validation retries (43,938 tokens, 1,613.4 cumulative API seconds).
+The production default was therefore increased from 6 to 20; this reduces the prefiltered G3 set
+from 94 nominal batches to 28 without weakening the G1 gate. The production request timeout was
+also aligned to the evaluator's verified 600-second retry ceiling after four initial G3 requests
+all hit the former 300-second limit; failed attempts remain in the raw append-only log.
 
 ## G2 — Juliet query regression: pass
 
@@ -160,6 +170,74 @@ The CPG is better than the QLoRA on binary F1 by 0.144 and ties it on exact-CWE 
 source/sink evidence. The base model misses every labelled positive under the same prompt and token
 budget. This supports removing the QLoRA from Java, but does not establish final performance: the
 frozen 12-project held-out has not been opened.
+
+### Buggy/fixed development pairs
+
+The fixed Java CPG was also run on each project's final listed fix commit. Target-CWE alert counts
+changed as follows: Spark 10→10 (8 exact file/CWE/sink-code fingerprints persisted), Plexus-utils
+2→2 (0 exact fingerprints), and Cron-utils 1→0. This is a failed pair-cleanliness gate for two of
+three projects and exposes missing interprocedural state/sanitizer semantics.
+
+The counts are not automatically twelve proven false positives. Spark's fixed snapshot still has
+other public resource APIs accepting untrusted paths, while Plexus-utils intentionally still allows
+a caller-controlled executable array and changed shell construction rather than removing
+`Runtime.exec`. Nevertheless, the engine cannot currently distinguish the CVE-fixing validation
+(`file:` rejection before storing a cleaned path) or safe direct argument-vector construction from
+their vulnerable forms. The correct next step is structural path semantics, not filename- or
+project-specific suppression.
+
+### Java candidate prefilter
+
+Joern candidate extraction intentionally remains broad, but Java rule generation no longer sends
+JS-only property-write candidates or calls that resolve exclusively to packages implemented inside
+the repository. Standard-library, third-party, and unresolved calls are retained. On the same three
+G3 repositories this reduces rule-generation candidates by 73.8% without changing the fixed CPG
+findings:
+
+| project | before | after | removed |
+|---|---:|---:|---:|
+| Spark | 601 | 216 | 385 |
+| Plexus-utils | 1,056 | 208 | 848 |
+| Cron-utils | 484 | 136 | 348 |
+| total | **2,141** | **560** | **1,581** |
+
+This is primarily a latency/cost and precision-of-rule-generation improvement. It is not counted as
+a detection-score gain until a full Qwen3.8-Max rule-generation rerun passes G1 and G3.
+
+The full dynamic G3 rerun processed and validated all 560 candidates and emitted 40 rule rows
+(Spark 28, Plexus-utils 10, Cron-utils 2). It preserved TP=5, FN=39 and project recall 3/3, but
+active findings rose 78→116, strict FP 69→107, and strict F1 fell 0.0847→0.0641. Target-CWE FP
+also rose 4→5 and F1 fell 0.1887→0.1852. Wall time was 3,073.7 s. Including preserved failed
+attempts, the append-only log has 38 calls, 9 timeout/error records, and 28 successful final
+batches. This arm fails G3 and must not advance to G4.
+
+Consequently, repository-generated Qwen3.8 rules now default to `shadow`: proposals are validated
+and cached, but do not affect verdicts. `GRAPH_SPEC_DYNAMIC_RULE_MODE=enforce` is an explicit
+experimental override, not the production default. Rules must be promoted through golden,
+buggy/fixed, and held-out evidence before enforcement. This keeps Qwen3.8 as the only Java LLM while
+preventing an unvalidated rule proposal from degrading the CPG verdict.
+
+### Path critic safety contract
+
+The optional LLM critic is now three-valued: `TRUE`, `FALSE`, and `UNCERTAIN`. A finding can be
+suppressed only when `FALSE` has the configured confidence (`high` by default), a non-empty reason,
+and a cited line that was actually present in the supplied sink/source context. Unsupported FALSE
+answers are downgraded to `UNCERTAIN`; parse failures and evidence mismatches keep the finding. Raw
+responses, validated verdicts, and suppression decisions are retained. The critic remains off by
+default until its held-out precision gain is shown without an unacceptable recall loss.
+
+The local Qwen3.5-9B Q4 critic was evaluated as a safe offline falsification test. It removed 24
+of 78 findings, but also removed Cron-utils' only labelled hit: project recall fell from 3/3 to 2/3,
+method TP from 5 to 4, and recall from 0.114 to 0.091. Although target-CWE precision rose from
+0.556 to 0.571, target-CWE F1 fell from 0.189 to 0.157. It therefore fails the recall gate and is
+not adopted. The result must not be represented as Qwen3.8-Max performance.
+
+The approved Qwen3.8-Max critic then removed 9 of 78 findings while preserving TP=5, FN=39 and
+project recall 3/3. Strict all-CWE FP fell from 69 to 60, precision rose from 0.0676 to 0.0769, and
+F1 rose from 0.0847 to 0.0917. Target-CWE TP/FP/FN and F1 were unchanged (5/4/39, 0.1887), meaning
+the removed alerts were other-CWE findings not labelled by this benchmark. The run took 590.2 s.
+This passes the development no-recall-loss check but remains off by default because its benefit is
+small, costly, and not yet confirmed on G4.
 
 Reproduce the comparison after starting the base and adapter servers in turn:
 

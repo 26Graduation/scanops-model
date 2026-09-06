@@ -543,10 +543,25 @@ def _java_cpg_primary(language: str) -> bool:
 
 
 def _findings_to_overrides(graph_files: list[dict], findings: list[dict]) -> dict[str, dict]:
-    """Convert repository findings to one deterministic CPG verdict per file."""
+    """Convert findings to one deterministic verdict and strongest evidence path per file."""
     result = {x["path"]: {"verdict": "safe", "categories": [], "path": []}
               for x in graph_files}
-    for finding in findings:
+    source_rank = {"explicit_source_api": 0, "public_parameter": 1,
+                   "parameter_field_access": 2, "instance_state": 3,
+                   "argument_literal": 4, "argument_count": 4,
+                   "call_site_only": 5, "unknown": 6}
+
+    def evidence_rank(finding: dict) -> tuple:
+        critic = finding.get("_critic") or {}
+        critic_rank = 0 if (critic.get("verdict") == "TRUE" and
+                            critic.get("confidence") == "high") else 1
+        path = finding.get("path") or []
+        return (str(finding.get("file") or ""), critic_rank,
+                source_rank.get(finding.get("source_kind", "unknown"), 6),
+                0 if path else 1, -len(path), int(finding.get("line") or 0),
+                str(finding.get("cwe") or finding.get("category") or ""))
+
+    for finding in sorted(findings, key=evidence_rank):
         entry = result.setdefault(
             finding["file"], {"verdict": "safe", "categories": [], "path": []})
         entry["verdict"] = "vuln"
@@ -554,7 +569,11 @@ def _findings_to_overrides(graph_files: list[dict], findings: list[dict]) -> dic
         if category not in entry["categories"]:
             entry["categories"].append(category)
         if not entry["path"]:
-            entry["path"] = finding.get("path") or []
+            path = [dict(step) if isinstance(step, dict) else step
+                    for step in (finding.get("path") or [])]
+            if path and isinstance(path[0], dict) and finding.get("source_kind"):
+                path[0].setdefault("source_kind", finding["source_kind"])
+            entry["path"] = path
     return result
 
 
@@ -628,7 +647,8 @@ def health():
             "java_engine": JAVA_ENGINE,
             "llm_backend": "runpod" if use_runpod() else "llama-local",
             "graph_rule_model": graph_spec_prod.LLM_MODEL,
-            "graph_critic_enabled": graph_spec_prod.CRITIC_ENABLED}
+            "graph_critic_enabled": graph_spec_prod.CRITIC_ENABLED,
+            "graph_dynamic_rule_mode": graph_spec_prod.DYNAMIC_RULE_MODE}
 
 
 @app.post("/analyze", response_model=AnalyzeResponse)
