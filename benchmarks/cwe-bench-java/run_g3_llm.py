@@ -74,6 +74,10 @@ def main() -> None:
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--url", default="http://127.0.0.1:8080")
     parser.add_argument("--workers", type=int, default=2)
+    parser.add_argument("--model-label", default="Qwen3.5-9B-Q4_K_M + adapter_v1_fix",
+                        help="Exact model/configuration name recorded in the report.")
+    parser.add_argument("--max-new-files", type=int,
+                        help="Bound this invocation for a reproducible fail-fast comparison.")
     parser.add_argument("--checkpoint", type=Path,
                         help="Append-only JSONL checkpoint (default: OUT with .jsonl suffix).")
     parser.add_argument("--summarize-only", action="store_true",
@@ -98,6 +102,10 @@ def main() -> None:
     # order-independent and the append-only checkpoint makes the run resumable.
     work.sort(key=lambda item: (not item[3], item[0], item[1]))
     expected_files = len(prior) + len(work)
+    if args.max_new_files is not None:
+        if args.max_new_files < 0:
+            raise SystemExit("--max-new-files must be >= 0")
+        work = work[:args.max_new_files]
 
     def classify(item: tuple) -> dict:
         slug, rel, code, truth, expected = item
@@ -138,7 +146,7 @@ def main() -> None:
                           f"{time.time() - started:.1f}s", flush=True)
     summary = {
         "schema": "scanops.cwe-bench-java.g3-llm.v1",
-        "model": "Qwen3.5-9B-Q4_K_M + adapter_v1_fix", "external_transfer": False,
+        "model": args.model_label, "external_transfer": False,
         "prompt_sha256_16": prompt_hash(), "n_files": len(rows),
         "n_expected_files": expected_files, "complete": len(rows) == expected_files,
         "n_truth_files": sum(x["truth"] for x in rows),
@@ -146,6 +154,7 @@ def main() -> None:
         "parse_failures": sum(x["label"] == "parse_fail" for x in rows),
         "elapsed_this_run": round(time.time() - started, 3),
         "checkpoint": str(checkpoint),
+        "bounded_run": args.max_new_files is not None,
         "label_caveat": "non-fix main files are treated as negative and may contain unrelated unlabeled flaws",
     }
     args.out.parent.mkdir(parents=True, exist_ok=True)

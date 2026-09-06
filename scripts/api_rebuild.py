@@ -1,12 +1,13 @@
-"""ScanOps Rebuild API — 2026-07 재구축 Qwen3.5-9B 단일 모델, 백엔드 계약 전체 서빙
+"""ScanOps API — Java CPG+Qwen3.8-Max, 레거시 언어 Qwen3.5-9B, 백엔드 계약 전체 서빙
 ================================================================
 모델 = 2026-07 전면 재구축(rebuild/) (CVEfixes 시간분할 test 1,197건에서
 재현율 79.7% / 오탐률 15.7% / F1 80.5 — Claude Sonnet 5(F1 60.0)·Grok-4(54.1) 대비
 실사용 지표 우위, rebuild/out/test_report.json).
 
-설계(재구축 문제정의): **탐지는 파인튜닝 모델 단독**, RAG·그래프는 판정 후
-설명층. 모델은 4줄 평문(VULNERABILITY/SEVERITY/CVSS/REASON)을 출력하고
-이 서버가 백엔드 계약 JSON으로 조립한다.
+Java의 기본 탐지는 Qwen3.8-Max가 생성·검증한 API 규칙과 Joern source→sink 경로다.
+CVEfixes QLoRA는 실제 Java 저장소 전이 실패로 Java 판정에서 제외한다. CPG 런타임이
+없거나 실패하면 PARTIAL을 반환하며 레거시 모델로 폴백하지 않는다. 다른 언어는 기존
+4줄 분류 모델 경로를 유지해 백엔드 계약 호환성을 보존한다.
 
 api_v17.py 의 REST 계약(/analyze, /analyze/batch, /analyze/pr, /health)을 그대로
 구현해 **Java 백엔드(ScanopsModelClient·GitHubAppWebhookController)는 무변경**.
@@ -54,6 +55,9 @@ RAG_REFS_ENABLED = bool(os.getenv("QDRANT_URL", ""))
 # JOERN_HYBRID_REPORT.md §4-3) → 기본값을 그대로 둔다. Joern 은 판정에 관여하지 않고
 # evidence 수집용으로만 붙는다.
 HYBRID_POLICY = os.getenv("SCANOPS_HYBRID_POLICY", "JOERN-NO-BETTER")
+# Java는 CVEfixes 전용 QLoRA의 외부 저장소 전이 실패가 확인되어 기본 판정에서 제외한다.
+# Qwen3.8-Max가 Java API 의미를 룰로 만들고 Joern이 증명한 경로만 판정으로 사용한다.
+JAVA_ENGINE = os.getenv("SCANOPS_JAVA_ENGINE", "cpg-qwen38").strip().lower()
 JOERN_URL = os.getenv("SCANOPS_JOERN_URL", "")
 # 연속 점수는 SIGNAL 정책에서만 필요하다. 매 요청 추가 호출이 붙으므로 기본 off.
 SCORE_ENABLED = os.getenv("SCANOPS_SCORE", "").lower() in ("1", "on", "true") \
@@ -532,23 +536,60 @@ def _joern(language: str, code: str, file_path: Optional[str]) -> Optional[dict]
         return None
 
 
+def _java_cpg_primary(language: str) -> bool:
+    if JAVA_ENGINE != "cpg-qwen38" or not graph_spec_prod.is_supported_lang(language):
+        return False
+    return graph_spec_prod.language_context(language)[0] == "JAVASRC"
+
+
+def _findings_to_overrides(graph_files: list[dict], findings: list[dict]) -> dict[str, dict]:
+    """Convert repository findings to one deterministic CPG verdict per file."""
+    result = {x["path"]: {"verdict": "safe", "categories": [], "path": []}
+              for x in graph_files}
+    for finding in findings:
+        entry = result.setdefault(
+            finding["file"], {"verdict": "safe", "categories": [], "path": []})
+        entry["verdict"] = "vuln"
+        category = finding.get("cwe") or finding.get("category") or "DETECTED"
+        if category not in entry["categories"]:
+            entry["categories"].append(category)
+        if not entry["path"]:
+            entry["path"] = finding.get("path") or []
+    return result
+
+
 def _analyze_one(language: str, code: str, file_path: Optional[str],
                  prompt_code: Optional[str] = None,
                  joern_override: Optional[dict] = None) -> AnalyzeResponse:
     """joern_override: 레포단위 그래프 보강 결과(analyze_batch가 미리 계산)가 있으면
     스니펫 단위 _joern() 호출을 건너뛰고 그걸 쓴다. None이면 기존 동작(단일 호출) 그대로."""
     t0 = time.time()
-    r = _detect(language, code, prompt_code)
-    r["score"] = _score(language, code)
-    joern = joern_override if joern_override is not None else _joern(language, code, file_path)
-    agg = hybrid_mod.aggregate(r, joern, None, HYBRID_POLICY)
-    r = {**r, "detected": agg["detected"]}
-    if agg["detected"] and agg["source"] in ("joern", "graph") and r["vulnerability"] == "NONE":
-        r["vulnerability"] = agg["vulnerability"]
-        r["severity"] = agg["severity"]
-        r["reason"] = agg["reason"]
+    java_cpg = _java_cpg_primary(language)
+    if java_cpg:
+        joern = joern_override
+        available = bool(joern and joern.get("verdict") in ("safe", "vuln", "safe_sanitized"))
+        detected = bool(available and joern.get("verdict") == "vuln")
+        category = ((joern or {}).get("categories") or ["DETECTED"])[0]
+        r = {"detected": detected,
+             "vulnerability": category if detected else "NONE",
+             "severity": "UNKNOWN" if detected else "NONE", "cvss": None,
+             "reason": "Joern source-to-sink path using Qwen3.8-Max Java rules" if detected else "",
+             "retried": False}
+        agg = {"detected": detected, "source": "cpg+qwen3.8-max",
+               "evidence": (joern or {}).get("path") or None,
+               "status": "DONE" if available else "PARTIAL", "score": None}
+    else:
+        r = _detect(language, code, prompt_code)
+        r["score"] = _score(language, code)
+        joern = joern_override if joern_override is not None else _joern(language, code, file_path)
+        agg = hybrid_mod.aggregate(r, joern, None, HYBRID_POLICY)
+        r = {**r, "detected": agg["detected"]}
+        if agg["detected"] and agg["source"] in ("joern", "graph") and r["vulnerability"] == "NONE":
+            r["vulnerability"] = agg["vulnerability"]
+            r["severity"] = agg["severity"]
+            r["reason"] = agg["reason"]
     meta, handoff, refs = {}, "", []
-    if r["detected"]:
+    if r["detected"] and not java_cpg:
         meta = _gen_meta(language, code, r["vulnerability"], r["reason"])
         handoff = _handoff_prompt(language, code, r["vulnerability"],
                                   r["severity"], r["cvss"])
@@ -565,7 +606,7 @@ def _analyze_one(language: str, code: str, file_path: Optional[str],
         summary=meta.get("summary", "") or r["reason"],
         ai_prompt=handoff,
         cve_references=refs,
-        votes={"model": r["detected"]},
+        votes={"cpg_qwen38" if java_cpg else "model": r["detected"]},
         score=agg.get("score"),
         source=agg.get("source", "llm"),
         evidence=agg.get("evidence") if isinstance(agg.get("evidence"), list) else
@@ -583,7 +624,8 @@ def _analyze_one(language: str, code: str, file_path: Optional[str],
 def health():
     return {"status": "ok", "version": "rebuild-1",
             "parse_stats": dict(_PARSE_STATS),
-            "model": "scanops-rebuild-9b (Qwen3.5-9B QLoRA, CVEfixes F1 80.5)",
+            "model": "Java: CPG + qwen3.8-max; other languages: scanops-rebuild-9b",
+            "java_engine": JAVA_ENGINE,
             "llm_backend": "runpod" if use_runpod() else "llama-local",
             "graph_rule_model": graph_spec_prod.LLM_MODEL,
             "graph_critic_enabled": graph_spec_prod.CRITIC_ENABLED}
@@ -594,7 +636,16 @@ def analyze(req: AnalyzeRequest, _=Security(_require_api_key)):
     if not req.code.strip():
         raise HTTPException(status_code=400, detail="empty code")
     try:
-        return _analyze_one(req.language, req.code, req.file_path)
+        override = None
+        if _java_cpg_primary(req.language):
+            graph_files = [{"path": req.file_path or "snippet.java", "content": req.code}]
+            try:
+                findings = graph_spec_prod.analyze_repo(
+                    graph_files, req.language, strict=True)
+                override = _findings_to_overrides(graph_files, findings)[graph_files[0]["path"]]
+            except Exception as e:  # unavailable is explicit PARTIAL, never legacy-LLM fallback
+                print(f"[java-cpg] single-file analysis unavailable: {e}", flush=True)
+        return _analyze_one(req.language, req.code, req.file_path, joern_override=override)
     except Exception as e:  # noqa: BLE001
         raise HTTPException(status_code=502, detail=f"model backend error: {e}")
 
@@ -605,9 +656,19 @@ def analyze_batch(req: BatchRequest, _=Security(_require_api_key)):
 
     # ── 레포단위 그래프+taint 보강 (Java + JS/TS) ──
     # GithubScanService.java가 레포 전체 파일을 한 배치로 보내므로 여기서 한 번만 돈다.
-    # 완전히 실패해도(RunPod 타임아웃 등) v1 LLM 단독 결과로 그대로 나간다 —
-    # 절대 배치 전체를 막지 않는다.
+    # 완전히 실패해도 배치 전체는 막지 않는다. Java는 PARTIAL로 표시하고 레거시
+    # CVEfixes LLM으로 폴백하지 않으며, 다른 언어만 기존 LLM 경로를 유지한다.
     graph_by_file: dict[str, dict] = {}
+    if req.stop_on_first:
+        java_files = [{"path": f.file_path, "content": f.code} for f in req.files
+                      if f.file_path and f.code.strip() and _java_cpg_primary(f.language)]
+        if java_files:
+            try:
+                findings = graph_spec_prod.analyze_repo(
+                    java_files, "Java", strict=True)
+                graph_by_file.update(_findings_to_overrides(java_files, findings))
+            except Exception as e:
+                print(f"[java-cpg] stop-on-first analysis unavailable: {e}", flush=True)
     if not req.stop_on_first:
         # Joern CPG 하나에는 frontend 하나만 들어갈 수 있다. Java/JSSRC가 섞인 배치를
         # 첫 파일 언어로 통째로 import하던 기존 JSTS 변수/배선을 없애고 frontend별로 분리한다.
@@ -623,22 +684,14 @@ def analyze_batch(req: BatchRequest, _=Security(_require_api_key)):
         for frontend, group in graph_groups.items():
             try:
                 graph_files = group["files"]
-                findings = graph_spec_prod.analyze_repo(graph_files, group["language"])
-                # 성공한 그룹에만 safe override를 만든다. 예외 난 그룹은 기존 v1/스니펫
-                # Joern 경로로 내려가며, 다른 언어 그룹의 성공 결과는 보존한다.
-                for x in graph_files:
-                    graph_by_file[x["path"]] = {
-                        "verdict": "safe", "categories": [], "path": []}
-                for gf in findings:
-                    entry = graph_by_file.setdefault(
-                        gf["file"], {"verdict": "safe", "categories": [], "path": []})
-                    entry["verdict"] = "vuln"
-                    if gf["category"] not in entry["categories"]:
-                        entry["categories"].append(gf["category"])
-                    if not entry["path"]:
-                        entry["path"] = gf.get("path") or []
+                findings = graph_spec_prod.analyze_repo(
+                    graph_files, group["language"],
+                    strict=_java_cpg_primary(group["language"]))
+                # 성공한 그룹에만 safe override를 만든다. 실패한 Java 그룹은 PARTIAL,
+                # 다른 언어는 기존 경로로 내려가며 성공한 타 언어 그룹은 보존한다.
+                graph_by_file.update(_findings_to_overrides(graph_files, findings))
             except Exception as e:  # noqa: BLE001
-                print(f"[graph_spec] {frontend} 레포 보강 실패(무시, v1 단독으로 진행): {e}",
+                print(f"[graph_spec] {frontend} 레포 분석 실패(언어별 폴백/상태 적용): {e}",
                       flush=True)
 
     results: list[AnalyzeResponse] = []
@@ -662,13 +715,26 @@ def analyze_batch(req: BatchRequest, _=Security(_require_api_key)):
 def analyze_pr(req: PrScanRequest, _=Security(_require_api_key)):
     t0 = time.time()
     findings: list[PrFinding] = []
+    java_files = [{"path": f.filename, "content": f.content} for f in req.files
+                  if f.content.strip() and _java_cpg_primary(_lang_of(f.filename))]
+    java_graph: dict[str, dict] = {}
+    if java_files:
+        try:
+            cpg_findings = graph_spec_prod.analyze_repo(
+                java_files, "Java", repo_tag=req.repo or "pr", strict=True)
+            java_graph = _findings_to_overrides(java_files, cpg_findings)
+        except Exception as e:
+            print(f"[java-cpg] PR analysis unavailable: {e}", flush=True)
+            raise HTTPException(status_code=503,
+                                detail="Java CPG+Qwen3.8-Max analysis unavailable") from e
     for f in req.files:
         if not f.content.strip():
             continue
         lang = _lang_of(f.filename)
         prompt_code, marked = _pr_marked_content(lang, f.content, f.patch)
         try:
-            r = _analyze_one(lang, f.content, f.filename, prompt_code=prompt_code)
+            r = _analyze_one(lang, f.content, f.filename, prompt_code=prompt_code,
+                             joern_override=java_graph.get(f.filename))
         except Exception:  # noqa: BLE001
             continue
         if not r.detected:

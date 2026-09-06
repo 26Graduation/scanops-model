@@ -7,7 +7,7 @@ Date: 2026-09-06
 - Python unit tests: 10/10 pass.
 - Java routes to `JAVASRC` and the prompt label is `Java`; JS/TS stays `JSSRC`.
 - CPG rule generation uses DashScope `qwen3.8-max` only. The returned API model field was
-  `qwen3.8-max`; the separate Qwen3.5-9B classifier remains unchanged.
+  `qwen3.8-max`.
 - Java and JS caches are namespaced. Valid `none` results are cached as well as active rules.
 - Java uses `srcMode=java`: explicit source API calls, public data-carrier parameters, and
   data-carrier `this.field` reads, while
@@ -112,6 +112,15 @@ incomplete (15/266): binary F1 0.444 and exact-CWE F1 0.545. It produced 8/9 neg
 missed 2/6 positive files, so the historical CVEfixes F1=0.805 does not transfer to this development
 sample and must not be used as the final Java claim.
 
+### Post-G3 Java architecture decision
+
+The CVEfixes QLoRA is no longer part of Java detection. Java now defaults to
+`SCANOPS_JAVA_ENGINE=cpg-qwen38`: Qwen3.8-Max generates validated Java API rules and Joern's
+source-to-sink result is the verdict. The API does not call the legacy classifier for Java,
+including `stop_on_first` batches and PR scans. If the CPG/Qwen runtime is unavailable, the result
+is explicitly `PARTIAL`; it does not silently fall back to the poorly transferring classifier.
+Other languages retain the legacy path until they receive their own evaluated engine.
+
 Reproduce without any external model call:
 
 ```bash
@@ -131,13 +140,57 @@ The LLM runner writes an append-only `.jsonl` checkpoint and resumes completed f
 slots were rejected after a measured Metal out-of-memory failure; two slots are the verified
 configuration on this host.
 
+### Same-file open-weight development comparison
+
+The fixed CPG and both local Qwen variants were rescored on the identical deterministic set of six
+positive and nine nominal-negative main-source files. This removes the earlier asynchronous
+fail-fast sample mismatch. It is still a small development result, and nominal negatives can
+contain unrelated unlabeled vulnerabilities.
+
+| scoring | engine | precision | recall | F1 | F2 |
+|---|---|---:|---:|---:|---:|
+| binary | ScanOps fixed Java CPG | 0.571 | 0.667 | **0.615** | **0.645** |
+| binary | Qwen3.5-9B base Q4 | 0.000 | 0.000 | 0.000 | 0.000 |
+| binary | Qwen3.5-9B + CVEfixes QLoRA | 0.364 | 0.667 | 0.471 | 0.571 |
+| exact CWE | ScanOps fixed Java CPG | 1.000 | 0.500 | **0.667** | **0.556** |
+| exact CWE | Qwen3.5-9B base Q4 | 0.000 | 0.000 | 0.000 | 0.000 |
+| exact CWE | Qwen3.5-9B + CVEfixes QLoRA | 1.000 | 0.500 | **0.667** | **0.556** |
+
+The CPG is better than the QLoRA on binary F1 by 0.144 and ties it on exact-CWE F1, while retaining
+source/sink evidence. The base model misses every labelled positive under the same prompt and token
+budget. This supports removing the QLoRA from Java, but does not establish final performance: the
+frozen 12-project held-out has not been opened.
+
+Reproduce the comparison after starting the base and adapter servers in turn:
+
+```bash
+python3 benchmarks/cwe-bench-java/run_g3_llm.py --url http://127.0.0.1:8081 \
+  --workers 2 --max-new-files 15 --model-label 'Qwen/Qwen3.5-9B Q4_K_M base (Apache-2.0)' \
+  --out rebuild/out/java_qwen38/my_base15.json
+python3 benchmarks/cwe-bench-java/compare_g3_engines.py \
+  --cpg rebuild/out/java_qwen38/g3_fixed_cpg_v5_scored_20260906.json \
+  --llm rebuild/out/java_qwen38/g3_qwen35_base_dev15_20260906.json \
+  --llm rebuild/out/java_qwen38/g3_qwen35_qlora_dev15_deterministic_20260906.json \
+  --out rebuild/out/java_qwen38/my_same_file_comparison.md
+```
+
+## Metric policy
+
+F1 remains the primary scalar because it prevents an all-alert engine (high recall, unusable
+precision) and an almost-never-alert engine (high precision, unusable recall) from winning. It is
+not the only gate: recall, F2, alert burden, project/CVE detection, parse failures, and buggy/fixed
+pair persistence are reported separately. In particular, CWE-Bench's `fix_info.csv` contains
+supporting and test methods that may have no sink; method recall alone is not a fair description of
+a sink-reporting CPG engine.
+
 ## Remaining gates / no-push status
 
 - A larger Qwen3.8-Max rule-generation batch must re-pass G1 before changing the production batch
   size. The attempted call was stopped before transmission because explicit authorization is
   required to send Java API signatures/snippets to DashScope.
-- G3 full dynamic Qwen rule generation and G4 Claude/GPT comparison require the same external-code
-  transfer authorization. Anthropic and DashScope credentials exist locally; no OpenAI API key is
-  configured, so GPT is currently `BLOCKED_NO_KEY`.
-- No remote push is allowed until the frozen held-out G4 F1 and recall are each within 5 percentage
-  points of the best available GPT/Claude result.
+- G3 full dynamic Qwen rule generation still requires explicit authorization to send repository API
+  signatures/snippets to DashScope. Fixed CPG and open-weight comparisons run locally without any
+  external code transfer.
+- G4 compares against preregistered open-weight models on identical inputs. No remote push is
+  allowed until the frozen held-out G4 F1 and recall are each within 5 percentage points of the
+  strongest available comparator.

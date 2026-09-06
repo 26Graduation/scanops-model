@@ -107,6 +107,17 @@ class GraphSpecJavaTests(unittest.TestCase):
         self.assertEqual("system", payload["messages"][0]["content"])
         self.assertEqual("user", payload["messages"][1]["content"])
 
+    def test_strict_mode_exposes_unavailable_runtime(self):
+        files = [{"path": "Demo.java", "content": "class Demo {}"}]
+        with patch.object(g, "ENABLED", True), \
+             patch.object(g, "JOERN_HTTP_URL", ""), \
+             patch.object(g, "RUNPOD_API_KEY", ""), \
+             patch.object(g, "JOERN_ENDPOINT_ID", ""), \
+             patch.object(g, "DASHSCOPE_API_KEY", ""):
+            self.assertEqual([], g.analyze_repo(files, "Java"))
+            with self.assertRaisesRegex(RuntimeError, "runtime is not ready"):
+                g.analyze_repo(files, "Java", strict=True)
+
 
 if __name__ == "__main__":
     unittest.main()

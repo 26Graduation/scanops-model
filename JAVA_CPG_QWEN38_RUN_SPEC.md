@@ -9,8 +9,8 @@ Java 레포에 대해 Qwen3.8-Max가 CPG source/sink/sanitizer 스펙을 생성�
 source→sink 경로를 탐색하는 제품 경로를 완성한다. 최종 원격 push는 아래 게이트를 모두
 통과한 경우에만 수행한다.
 
-- 동일한 held-out Java 평가셋에서 ScanOps의 취약점 인스턴스 F1과 recall이 GPT/Claude 중
-  더 높은 모델보다 각각 5%p 이상 낮지 않을 것.
+- 동일한 held-out Java 평가셋에서 ScanOps의 취약점 인스턴스 F1과 recall이 사전 선정한
+  최강 오픈웨이트 비교 모델보다 각각 5%p 이상 낮지 않을 것.
 - ScanOps가 반환한 진탐에는 sink line이 있고, taint형 진탐에는 source→sink path가 있을 것.
 - 파일 단위 경보를 대량으로 내서 recall만 높이는 결과는 통과로 보지 않는다.
 - 룰 생성/Joern 배치 유실률 0%, 파싱 실패는 전부 수치와 원문을 보존할 것.
@@ -19,9 +19,10 @@ source→sink 경로를 탐색하는 제품 경로를 완성한다. 최종 원�
 ## 2. 고정 모델과 비교 조건
 
 - ScanOps CPG 룰 생성과 critic: DashScope `qwen3.8-max`, temperature 0.
-- 기존 취약점 분류 LLM(Qwen3.5-9B QLoRA)은 별도 신호로 유지한다. 이번 변경의 독립 변수는
-  CPG 룰 생성 모델과 Java 제품 배선이다.
-- GPT와 Claude 비교는 같은 파일/프롬프트/출력 스키마/토큰 예산으로 수행한다.
+- Java 최종 판정에는 CVEfixes Qwen3.5-9B QLoRA를 사용하지 않는다. G3 외부 저장소
+  fail-fast에서 binary F1 0.444, 음성 파일 오탐 8/9로 전이 실패가 확인됐기 때문이다.
+- Qwen3.5-9B QLoRA 결과는 실패한 과거 baseline으로만 보존한다.
+- 오픈웨이트 비교 모델은 같은 파일/프롬프트/출력 스키마/토큰 예산으로 수행한다.
 - 모델의 정확한 API ID와 호출일은 결과 보고서에 기록한다.
 - API 키가 없는 비교 모델은 결과를 추정하거나 대체하지 않고 `BLOCKED_NO_KEY`로 기록한다.
 
@@ -43,9 +44,16 @@ source→sink 경로를 탐색하는 제품 경로를 완성한다. 최종 원�
 `(repository, file, enclosing method, CWE)` 취약점 인스턴스 단위 precision/recall/F1.
 같은 취약 메서드의 여러 정당한 sink 경보는 하나의 취약점 인스턴스로 합친다.
 
+F1을 주지표로 둔 이유는 recall만 최적화하면 모든 파일에 경보를 내는 엔진도 좋아 보이고,
+precision만 최적화하면 거의 아무것도 탐지하지 않는 엔진도 좋아 보이기 때문이다. F1은 두 값의
+조화평균이라 한쪽이 낮으면 함께 낮아진다. 단, 보안 탐지에서 놓침의 비용이 더 크므로 recall을
+독립 합격 게이트로 함께 두며, 경보 수/프로젝트와 parse failure도 반드시 별도 보고한다.
+
 ### 보조지표
 
 - raw line alert TP/FP/FN 및 중복률
+- F2 (놓침을 precision보다 두 배 가중)와 프로젝트/CVE 탐지율
+- 같은 CVE의 buggy/fixed 쌍에서 fix 후에도 남는 목표-CWE 경보율
 - CWE 엄격 일치와 CWE를 무시한 loose 적중
 - source→sink path 존재율과 cross-file path 수
 - CPG 생성 성공률, LLM JSON 파싱 성공률, API 호출 수/토큰/시간
@@ -85,10 +93,10 @@ Juliet FLAW 마커 주변의 모든 sink를 새 GT로 확장하지 않는다. �
 - 결과 파일, 생성 룰, 경로, 비용/시간을 보존한다.
 - 프로젝트별 실패 원인을 source/sink/CPG/build/CWE-label/critic으로 분류한다.
 
-### G4 — GPT/Claude 블라인드 비교
+### G4 — 오픈웨이트 모델 블라인드 비교
 
 - 동일 held-out 표본과 동일 CWE 허용 범위를 사용한다.
-- ScanOps/GPT/Claude 결과를 모두 고정한 다음 한 번에 채점한다.
+- ScanOps와 비교 모델 결과를 모두 고정한 다음 한 번에 채점한다.
 - 합격: ScanOps F1과 recall이 최고 비교 모델 대비 각각 5%p 이내.
 - 불합격 시 원인을 수정하되, 이미 본 held-out 프로젝트는 튜닝셋으로 이동하고 새로운 held-out으로
   최종 평가한다.

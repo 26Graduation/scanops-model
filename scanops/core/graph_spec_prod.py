@@ -747,18 +747,25 @@ def filter_findings(findings: list[dict], content_by_path: dict[str, str], lang_
 
 # ── 오케스트레이션 ───────────────────────────────────────────────────────────
 
-def analyze_repo(files: list[dict], language: str, repo_tag: str = "prod") -> list[dict]:
+def analyze_repo(files: list[dict], language: str, repo_tag: str = "prod",
+                 strict: bool = False) -> list[dict]:
     """files = [{"path","content"}] (한 언어의 레포 파일). 반환: findings(line 단위)."""
     if not ENABLED or not is_supported_lang(language) or not files:
+        if strict and files and is_supported_lang(language):
+            raise RuntimeError("graph-spec engine is disabled")
         return []
     frontend, lang_label = language_context(language)
     joern_ready = bool(JOERN_HTTP_URL) or bool(RUNPOD_API_KEY and JOERN_ENDPOINT_ID)
     if not (joern_ready and DASHSCOPE_API_KEY and LLM_MODEL == "qwen3.8-max"):
+        if strict:
+            raise RuntimeError("Java CPG+Qwen3.8-Max runtime is not ready")
         return []
 
     cand_out = call_joern_repo("candidates", language, files)
     cand = cand_out.get("data") or {}
     if cand_out.get("timed_out") or cand.get("error"):
+        if strict:
+            raise RuntimeError(f"candidate extraction failed: {cand.get('error') or 'timeout'}")
         return []
 
     items = build_items(cand)
@@ -796,6 +803,8 @@ def analyze_repo(files: list[dict], language: str, repo_tag: str = "prod") -> li
     )
     taint_data = taint_out.get("data") or {}
     if taint_out.get("timed_out") or taint_data.get("error"):
+        if strict:
+            raise RuntimeError(f"taint analysis failed: {taint_data.get('error') or 'timeout'}")
         return []
     findings = taint_data.get("findings") or []
     if not findings:
