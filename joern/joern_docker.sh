@@ -15,6 +15,19 @@ IMAGE="${JOERN_IMAGE:-ghcr.io/joernio/joern:master}"
 WORK_ROOT="${JOERN_WORK_ROOT:-/tmp}"
 REPO_ROOT="${JOERN_REPO_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 XMX="${JOERN_XMX:-4g}"
+# Bash 3 + `set -u` errors when expanding an empty array. Keep the no-cidfile
+# path explicit instead of relying on an optional empty array.
+if [[ -n "${JOERN_CIDFILE:-}" ]]; then
+  exec docker run --rm --cidfile "${JOERN_CIDFILE}" \
+    --memory="${JOERN_DOCKER_MEM:-8g}" \
+    -e JAVA_OPTS="-Xmx${XMX}" \
+    -e _JAVA_OPTIONS="-Xmx${XMX}" \
+    -v "${WORK_ROOT}:${WORK_ROOT}" \
+    -v "${REPO_ROOT}:${REPO_ROOT}:ro" \
+    -w "${WORK_ROOT}" \
+    "${IMAGE}" \
+    joern "$@"
+fi
 
 exec docker run --rm \
   --memory="${JOERN_DOCKER_MEM:-8g}" \

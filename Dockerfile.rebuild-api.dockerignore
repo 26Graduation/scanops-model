@@ -1,0 +1,19 @@
+# Only runtime sources enter the build context; no secrets, experiments or weights.
+**
+!Dockerfile.rebuild-api
+!scanops/
+!scanops/__init__.py
+!scanops/core/
+!scanops/core/*.py
+!scanops/core/specs/
+!scanops/core/specs/*.tsv
+!scripts/
+!scripts/api_rebuild.py
+!scripts/benchmark_qwen_rag.py
+!scripts/benchmark_core.py
+!scripts/grok_client.py
+!joern/
+!joern/langmap.py
+!rebuild/
+!rebuild/out/
+!rebuild/out/graph_spec_api_cache.json

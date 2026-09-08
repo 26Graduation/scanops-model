@@ -1,0 +1,9 @@
+# Joern runtime only; no repository data or credentials enter the build context.
+**
+!joern/
+!joern/Dockerfile
+!joern/*.py
+!joern/*.json
+!joern/*.txt
+!joern/queries/
+!joern/queries/*.sc

@@ -324,6 +324,9 @@ def _code_of(chunk: list[tuple[str, str]], cid: str) -> str:
 
 CANDIDATES_SCRIPT = os.getenv(
     "JOERN_CANDIDATES_SCRIPT", str(Path(__file__).resolve().parent / "queries" / "dump_candidates.sc"))
+CANDIDATES_V2_SCRIPT = os.getenv(
+    "JOERN_CANDIDATES_V2_SCRIPT",
+    str(Path(__file__).resolve().parent / "queries" / "dump_candidates_v2.sc"))
 TAINT_SPEC_SCRIPT = os.getenv(
     "JOERN_TAINT_SPEC_SCRIPT", str(Path(__file__).resolve().parent / "queries" / "taint_spec.sc"))
 REPO_TIMEOUT = int(os.getenv("JOERN_REPO_TIMEOUT", "600"))
@@ -331,7 +334,8 @@ REPO_TIMEOUT = int(os.getenv("JOERN_REPO_TIMEOUT", "600"))
 
 def run_repo_script(job_id: str, mode: str, language: str, files: list[dict],
                      spec_text: str = "", san_file: str = "", san_text: str = "",
-                     prop_file: str = "",
+                     prop_file: str = "", prop_text: str = "",
+                     candidate_schema: str = "v1",
                      src_mode: str = "params", arm: str = "S2C",
                      timeout: int | None = None) -> dict:
     """레포 파일 전체를 한 디렉터리에 써서 Joern을 **한 번만** 돌린다.
@@ -374,7 +378,8 @@ def run_repo_script(job_id: str, mode: str, language: str, files: list[dict],
         env["_JAVA_OPTIONS"] = f"-Xmx{XMX}"
 
         if mode == "candidates":
-            cmd = [JOERN_BIN, "--script", CANDIDATES_SCRIPT,
+            candidate_script = CANDIDATES_V2_SCRIPT if candidate_schema == "v2" else CANDIDATES_SCRIPT
+            cmd = [JOERN_BIN, "--script", candidate_script,
                    "--param", f"inDir={in_dir}", "--param", f"lang={joern_lang}",
                    "--param", f"outFile={out_file}"]
         else:  # taint
@@ -391,11 +396,18 @@ def run_repo_script(job_id: str, mode: str, language: str, files: list[dict],
                 effective_san_file = str(san_path)
             if effective_san_file:
                 cmd += ["--param", f"sanFile={effective_san_file}"]
-            if prop_file:
-                cmd += ["--param", f"propFile={prop_file}"]
+            effective_prop_file = prop_file
+            if prop_text:
+                prop_path = root / "propagation.tsv"
+                prop_path.write_text(prop_text, errors="replace")
+                effective_prop_file = str(prop_path)
+            if effective_prop_file:
+                cmd += ["--param", f"propFile={effective_prop_file}"]
 
         _log(f"RUN_REPO mode={mode} lang={joern_lang} n_files={n_written} cmd={' '.join(cmd)}")
         t0 = time.time()
+        cid_file = root / "joern-container.cid"
+        env["JOERN_CIDFILE"] = str(cid_file)
         proc = subprocess.Popen(cmd, env=env, cwd=str(root), stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT, text=True)
         rss: dict = {"peak_rss_mb": 0}
@@ -408,7 +420,22 @@ def run_repo_script(job_id: str, mode: str, language: str, files: list[dict],
         except subprocess.TimeoutExpired:
             timed_out = True
             proc.kill()
-            stdout, _ = proc.communicate()
+            # Killing `docker run` only kills the client.  Without removing the
+            # container, Joern keeps consuming CPU/RAM and `communicate()` may
+            # wait indefinitely because descendants retain the output pipe.
+            if cid_file.exists():
+                cid = cid_file.read_text(errors="replace").strip()
+                if cid:
+                    try:
+                        subprocess.run(["docker", "rm", "-f", cid],
+                                       stdout=subprocess.DEVNULL,
+                                       stderr=subprocess.DEVNULL, timeout=30)
+                    except Exception as cleanup_error:  # noqa: BLE001
+                        _log(f"container timeout cleanup failed cid={cid}: {cleanup_error}")
+            try:
+                stdout, _ = proc.communicate(timeout=30)
+            except subprocess.TimeoutExpired:
+                stdout = ""
         finally:
             stop.set()
             th.join(timeout=5)
@@ -451,6 +478,8 @@ def handler(job: dict) -> dict:
                 san_file=inp.get("san_file", ""),
                 san_text=inp.get("san_text", ""),
                 prop_file=inp.get("prop_file", ""),
+                prop_text=inp.get("prop_text", ""),
+                candidate_schema=inp.get("candidate_schema", "v1"),
                 src_mode=inp.get("src_mode", "params"),
                 arm=inp.get("arm", "S2C"),
                 timeout=inp.get("timeout"),
@@ -498,6 +527,8 @@ try:  # 요청 모델은 **모듈 레벨**이어야 한다.
         san_file: str = ""
         san_text: str = ""
         prop_file: str = ""
+        prop_text: str = ""
+        candidate_schema: str = "v1"
         src_mode: str = "params"
         arm: str = "S2C"
 except ImportError:  # pydantic 없이 CLI/RunPod 로만 쓸 때
@@ -554,7 +585,8 @@ def _build_app():
                 req.job_id, req.mode, req.language,
                 [{"path": f.path, "content": f.content} for f in req.files],
                 spec_text=req.spec_text, san_file=req.san_file, san_text=req.san_text,
-                prop_file=req.prop_file,
+                prop_file=req.prop_file, prop_text=req.prop_text,
+                candidate_schema=req.candidate_schema,
                 src_mode=req.src_mode, arm=req.arm)
         except ValueError as e:
             raise HTTPException(409, str(e))

@@ -7,11 +7,11 @@
 API 요청 하나 안에서 전부 메모리로 처리한다(레포 파일이 이미 요청 본문에 들어있으므로).
 
 호출 순서 (analyze_repo):
-  1) Joern 워커(HTTP 또는 RunPod) mode=candidates — 레포 전체를 한 CPG로 후보 추출
-  2) 후보 → build_items → API 캐시 조회 → 캐시미스만 Qwen3.8-Max(DashScope) 호출
-  3) 검증(§9 반과적합) + hand_rules 병합 + 캐시로 최종 override → spec.tsv 조립
+  1) 고정 룰만 쓰는 shadow/offline이면 바로 spec.tsv 조립(Qwen/DashScope 불필요)
+  2) 룰생성 또는 enforce가 필요할 때만 Joern mode=candidates로 후보 추출
+  3) 룰생성 활성+Qwen 가용 시 캐시미스 제안; enforce일 때만 동적 룰을 spec에 추가
   4) Joern 워커 mode=taint — 조립한 spec으로 실제 taint 쿼리, line 단위 findings
-  5) evidence 검증 통과분만 오탐필터(critic, 같은 룰생성 모델) 호출
+  5) critic 활성+Qwen 가용 시에만 evidence 검증 통과분을 오탐필터로 호출
   6) §23 PRODUCTION_failsafe: TRUE/UNCERTAIN/unjudged/evidence_mismatch를 살리고,
      실제 제시 문맥의 line을 근거로 든 high-confidence FALSE만 제거
 
@@ -22,6 +22,7 @@ API 요청 하나 안에서 전부 메모리로 처리한다(레포 파일이 �
 from __future__ import annotations
 
 import json
+import hashlib
 import os
 import re
 import time
@@ -76,6 +77,15 @@ MAX_FRESH_ITEMS = int(os.getenv("GRAPH_SPEC_MAX_FRESH_ITEMS", "0"))
 RULEGEN_BATCH = int(os.getenv("GRAPH_SPEC_RULEGEN_BATCH", "20"))
 CRITIC_BATCH = int(os.getenv("GRAPH_SPEC_CRITIC_BATCH", "4"))
 LLM_MAX_WORKERS = max(1, int(os.getenv("GRAPH_SPEC_LLM_MAX_WORKERS", "6")))
+# Rule proposal is an optional side channel. Keeping the historical default on means
+# configured deployments still populate the shadow cache, while an offline deployment
+# can run the fixed Java CPG rules without a DashScope credential.
+RULEGEN_ENABLED = os.getenv("GRAPH_SPEC_RULEGEN_ENABLED", "on").lower() == "on"
+RULEGEN_CONTEXT_VERSION = os.getenv("GRAPH_SPEC_RULEGEN_CONTEXT", "v1").strip().lower()
+if RULEGEN_CONTEXT_VERSION not in ("v1", "v2"):
+    RULEGEN_CONTEXT_VERSION = "v1"
+DYNAMIC_SANITIZER_ENABLED = os.getenv("GRAPH_SPEC_DYNAMIC_SANITIZER_ENABLED", "off").lower() == "on"
+DYNAMIC_PROPAGATION_ENABLED = os.getenv("GRAPH_SPEC_DYNAMIC_PROPAGATION_ENABLED", "off").lower() == "on"
 CRITIC_ENABLED = os.getenv("GRAPH_SPEC_CRITIC_ENABLED", "off").lower() == "on"
 CRITIC_FALSE_CONFIDENCE = os.getenv(
     "GRAPH_SPEC_CRITIC_FALSE_CONFIDENCE", "high").strip().lower()
@@ -84,6 +94,37 @@ if DYNAMIC_RULE_MODE not in ("shadow", "enforce"):
     DYNAMIC_RULE_MODE = "shadow"
 
 API_CACHE_PATH = Path(os.getenv("GRAPH_SPEC_API_CACHE", str(ROOT / "rebuild" / "out" / "graph_spec_api_cache.json")))
+
+
+def qwen_runtime_ready() -> bool:
+    """Whether the pinned Qwen rule/critic transport is usable in this process."""
+    return bool(DASHSCOPE_API_KEY) and LLM_MODEL == "qwen3.8-max"
+
+
+def runtime_metadata() -> dict[str, Any]:
+    """Expose configured versus effective optional features for logs/health endpoints."""
+    qwen_ready = qwen_runtime_ready()
+    return {
+        "engine_enabled": ENABLED,
+        "joern_configured": bool(JOERN_HTTP_URL) or bool(RUNPOD_API_KEY and JOERN_ENDPOINT_ID),
+        "fixed_rules_require_qwen": False,
+        "dynamic_rule_mode": DYNAMIC_RULE_MODE,
+        "rulegen_context": RULEGEN_CONTEXT_VERSION,
+        "dynamic_sanitizer_enabled": DYNAMIC_SANITIZER_ENABLED,
+        "dynamic_propagation_enabled": DYNAMIC_PROPAGATION_ENABLED,
+        "rulegen": {
+            "enabled": RULEGEN_ENABLED,
+            "qwen_ready": qwen_ready,
+            "effective": RULEGEN_ENABLED and qwen_ready,
+            "model": LLM_MODEL,
+        },
+        "critic": {
+            "enabled": CRITIC_ENABLED,
+            "qwen_ready": qwen_ready,
+            "effective": CRITIC_ENABLED and qwen_ready,
+            "model": LLM_MODEL,
+        },
+    }
 
 # ── RunPod 호출 (async run + poll — runsync 타임아웃 회피) ──────────────────
 
@@ -138,7 +179,8 @@ def call_rulegen(system: str, user: str, n_predict: int) -> str:
         json={"model": LLM_MODEL,
               "messages": [{"role": "system", "content": system},
                            {"role": "user", "content": user}],
-              "max_tokens": n_predict, "temperature": 0.0},
+              "max_tokens": n_predict, "temperature": 0.0,
+              "enable_thinking": False},
         timeout=RULEGEN_TIMEOUT,
     )
     r.raise_for_status()
@@ -181,7 +223,8 @@ def update_api_cache(good: list[dict], repo_tag: str, frontend: str) -> None:
         # 거쳐 오는 순간 validate() 의 arg_pattern 필수 체크에 걸려 조용히 탈락한다.
         entry = {kk: r[kk] for kk in ("role", "cat", "cwe", "match", "pattern", "arg_pattern",
                                       "arg_count",
-                                      "applies_to", "propagation", "confidence", "why")
+                                      "endpoint", "applies_to", "propagation", "confidence", "why",
+                                      "rule_id", "_provenance", "_enforce_eligible")
                  if kk in r}
         entry["_first_seen_repo"] = repo_tag
         entry["_reviewed_by_human"] = False
@@ -344,6 +387,149 @@ def fmt_item(it: dict) -> str:
                        "snippets": it["snippets"]}, ensure_ascii=False)
 
 
+CWE_DESCRIPTIONS = {
+    "CWE-15": "External control of system or configuration setting",
+    "CWE-22": "Path traversal",
+    "CWE-78": "OS command injection",
+    "CWE-79": "Cross-site scripting",
+    "CWE-89": "SQL injection",
+    "CWE-90": "LDAP injection",
+    "CWE-94": "Code injection",
+    "CWE-113": "HTTP response splitting",
+    "CWE-117": "Improper output neutralization for logs",
+    "CWE-200": "Exposure of sensitive information",
+    "CWE-284": "Improper access control",
+    "CWE-327": "Use of a broken or risky cryptographic algorithm",
+    "CWE-470": "Externally controlled input to select classes or code",
+    "CWE-477": "Use of obsolete function",
+    "CWE-502": "Deserialization of untrusted data",
+    "CWE-601": "Open redirect",
+    "CWE-643": "XPath injection",
+    "CWE-918": "Server-side request forgery",
+}
+
+RULEGEN_V2_SYSTEM = """You generate precise Java taint-model proposals from structured facts extracted from a Joern CPG and source context.
+
+The input is NOT a whole CPG. It contains exact call/method facts, endpoints, representative source windows, comments/JavaDoc when available, and a target CWE catalogue. Do not invent facts absent from the item.
+
+Return one JSON array in input order, with no prose or markdown. Each object must contain:
+{"id": <echo id>, "role": "sink"|"source"|"sanitizer"|"propagator"|"none",
+ "cat": <allowed category for sinks>, "cwe": "CWE-nnn" for sinks,
+ "match": "full" or "internal_parameter", "pattern": <anchored Java regex>,
+ "endpoint": "return"|"receiver"|"call"|"arg:N",
+ "applies_to": [<categories>] for sanitizers,
+ "propagation": [{"from": <int|"return">, "to": <int|"return">}] for propagators,
+ "confidence": "high"|"med"|"low", "why": <max 20 words>}.
+
+Rules:
+- Prefer none when resolution or context is insufficient.
+- A call rule must use its exact resolved method_full_name and match=full. Never widen to a bare method name.
+- A sink must name the exact dangerous argument (arg:N), receiver, or call-presence endpoint.
+- A source must name return, receiver, or exact argument endpoint.
+- internal_method_parameter items may only be source or none, use match=internal_parameter and their exact arg:N endpoint.
+- A sanitizer is only valid with exact input/output behaviour and applies_to categories.
+- A propagator is only valid for external APIs whose body is unavailable.
+- Project-local names, file paths, line numbers, and repository-specific identifiers must not appear in pattern.
+
+Examples:
+Input resolved Runtime.exec arg 1 -> {"id":0,"role":"sink","cat":"cmdi","cwe":"CWE-78","match":"full","pattern":"^java\\.lang\\.Runtime\\.exec:java\\.lang\\.Process\\(java\\.lang\\.String\\)$","endpoint":"arg:1","confidence":"high","why":"command argument reaches process execution"}
+Input resolved HttpServletRequest.getParameter -> {"id":1,"role":"source","match":"full","pattern":"^javax\\.servlet\\.http\\.HttpServletRequest\\.getParameter:java\\.lang\\.String\\(java\\.lang\\.String\\)$","endpoint":"return","confidence":"high","why":"returns request-controlled parameter"}
+Input StringBuilder.append external body unavailable -> {"id":2,"role":"propagator","match":"full","pattern":"^java\\.lang\\.StringBuilder\\.append:java\\.lang\\.StringBuilder\\(java\\.lang\\.String\\)$","endpoint":"return","propagation":[{"from":1,"to":0},{"from":0,"to":"return"}],"confidence":"high","why":"append carries input through receiver and return"}
+Input unresolved generic write -> {"id":3,"role":"none","match":"full","pattern":"^<unresolved.*$","endpoint":"call","confidence":"low","why":"receiver and overload unresolved"}
+"""
+
+RULEGEN_V2_USER_TMPL = """Repository language: Java
+Candidate schema: scanops.rulegen-candidates.v2
+Target CWE catalogue: {cwes}
+Batch {bi}/{bn}. Label every item below.
+
+{items}
+
+Return the JSON array now."""
+
+
+def _file_content(files: list[dict], path: str) -> str:
+    normalized = (path or "").replace("\\", "/")
+    for item in files or []:
+        p = str(item.get("path") or "").replace("\\", "/")
+        if p == normalized or normalized.endswith("/" + p) or p.endswith("/" + normalized):
+            return str(item.get("content") or "")
+    return ""
+
+
+def _source_window(files: list[dict], path: str, line: int, radius: int = 5) -> str:
+    content = _file_content(files, path)
+    if not content or not isinstance(line, int) or line < 1:
+        return ""
+    lines = content.splitlines()
+    start, end = max(0, line - 1 - radius), min(len(lines), line + radius)
+    return "\n".join(f"{i + 1}: {lines[i]}" for i in range(start, end))[:2400]
+
+
+def _javadoc_before(files: list[dict], path: str, line: int) -> str:
+    content = _file_content(files, path)
+    if not content or not isinstance(line, int) or line < 2:
+        return ""
+    prefix = "\n".join(content.splitlines()[:line - 1])
+    match = re.search(r"/\*\*(.*?)\*/\s*(?:@[\w.]+(?:\([^\n]*\))?\s*)*$", prefix, re.S)
+    return re.sub(r"(?m)^\s*\* ?", "", match.group(1)).strip()[:800] if match else ""
+
+
+def _exact_pattern(full_name: str) -> str:
+    return "^" + re.escape(full_name) + "$"
+
+
+def build_items_v2(cand: dict, files: list[dict]) -> list[dict]:
+    """Build exact-FQN Java candidates while preserving unresolved items for shadow audit."""
+    items: list[dict] = []
+    local_packages = java_local_packages(files)
+    for call in cand.get("calls", []):
+        full = str(call.get("method_full_name") or "")
+        is_local = any(full.startswith(pkg + ".") for pkg in local_packages)
+        if is_local:
+            continue
+        sites = []
+        for site in (call.get("sites") or [])[:3]:
+            path, line = str(site.get("file") or ""), site.get("line")
+            sites.append({**site, "context": _source_window(files, path, line),
+                          "javadoc": _javadoc_before(files, path, line)})
+        item = {
+            "kind": "call_v2", "name": full or str(call.get("name") or ""),
+            "bare_name": str(call.get("name") or ""), "method_full_name": full,
+            "signature": str(call.get("signature") or ""),
+            "return_type": str(call.get("return_type") or ""),
+            "resolved": bool(call.get("resolved")), "external": True,
+            "n": int(call.get("occurrences") or 0), "sites": sites,
+        }
+        items.append(item)
+    for method in cand.get("internal_methods", []):
+        full = str(method.get("method_full_name") or "")
+        for param in method.get("parameters") or []:
+            idx = int(param.get("index") or 0)
+            if idx < 1:
+                continue
+            path, line = str(method.get("file") or ""), method.get("line")
+            items.append({
+                "kind": "internal_method_parameter", "name": f"{full}#arg:{idx}",
+                "method_full_name": full, "signature": str(method.get("signature") or ""),
+                "parameter": param, "endpoint": f"arg:{idx}", "resolved": bool(full),
+                "external": False, "n": 1, "visibility": method.get("visibility") or [],
+                "annotations": method.get("annotations") or [],
+                "context": _source_window(files, path, line),
+                "javadoc": _javadoc_before(files, path, line),
+            })
+    for i, item in enumerate(items):
+        item["id"] = i
+    return items
+
+
+def fmt_item_v2(item: dict) -> str:
+    payload = {k: v for k, v in item.items() if k not in {"name", "n"}}
+    payload["occurrences"] = item.get("n", 0)
+    payload["required_exact_pattern"] = _exact_pattern(str(item.get("method_full_name") or ""))
+    return json.dumps(payload, ensure_ascii=False, sort_keys=True)
+
+
 def _extract_json_array(text: str) -> list | None:
     txt = re.sub(r"<think>.*?</think>", "", text, flags=re.S).strip()
     if txt.startswith("```"):
@@ -404,6 +590,52 @@ def label_items(items: list[dict], lang_label: str) -> list[dict]:
     return results
 
 
+def label_items_v2(items: list[dict]) -> list[dict]:
+    """Label exact Java candidates and attach immutable prompt/model provenance."""
+    by_id = {item["id"]: item for item in items}
+    batches = [items[i:i + RULEGEN_BATCH] for i in range(0, len(items), RULEGEN_BATCH)]
+    cwes = json.dumps(CWE_DESCRIPTIONS, ensure_ascii=False, sort_keys=True)
+    system_hash = hashlib.sha256(RULEGEN_V2_SYSTEM.encode()).hexdigest()
+
+    def run_batch(pair: tuple[int, list[dict]]) -> list[dict]:
+        bi, batch = pair
+        body = "\n\n".join(fmt_item_v2(item) for item in batch)
+        user = RULEGEN_V2_USER_TMPL.format(cwes=cwes, bi=bi + 1, bn=len(batches), items=body)
+        prompt_hash = hashlib.sha256((RULEGEN_V2_SYSTEM + "\n" + user).encode()).hexdigest()
+        for attempt in range(3):
+            try:
+                raw = call_rulegen(RULEGEN_V2_SYSTEM, user, 260 * len(batch) * (attempt + 1))
+            except Exception:  # noqa: BLE001
+                continue
+            arr = _extract_json_array(raw)
+            if arr is not None:
+                return [{**obj, "_provenance": {
+                    "schema": "scanops.rulegen.v2", "model": LLM_MODEL,
+                    "system_prompt_sha256": system_hash, "prompt_sha256": prompt_hash,
+                    "batch": bi,
+                }} for obj in arr if isinstance(obj, dict)]
+        return []
+
+    returned: dict[int, dict] = {}
+    with ThreadPoolExecutor(max_workers=min(LLM_MAX_WORKERS, max(1, len(batches)))) as ex:
+        for outputs in ex.map(run_batch, enumerate(batches)):
+            for obj in outputs:
+                if obj.get("id") in by_id:
+                    returned[obj["id"]] = obj
+    results = []
+    for item in items:
+        obj = returned.get(item["id"])
+        if obj is None:
+            continue
+        obj["_candidate"] = {
+            "name": item["name"], "kind": item["kind"], "n": item["n"],
+            "resolved": item.get("resolved", False),
+            "method_full_name": item.get("method_full_name", ""),
+        }
+        results.append(obj)
+    return results
+
+
 # ── 검증/조립 (rebuild/graph_spec_to_joern.py 와 동일 규칙) ─────────────────
 
 BAD_PATH = re.compile(r"[A-Za-z0-9_./\-]+\.(ts|tsx|js|jsx|mjs|cjs|py|java|scala|go|rb|php)\b")
@@ -457,7 +689,12 @@ def sanitizer_spec_text(frontend: str) -> str:
 def compose_spec_text(frontend: str, dynamic_rules: list[dict]) -> str:
     """Only benchmark-promoted deployments may let repository-generated rules affect verdicts."""
     base = base_spec_text(frontend).rstrip() + "\n"
-    return base + (to_tsv(dynamic_rules) if DYNAMIC_RULE_MODE == "enforce" else "")
+    if DYNAMIC_RULE_MODE != "enforce":
+        return base
+    eligible = [r for r in dynamic_rules
+                if r.get("_candidate", {}).get("kind") not in ("call_v2", "internal_method_parameter")
+                or r.get("_enforce_eligible")]
+    return base + to_tsv(eligible)
 
 
 def language_context(language: str) -> tuple[str, str]:
@@ -499,7 +736,7 @@ def validate(rules: list[dict], repo_toks: set[str]) -> list[dict]:
         pat = (o.get("pattern") or "").strip()
         # `none`도 일반 API에 대한 유효한 판정이다. 캐시하지 않으면 같은 무관 API를 매
         # 스캔마다 Qwen에 다시 보내므로 검증 후 보존하고, to_tsv에서만 출력하지 않는다.
-        if role not in ("sink", "source", "sanitizer", "none"):
+        if role not in ("sink", "source", "sanitizer", "propagator", "none"):
             continue
         if not pat:
             continue
@@ -515,7 +752,7 @@ def validate(rules: list[dict], repo_toks: set[str]) -> list[dict]:
         # Cipher.getInstance("DES") 처럼 "어느 리터럴 인자가 오느냐"에 따라서만 위험한
         # sink(CWE-327 등)를 LLM 이 정확히 판단해도(6/7라운드 실측: role=none 으로 정직하게
         # 넘기고 있었다) 룰로 못 옮기던 두 번째 구조적 갭.
-        if o.get("match") not in ("name", "full", "code", "assign_field",
+        if o.get("match") not in ("name", "full", "code", "assign_field", "internal_parameter",
                                    "exists", "exists_full",
                                    "arg_literal", "arg_literal_full",
                                    "arg_count", "arg_count_full"):
@@ -559,6 +796,28 @@ def validate(rules: list[dict], repo_toks: set[str]) -> list[dict]:
             if n_args < 1:
                 continue
             o["arg_count"] = n_args
+        cand = o.get("_candidate") or {}
+        if cand.get("kind") in ("call_v2", "internal_method_parameter"):
+            endpoint = str(o.get("endpoint") or "")
+            allowed_endpoints = {"return", "receiver", "call"}
+            endpoint_ok = endpoint in allowed_endpoints or bool(re.fullmatch(r"arg:[1-9][0-9]*", endpoint))
+            if not endpoint_ok:
+                continue
+            full = str(cand.get("method_full_name") or "")
+            exact = _exact_pattern(full) if full else ""
+            if o.get("match") == "internal_parameter":
+                exact_match = cand.get("kind") == "internal_method_parameter" and pat == exact
+            else:
+                exact_match = o.get("match") == "full" and pat == exact
+            o["rule_id"] = o.get("rule_id") or (
+                "qwen38." + hashlib.sha256(
+                    f"{role}|{o.get('cwe','')}|{pat}|{endpoint}".encode()).hexdigest()[:16]
+            )
+            o["_enforce_eligible"] = bool(
+                cand.get("resolved") and exact_match and
+                str(o.get("confidence") or "").lower() == "high" and
+                role in ("sink", "source", "sanitizer", "propagator")
+            )
         good.append(o)
     return good
 
@@ -580,7 +839,8 @@ def apply_cache_override(rules: list[dict], cache: dict, frontend: str = "JSSRC"
         if k in by_key:
             by_key[k].update({kk: entry[kk] for kk in
                               ("role", "cat", "cwe", "match", "pattern", "arg_pattern", "arg_count",
-                               "applies_to", "propagation")
+                               "endpoint", "applies_to", "propagation", "rule_id",
+                               "_provenance", "_enforce_eligible")
                               if kk in entry})
     return out
 
@@ -629,10 +889,45 @@ def to_tsv(rules: list[dict], cwe_hint: str | None = None) -> str:
                 row += f"\t{o.get('arg_pattern', '')}"
             elif o.get("match") in ("arg_count", "arg_count_full"):
                 row += f"\t{o.get('arg_count', '')}"
+            elif o.get("endpoint"):
+                row += "\t"
+            if o.get("endpoint"):
+                row += f"\t{o['endpoint']}\t{o.get('rule_id', '')}"
             lines.append(row)
         elif o["role"] == "source":
-            lines.append(f"source\t-\t-\t{o['match']}\t{o['pattern']}")
+            row = f"source\t-\t-\t{o['match']}\t{o['pattern']}"
+            if o.get("endpoint"):
+                row += f"\t\t{o['endpoint']}\t{o.get('rule_id', '')}"
+            lines.append(row)
     return "\n".join(lines) + "\n"
+
+
+def to_sanitizer_tsv(rules: list[dict]) -> str:
+    """Experimental v2 sanitizer arm; never enabled by the default product path."""
+    lines = []
+    for rule in rules:
+        if rule.get("role") != "sanitizer" or not rule.get("_enforce_eligible"):
+            continue
+        applies = [x for x in rule.get("applies_to") or [] if x in CATEGORY_CWES]
+        if applies:
+            lines.append(f"dynamic.{rule.get('rule_id','unknown')}\t{','.join(applies)}\t{rule['pattern']}")
+    return "\n".join(lines) + ("\n" if lines else "")
+
+
+def to_propagation_tsv(rules: list[dict]) -> str:
+    """Experimental exact-FQN propagation arm; malformed endpoint pairs are ignored."""
+    lines = []
+    for rule in rules:
+        if rule.get("role") != "propagator" or not rule.get("_candidate", {}).get("resolved"):
+            continue
+        pairs = []
+        for flow in rule.get("propagation") or []:
+            src, dst = flow.get("from"), flow.get("to")
+            if (src == "return" or isinstance(src, int)) and (dst == "return" or isinstance(dst, int)):
+                pairs.append(f"{src},{dst}")
+        if pairs and rule.get("match") == "full" and rule.get("pattern"):
+            lines.append(f"{rule['pattern']}\t{';'.join(pairs)}")
+    return "\n".join(lines) + ("\n" if lines else "")
 
 
 # ── 오탐필터 (rebuild/graph_spec_critic_r3.py 와 동일 판정 규칙) ────────────
@@ -663,6 +958,9 @@ Answer with ONE JSON array, no prose, no markdown fence. One object per finding,
 {"id": <int, echo the input id>,
  "verdict": "TRUE" | "FALSE" | "UNCERTAIN",
  "confidence": "high" | "med" | "low",
+ "false_component": "source" | "sink" | "path" | "sanitizer" | "none",
+ "false_rule_id": "<rule id when a reusable endpoint rule is wrong, otherwise empty>",
+ "reusable_endpoint_rejection": <boolean>,
  "basis_line": <int — the line number your verdict rests on; REQUIRED when verdict is FALSE>,
  "reason": "<max 25 words>"}"""
 
@@ -682,16 +980,36 @@ def _snippet_from_content(content: str, line: int | None, ctx: int = CTX) -> str
     return "\n".join(f"{i+1}: {lines[i]}" for i in range(a, b))
 
 
+def _representative_path(path: list[dict], limit: int = 10) -> list[dict]:
+    """Keep both endpoints and evenly sample long paths without front-only truncation."""
+    if len(path) <= limit:
+        return path
+    indexes = {0, len(path) - 1}
+    for i in range(limit):
+        indexes.add(round(i * (len(path) - 1) / (limit - 1)))
+    # If rounding collapsed indexes, prefer call-looking nodes for the remaining slots.
+    for i, step in enumerate(path):
+        if len(indexes) >= limit:
+            break
+        code = str(step.get("code") or "")
+        if "(" in code and ")" in code:
+            indexes.add(i)
+    return [path[i] for i in sorted(indexes)[:limit - 1]] + [path[-1]]
+
+
 def _fmt_finding(f: dict, content_by_path: dict[str, str]) -> str:
     path = f.get("path") or []
     steps = [{"role": s["role"], "file": s.get("file", ""), "line": s.get("line"),
-              "code": (s.get("code") or "")[:150]} for s in path[:8]]
+              "code": (s.get("code") or "")[:150]} for s in _representative_path(path)]
     obj = {"id": f["_uid"], "category": f["category"], "cwe": f["cwe"],
+           "cwe_description": CWE_DESCRIPTIONS.get(f["cwe"], ""),
            "sink": {"file": f["file"], "line": f.get("line"), "code": (f.get("sink") or "")[:200]},
            "source": {"file": f.get("source_file", ""), "line": f.get("source_line"),
                       "code": (f.get("source") or "")[:200],
                       "kind": f.get("source_kind", "unknown")},
            "flow": steps,
+           "rule": {"id": f.get("rule_id", ""), "pattern": f.get("rule_pattern", ""),
+                    "match": f.get("rule_field", ""), "endpoint": f.get("rule_endpoint", "")},
            "sanitizer_hits": [h.get("pattern") for h in (f.get("sanitizer_hits") or [])][:4],
            "duplicate_flows_at_same_location": f["_dup_count"]}
     out = [json.dumps(obj, ensure_ascii=False)]
@@ -751,13 +1069,14 @@ def _critic_false_is_grounded(finding: dict, verdict: dict) -> bool:
 
 
 def review_findings(findings: list[dict], content_by_path: dict[str, str],
-                    lang_label: str) -> tuple[list[dict], dict]:
+                    lang_label: str, enabled: bool | None = None) -> tuple[list[dict], dict]:
     """Review findings and return both kept findings and a reproducible critic audit."""
+    critic_enabled = CRITIC_ENABLED if enabled is None else enabled
     if not findings:
-        return [], {"enabled": CRITIC_ENABLED, "input": 0, "kept": 0, "removed": 0,
+        return [], {"enabled": critic_enabled, "input": 0, "kept": 0, "removed": 0,
                     "verdicts": [], "raw_batches": []}
     uniq = _dedupe([f for f in findings if not f.get("sanitized")])
-    if not CRITIC_ENABLED:
+    if not critic_enabled:
         return uniq, {"enabled": False, "input": len(uniq), "kept": len(uniq),
                       "removed": 0, "verdicts": [], "raw_batches": []}
     sendable, quarantined_uids = [], set()
@@ -821,9 +1140,9 @@ def review_findings(findings: list[dict], content_by_path: dict[str, str],
 
 
 def filter_findings(findings: list[dict], content_by_path: dict[str, str],
-                    lang_label: str) -> list[dict]:
+                    lang_label: str, enabled: bool | None = None) -> list[dict]:
     """§23 failsafe: only evidence-grounded high-confidence FALSE is removed."""
-    return review_findings(findings, content_by_path, lang_label)[0]
+    return review_findings(findings, content_by_path, lang_label, enabled=enabled)[0]
 
 
 # ── 오케스트레이션 ───────────────────────────────────────────────────────────
@@ -837,52 +1156,89 @@ def analyze_repo(files: list[dict], language: str, repo_tag: str = "prod",
         return []
     frontend, lang_label = language_context(language)
     joern_ready = bool(JOERN_HTTP_URL) or bool(RUNPOD_API_KEY and JOERN_ENDPOINT_ID)
-    if not (joern_ready and DASHSCOPE_API_KEY and LLM_MODEL == "qwen3.8-max"):
+    if not joern_ready:
         if strict:
-            raise RuntimeError("Java CPG+Qwen3.8-Max runtime is not ready")
+            raise RuntimeError("Java CPG runtime is not ready: configure a Joern endpoint")
         return []
 
-    cand_out = call_joern_repo("candidates", language, files)
-    cand = cand_out.get("data") or {}
-    if cand_out.get("timed_out") or cand.get("error"):
-        if strict:
-            raise RuntimeError(f"candidate extraction failed: {cand.get('error') or 'timeout'}")
-        return []
+    qwen_ready = qwen_runtime_ready()
+    rulegen_effective = RULEGEN_ENABLED and qwen_ready
+    critic_effective = CRITIC_ENABLED and qwen_ready
+    if strict and CRITIC_ENABLED and not qwen_ready:
+        raise RuntimeError(
+            "graph-spec critic is enabled but Qwen3.8-Max runtime is not ready: "
+            "configure DASHSCOPE_API_KEY and GRAPH_SPEC_LLM_MODEL=qwen3.8-max"
+        )
+    if strict and DYNAMIC_RULE_MODE == "enforce" and RULEGEN_ENABLED and not qwen_ready:
+        raise RuntimeError(
+            "dynamic rule enforcement requested live rule generation, but Qwen3.8-Max "
+            "runtime is not ready; disable GRAPH_SPEC_RULEGEN_ENABLED for cache-only enforce"
+        )
 
-    items = build_items(cand, frontend, files)
-    api_cache = load_api_cache()
-    cached_items: list[tuple[dict, dict]] = []
-    fresh_items = []
-    for it in items:
-        entry = _cache_lookup(api_cache, it, frontend)
-        if entry is None:
-            fresh_items.append(it)
+    # Candidate extraction is unnecessary for the fixed shadow/offline path. It is used
+    # only to generate proposals, or to match an existing cache in explicit enforce mode.
+    dynamic_rules: list[dict] = []
+    need_candidates = rulegen_effective or DYNAMIC_RULE_MODE == "enforce"
+    if need_candidates:
+        try:
+            candidate_schema = "v2" if frontend == "JAVASRC" and RULEGEN_CONTEXT_VERSION == "v2" else "v1"
+            cand_out = call_joern_repo(
+                "candidates", language, files, candidate_schema=candidate_schema)
+            cand = cand_out.get("data") or {}
+            candidate_error = cand.get("error") or ("timeout" if cand_out.get("timed_out") else "")
+        except Exception as exc:  # noqa: BLE001 - optional enrichment must fail open
+            if strict:
+                raise RuntimeError(f"candidate extraction failed: {exc}") from exc
+            cand = {}
         else:
-            cached_items.append((it, entry))
-    if MAX_FRESH_ITEMS > 0 and len(fresh_items) > MAX_FRESH_ITEMS:
-        # Explicit operator override only.  Accuracy-first product default is unlimited (0).
-        fresh_items = fresh_items[:MAX_FRESH_ITEMS]
+            if candidate_error:
+                if strict:
+                    raise RuntimeError(f"candidate extraction failed: {candidate_error}")
+                # Dynamic discovery must never prevent the fixed rules from reaching taint.
+                cand = {}
 
-    # 캐시 히트 → 룰로 직접 변환 (재검증 없음 — 캐시 진입 시점에 이미 validate()를
-    # 통과했거나 사람이 교정한 값이다. role="none"도 반복 Qwen 호출 방지를 위해 보존하며
-    # to_tsv()가 실제 Joern 스펙에서는 제외한다).
-    cached_rules = []
-    for it, entry in cached_items:
-        cached_rules.append({**entry, "_candidate": {"name": it["name"], "kind": it["kind"], "n": it["n"]}})
+        if cand:
+            use_v2 = frontend == "JAVASRC" and RULEGEN_CONTEXT_VERSION == "v2"
+            items = build_items_v2(cand, files) if use_v2 else build_items(cand, frontend, files)
+            api_cache = load_api_cache()
+            cached_items: list[tuple[dict, dict]] = []
+            fresh_items = []
+            for it in items:
+                entry = _cache_lookup(api_cache, it, frontend)
+                if entry is None:
+                    fresh_items.append(it)
+                else:
+                    cached_items.append((it, entry))
+            if MAX_FRESH_ITEMS > 0 and len(fresh_items) > MAX_FRESH_ITEMS:
+                # Explicit operator override only. Accuracy-first default is unlimited (0).
+                fresh_items = fresh_items[:MAX_FRESH_ITEMS]
 
-    labeled = label_items(fresh_items, lang_label) if fresh_items else []
-    repo_toks = repo_path_tokens_from_files(files)
-    good = validate(labeled, repo_toks)
-    update_api_cache(good, repo_tag, frontend)
+            cached_rules = [
+                {**entry, "_candidate": {
+                    "name": it["name"], "kind": it["kind"], "n": it["n"],
+                    "resolved": it.get("resolved", False),
+                    "method_full_name": it.get("method_full_name", ""),
+                }} for it, entry in cached_items
+            ]
+            labeled = ((label_items_v2(fresh_items) if use_v2 else label_items(fresh_items, lang_label))
+                       if rulegen_effective and fresh_items else [])
+            good = validate(labeled, repo_path_tokens_from_files(files))
+            if rulegen_effective:
+                update_api_cache(good, repo_tag, frontend)
+            dynamic_rules = cached_rules + good
 
     # G3 dynamic arm preserved recall but increased active alerts 78→116 and strict FP 69→107.
     # Keep Qwen3.8 proposals/cache in shadow by default; enforcement requires an explicit,
     # benchmark-approved deployment setting.
-    spec_text = compose_spec_text(frontend, cached_rules + good)
+    spec_text = compose_spec_text(frontend, dynamic_rules)
 
+    dynamic_san = to_sanitizer_tsv(dynamic_rules) if DYNAMIC_SANITIZER_ENABLED else ""
+    dynamic_prop = to_propagation_tsv(dynamic_rules) if DYNAMIC_PROPAGATION_ENABLED else ""
     taint_out = call_joern_repo(
         "taint", language, files, spec_text=spec_text,
-        san_text=sanitizer_spec_text(frontend), src_mode=source_mode(frontend), arm="S2C"
+        san_text=sanitizer_spec_text(frontend) + dynamic_san,
+        prop_text=dynamic_prop,
+        src_mode=source_mode(frontend), arm="S2C"
     )
     taint_data = taint_out.get("data") or {}
     if taint_out.get("timed_out") or taint_data.get("error"):
@@ -894,4 +1250,4 @@ def analyze_repo(files: list[dict], language: str, repo_tag: str = "prod",
         return []
 
     content_by_path = {f.get("path", ""): f.get("content", "") for f in files}
-    return filter_findings(findings, content_by_path, lang_label)
+    return filter_findings(findings, content_by_path, lang_label, enabled=critic_effective)

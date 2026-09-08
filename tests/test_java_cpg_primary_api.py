@@ -11,6 +11,22 @@ except ModuleNotFoundError as exc:
 
 @unittest.skipIf(api is None, "FastAPI is not installed in this test environment")
 class JavaCpgPrimaryApiTests(unittest.TestCase):
+    def test_java_metadata_uses_qwen_and_preserves_verdict(self):
+        joern = {"verdict": "vuln", "categories": ["CWE-78"],
+                 "path": [{"line": 8, "role": "sink", "code": "exec(cmd)"}]}
+        with patch.object(api, "JAVA_ENGINE", "cpg-qwen38"), \
+             patch.object(api, "META_ENABLED", True), \
+             patch.object(api.graph_spec_prod, "qwen_runtime_ready", return_value=True), \
+             patch.object(api.graph_spec_prod, "call_rulegen", return_value=
+                          '{"summary":"검토 필요","attack":"외부 입력이면 명령 실행 가능","fix":"허용 목록 사용"}') as qwen, \
+             patch.object(api, "llm_chat", side_effect=AssertionError("legacy metadata called")):
+            result = api._analyze_one("Java", "class Demo {}", "Demo.java", joern_override=joern)
+        self.assertTrue(result.detected)
+        self.assertEqual(8, result.line)
+        self.assertEqual("허용 목록 사용", result.fix)
+        self.assertIn("CWE-78", result.ai_prompt)
+        qwen.assert_called_once()
+
     def test_java_cpg_verdict_does_not_call_legacy_classifier(self):
         joern = {
             "verdict": "vuln", "categories": ["CWE-78"],

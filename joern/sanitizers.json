@@ -13,12 +13,6 @@
         ]
       },
       {
-        "re": "prepareStatement\\(|PreparedStatement",
-        "applies_to": [
-          "sqli"
-        ]
-      },
-      {
         "re": "AddWithValue|Parameters\\.Add",
         "applies_to": [
           "sqli"
@@ -237,6 +231,15 @@
         ],
         "_why": "org.springframework.web.util.HtmlUtils.htmlEscape"
       }
+    ],
+    "redirect": [
+      {
+        "re": "URLEncoder\\.encode\\s*\\(",
+        "applies_to": [
+          "redirect"
+        ],
+        "_why": "java.net.URLEncoder.encode — 리다이렉트 대상 URL 을 인코딩해 오픈 리다이렉트(CWE-601) 페이로드 조작을 막는다. URLDecoder.decode() 는 반대로 인코딩을 되돌려 오염을 재도입할 수 있으니(특히 encode 뒤에 decode 가 체이닝되는 경우), decode 자체는 sink/sanitizer 가 아니라 규칙 추가 대상은 아니지만 유의할 것."
+      }
     ]
   },
   "JAVASRC": {
@@ -423,5 +426,6 @@
       }
     ]
   },
-  "_v4fix_note": "2026-08-17 추가: 출력 sink 앞의 표준 인코딩 API 3종을 xss sanitizer 로. OWASP 진단셋 과탐 24건 중 20건이 xss 규칙 발화였고(테스트 서블릿이 전부 response.getWriter() 로 끝난다), safe 변형은 그 출력을 인코딩한다. applies_to 는 xss 로만 한정 — 인코딩은 SQLi/cmdi 를 막지 못한다."
+  "_v4fix_note": "2026-08-17 추가: 출력 sink 앞의 표준 인코딩 API 3종을 xss sanitizer 로. OWASP 진단셋 과탐 24건 중 20건이 xss 규칙 발화였고(테스트 서블릿이 전부 response.getWriter() 로 끝난다), safe 변형은 그 출력을 인코딩한다. applies_to 는 xss 로만 한정 — 인코딩은 SQLi/cmdi 를 막지 못한다.",
+  "_v5_prepareStatement_demoted": "2026-09-02 제거: prepareStatement(/PreparedStatement 를 sqli sanitizer 에서 제외(= none, 중립 통과). prepareStatement() 는 '?' 플레이스홀더 + 별도 setX() 바인딩으로 쓸 때만 안전하다 — SQL 문자열 자체가 prepareStatement() 호출 전에 오염된 입력과 연결(concat)되어 만들어졌다면 여전히 취약한데, 기존 규칙은 이를 구분하지 못하고 무조건 안전 처리해 위양성 대신 위음성(false negative)을 만들었다. 현재 룰 테이블 구조는 API 이름만으로 분류하며 호출부별 인자 구성(argument provenance)을 분석하지 않으므로, 이 파일 안에서는 '안전하게 쓰인 prepareStatement 만 골라 sanitizer 로 남기기'가 불가능하다. 따라서 sanitizer 목록에서 빼서 중립(none)으로 되돌린다 — 오염된 입력이 SQL 문자열에 섞이면 executeQuery/executeUpdate/execute (이미 sink 로 등록됨) 까지 taint 가 정상적으로 이어진다. .setString/.setInt/... 바인딩 패턴은 여전히 sqli sanitizer 로 유지되므로 진짜 파라미터화 쿼리는 계속 안전 처리된다. 이 항목을 다시 sanitizer 로 되돌리기 전에 이 노트를 먼저 읽을 것."
 }

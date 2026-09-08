@@ -8,7 +8,7 @@
 #     -t hansekim31/scanops-joern-worker:latest --push .
 # 로컬:
 #   docker build -f joern/Dockerfile -t scanops-joern-worker:local .
-FROM ghcr.io/joernio/joern:master
+FROM ghcr.io/joernio/joern@sha256:be92fb19fa6fe19a3715ad5b0d81efc12b568ce40e3030aa0552690d3866155a
 
 # JVM 힙 상한 — 컨테이너 메모리의 절반 수준으로 잡는다. CPG는 스니펫 단위라
 # 4g 면 청크 25건에 충분(실측치는 JOERN_HYBRID_REPORT.md §2 RSS 곡선 참조).
@@ -30,6 +30,9 @@ RUN microdnf install -y python3 python3-pip \
 
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:${PATH}"
+# 1.10.1로 맞추려 했으나 이 이미지의 python3.9(AlmaLinux 기본)엔 1.9.1이 상한(핀 실패,
+# 2026-08-23 실측) — RunPod 서버리스 job 디스패치 문제(§24-6)는 SDK 버전이 원인이 아닌
+# 것으로 보고, 온프레미스 HTTP 모드(/joern/repo)로 우회하기로 함.
 RUN pip install --no-cache-dir runpod fastapi "uvicorn[standard]" pydantic requests
 
 WORKDIR /app

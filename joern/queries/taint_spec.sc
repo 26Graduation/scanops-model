@@ -17,16 +17,23 @@
  * 그 외 sanitizer 처리·path 출력·에러 처리는 taint_v4.sc 와 같은 방식을 따른다.
  *
  * specFile 형식 (TSV, 한 줄 = 룰 하나):
- *   sink<TAB>cat<TAB>cwe<TAB>field(name|full|code|assign_field|dynamic_index|exists|exists_full|arg_literal|arg_literal_full|arg_count|arg_count_full)<TAB>regex[<TAB>argRegex]
- *   source<TAB>-<TAB>-<TAB>field(name|full)<TAB>regex
+ *   sink<TAB>cat<TAB>cwe<TAB>field<TAB>regex[<TAB>argRegex<TAB>endpoint<TAB>ruleId]
+ *   source<TAB>-<TAB>-<TAB>field(name|full)<TAB>regex[<TAB><TAB>endpoint<TAB>ruleId]
+ * endpoint is optional and backward compatible. Sink values are all_args (legacy),
+ * receiver, call, or arg:N. Source values are return (legacy), receiver, or arg:N.
  * field=assign_field (PLAN.md 4단계): `el.innerHTML = x` 같은 프로퍼티 대입을 sink 로 본다.
  * regex 는 대입 LHS 의 필드명(예: innerHTML)에 매칭한다 — 함수 호출이 아니므로 name/full 과는
  * 다른 노드(<operator>.assignment)를 쿼리한다. 후보는 dump_candidates.sc 의 assigns, 라벨은
  * graph_spec_llm.py 가 다른 후보와 같은 반과적합 규칙으로 생성한다.
- * field=exists / exists_full (2026-09-04, §1-11): "danger가 데이터 흐름이 아니라 API 자체에
+ * field=exists / exists_full / exists_code / exists_code_without (2026-09-04, §1-11):
+ * "danger가 데이터 흐름이 아니라 API 자체에
  * 있는" sink(예: System.loadLibrary, new Random()) — reachableByFlows 없이, 콜이 CPG 안에
  * 존재하면 그 자체로 finding. exists 는 cpg.call.name(regex), exists_full 은
- * cpg.call.methodFullName(regex) 로 콜을 고른다. source 표시는 "N/A (call-site-only)".
+ * cpg.call.methodFullName(regex) 로 콜을 고른다. exists_code 는 Java frontend가
+ * Map.put/중첩 표현식을 operator call로 낮추는 경우를 위해 cpg.call.code(regex)를 쓴다.
+ * exists_code_without 동일하지만 콜의 근접 AST context에 argRegex가 존재하면
+ * 보호 조건으로 보고 제외한다.
+ * source 표시는 "N/A (call-site-only)".
  * field=arg_literal / arg_literal_full (2026-09-04, §1-11): 인자 값 자체가 위험 신호인
  * sink(예: Cipher.getInstance("DES"), Cookie.setMaxAge(양수)) — regex(5번째 열)로 콜을
  * 고르는 건 exists 와 같고(arg_literal 은 name, arg_literal_full 은 full), 거기에 6번째 열
@@ -49,9 +56,11 @@ import io.joern.dataflowengineoss.semanticsloader.{FlowSemantic, FullNameSemanti
 import io.joern.dataflowengineoss.DefaultSemantics
 import io.shiftleft.codepropertygraph.generated.nodes.Call
 import io.shiftleft.codepropertygraph.generated.nodes.Literal
+import io.shiftleft.codepropertygraph.generated.nodes.Method
 
-case class Rule(cat: String, cwe: String, sink: String, field: String, argRe: String = "")
-case class SrcRule(field: String, re: String)
+case class Rule(cat: String, cwe: String, sink: String, field: String,
+                argRe: String = "", endpoint: String = "all_args", ruleId: String = "")
+case class SrcRule(field: String, re: String, endpoint: String = "return", ruleId: String = "")
 
 def esc(s: String): String = {
   val b = new StringBuilder
@@ -97,15 +106,20 @@ def readLines(p: String): List[String] =
   var rules = List.empty[Rule]
   var srcRules = List.empty[SrcRule]
   for (ln <- readLines(specFile)) {
-    // limit=6: arg_literal(_full) 룰은 6번째 열(argRegex)을 쓴다. 기존 5열 행은 limit 을 늘려도
-    // 탭이 4개뿐이라 그대로 5개짜리 배열이 나와 호환된다(2026-09-04, §1-11).
-    val p = ln.split("\t", 6)
+    // Negative limit preserves empty argRegex when v2 endpoint/ruleId columns follow it.
+    val p = ln.split("\t", -1)
     if (p.length >= 5) {
       if (p(0) == "sink") {
         val argRe = if (p.length >= 6) p(5) else ""
-        rules = rules :+ Rule(p(1), p(2), p(4), p(3), argRe)
+        val endpoint = if (p.length >= 7 && p(6).nonEmpty) p(6) else "all_args"
+        val ruleId = if (p.length >= 8) p(7) else ""
+        rules = rules :+ Rule(p(1), p(2), p(4), p(3), argRe, endpoint, ruleId)
       }
-      else if (p(0) == "source") srcRules = srcRules :+ SrcRule(p(3), p(4))
+      else if (p(0) == "source") {
+        val endpoint = if (p.length >= 7 && p(6).nonEmpty) p(6) else "return"
+        val ruleId = if (p.length >= 8) p(7) else ""
+        srcRules = srcRules :+ SrcRule(p(3), p(4), endpoint, ruleId)
+      }
     }
   }
 
@@ -177,6 +191,47 @@ def readLines(p: String): List[String] =
   def lineOf(n: io.shiftleft.codepropertygraph.generated.nodes.AstNode): Int =
     try { n.lineNumber.map(_.toInt).getOrElse(-1) } catch { case _: Throwable => -1 }
 
+  def enclosingMethodOf(n: io.shiftleft.codepropertygraph.generated.nodes.AstNode): Option[Method] = {
+    var cur: io.shiftleft.codepropertygraph.generated.nodes.AstNode = n
+    var result: Option[Method] = None
+    var depth = 0
+    while (result.isEmpty && cur != null && depth < 100) {
+      if (cur.isInstanceOf[Method]) result = Some(cur.asInstanceOf[Method])
+      else cur = try cur.astParent catch { case _: Throwable => null }
+      depth += 1
+    }
+    // Java lambdas are materialized as synthetic `<lambda>N` methods.  They are
+    // implementation details rather than stable source-level method identities,
+    // so attribute their findings to the smallest enclosing non-lambda method.
+    result match {
+      case Some(m) if m.name.startsWith("<lambda>") =>
+        val fileName = try m.filename catch { case _: Throwable => "" }
+        val line = lineOf(n)
+        try {
+          cpg.method.l.filter { outer =>
+            val start = outer.lineNumber.map(_.toInt).getOrElse(-1)
+            val end = outer.lineNumberEnd.map(_.toInt).getOrElse(start)
+            outer.filename == fileName && !outer.name.startsWith("<lambda>") &&
+              start >= 0 && line >= start && line <= end
+          }.sortBy { outer =>
+            val start = outer.lineNumber.map(_.toInt).getOrElse(-1)
+            val end = outer.lineNumberEnd.map(_.toInt).getOrElse(Int.MaxValue)
+            end - start
+          }.headOption.orElse(result)
+        } catch { case _: Throwable => result }
+      case _ => result
+    }
+  }
+
+  def methodNameOf(n: io.shiftleft.codepropertygraph.generated.nodes.AstNode): String =
+    try enclosingMethodOf(n).map(_.name).getOrElse("") catch { case _: Throwable => "" }
+
+  def methodFullNameOf(n: io.shiftleft.codepropertygraph.generated.nodes.AstNode): String =
+    try enclosingMethodOf(n).map(_.fullName).getOrElse("") catch { case _: Throwable => "" }
+
+  def methodSignatureOf(n: io.shiftleft.codepropertygraph.generated.nodes.AstNode): String =
+    try enclosingMethodOf(n).map(_.signature).getOrElse("") catch { case _: Throwable => "" }
+
   def enclosingCodes(n: io.shiftleft.codepropertygraph.generated.nodes.AstNode): List[String] = {
     var acc = List(n.code.take(300))
     var cur: io.shiftleft.codepropertygraph.generated.nodes.AstNode = n
@@ -194,12 +249,19 @@ def readLines(p: String): List[String] =
     acc.distinct
   }
 
+  def guardContextCodes(n: io.shiftleft.codepropertygraph.generated.nodes.AstNode): List[String] = {
+    val methodAst = try enclosingMethodOf(n).toList.flatMap(_.ast.code.l).map(_.take(300))
+                    catch { case _: Throwable => Nil }
+    (enclosingCodes(n) ++ methodAst).filter(_.nonEmpty).distinct
+  }
+
   case class Step(file: String, line: Int, code: String, role: String)
   case class SanHit(line: Int, code: String, role: String, pattern: String)
   case class Finding(file: String, cat: String, cwe: String, src: String, snk: String,
                      line: Int, srcFile: String, srcLine: Int, srcKind: String,
+                     sinkMethod: String, sinkMethodFullName: String, sinkMethodSignature: String,
                      path: List[Step], sanitized: Boolean, sanHits: List[SanHit],
-                     rulePat: String, ruleField: String)
+                     rulePat: String, ruleField: String, ruleEndpoint: String, ruleId: String)
   var findings = List.empty[Finding]
 
   // source = 명시적 파라미터(암묵 수신자 제외) + 스펙이 지정한 source 호출.
@@ -222,17 +284,30 @@ def readLines(p: String): List[String] =
   }
   val paramSources =
     if (srcMode == "calls") Nil
-    else if (srcMode == "java") allExplicitParams.filter(isPublicDataParam)
+    else if (srcMode == "java" || srcMode == "java_local" || srcMode == "java_file")
+      allExplicitParams.filter(isPublicDataParam)
     else allExplicitParams
-  val callSources = srcRules.flatMap { s =>
-    try { if (s.field == "full") cpg.call.methodFullName(s.re).l else cpg.call.name(s.re).l }
-    catch { case _: Throwable => Nil }
+  val internalParamSources = srcRules.filter(_.field == "internal_parameter").flatMap { s =>
+    try {
+      val idx = try s.endpoint.stripPrefix("arg:").toInt catch { case _: Throwable => -999 }
+      cpg.method.fullName(s.re).parameter.index(idx).l
+    } catch { case _: Throwable => Nil }
+  }.distinct
+  val callSources = srcRules.filterNot(_.field == "internal_parameter").flatMap { s =>
+    try {
+      val calls = if (s.field == "full") cpg.call.methodFullName(s.re).l else cpg.call.name(s.re).l
+      if (s.endpoint == "receiver") calls.flatMap(_.argument.filter(_.argumentIndex == 0).l)
+      else if (s.endpoint.startsWith("arg:")) {
+        val idx = try s.endpoint.stripPrefix("arg:").toInt catch { case _: Throwable => -999 }
+        calls.flatMap(_.argument.filter(_.argumentIndex == idx).l)
+      } else calls
+    } catch { case _: Throwable => Nil }
   }.distinct
   // Java frontends do not connect constructor/setter parameter writes to later reads of
   // the same instance field.  Treat data-carrying `this.field` reads as trust-boundary
   // continuations; sink reachability still has to hold, so the field read alone is not a finding.
   val javaStateSources =
-    if (srcMode != "java") Nil
+    if (srcMode != "java" && srcMode != "java_local" && srcMode != "java_file") Nil
     else try cpg.call.name("<operator>.fieldAccess").l.filter { c =>
       val t = try c.typeFullName catch { case _: Throwable => "" }
       c.code.trim.startsWith("this.") && isDataCarrierType(t) && !isFrameworkContextType(t)
@@ -259,7 +334,7 @@ def readLines(p: String): List[String] =
       }
     } catch { case _: Throwable => Nil }
 
-  val sources = paramSources ++ callSources ++ faSources ++ javaStateSources
+  val sources = paramSources ++ callSources ++ internalParamSources ++ faSources ++ javaStateSources
 
   // 2026-09-04 dangerous-call-only 확장(§1-11) 전용 헬퍼: exists/arg_literal 은 flow path 가
   // 없어 콜 노드 하나만 보고 sanitizer 근접 여부를 판단한다. 기존 reachability 분기(아래 else)의
@@ -275,10 +350,22 @@ def readLines(p: String): List[String] =
   var ruleErrors = List.empty[String]
   for (r <- rules) {
     try {
-      if (r.field == "exists" || r.field == "exists_full") {
+      if (r.field == "exists" || r.field == "exists_full" || r.field == "exists_code" ||
+          r.field == "exists_code_without") {
         // (a) 순수 존재확인: source→sink 데이터 흐름이 아니라 API 호출 자체가 위험 신호인 sink
         // (System.loadLibrary, new Random() 등). reachableByFlows 없이 콜이 CPG 에 있으면 finding.
-        val calls = if (r.field == "exists_full") cpg.call.methodFullName(r.sink).l else cpg.call.name(r.sink).l
+        val selectedCalls =
+          if (r.field == "exists_full") cpg.call.methodFullName(r.sink).l
+          else if (r.field == "exists_code" || r.field == "exists_code_without") cpg.call.code(r.sink).l
+          else cpg.call.name(r.sink).l
+        val guardPat =
+          if (r.field == "exists_code_without")
+            try Some(java.util.regex.Pattern.compile(r.argRe)) catch { case _: Throwable => None }
+          else None
+        val calls = selectedCalls.filter { c =>
+          guardPat.forall(p => !guardContextCodes(c).exists(code =>
+            try p.matcher(code).find() catch { case _: Throwable => false }))
+        }
         val pats = sanPatternsFor(r.cat)
         for (c <- calls) {
           val fileName = fileOf(c)
@@ -288,8 +375,9 @@ def readLines(p: String): List[String] =
               fileName, r.cat, r.cwe,
               "N/A (call-site-only)", c.code.take(160), lineOf(c),
               fileName, lineOf(c), "call_site_only",
+              methodNameOf(c), methodFullNameOf(c), methodSignatureOf(c),
               List(Step(fileName, lineOf(c), c.code.take(200), "sink")),
-              hits.nonEmpty, hits.take(6), r.sink, r.field)
+              hits.nonEmpty, hits.take(6), r.sink, r.field, "call", r.ruleId)
           }
         }
       } else if (r.field == "arg_literal" || r.field == "arg_literal_full") {
@@ -310,8 +398,9 @@ def readLines(p: String): List[String] =
                   fileName, r.cat, r.cwe,
                   "N/A (arg-literal-only)", c.code.take(160), lineOf(c),
                   fileName, lineOf(c), "argument_literal",
+                  methodNameOf(c), methodFullNameOf(c), methodSignatureOf(c),
                   List(Step(fileName, lineOf(c), c.code.take(200), "sink")),
-                  hits.nonEmpty, hits.take(6), r.sink, r.field)
+                  hits.nonEmpty, hits.take(6), r.sink, r.field, "literal", r.ruleId)
               }
             }
           }
@@ -338,15 +427,24 @@ def readLines(p: String): List[String] =
                   fileName, r.cat, r.cwe,
                   "N/A (arg-count-only)", c.code.take(160), lineOf(c),
                   fileName, lineOf(c), "argument_count",
+                  methodNameOf(c), methodFullNameOf(c), methodSignatureOf(c),
                   List(Step(fileName, lineOf(c), c.code.take(200), "sink")),
-                  hits.nonEmpty, hits.take(6), r.sink, r.field)
+                  hits.nonEmpty, hits.take(6), r.sink, r.field, "argument_count", r.ruleId)
               }
             }
           }
         }
       } else {
       val sinks =
-        if (r.field == "full") cpg.call.methodFullName(r.sink).argument.filter(_.argumentIndex > 0)
+        if (r.field == "full" || r.field == "name") {
+          val calls = if (r.field == "full") cpg.call.methodFullName(r.sink).l else cpg.call.name(r.sink).l
+          if (r.endpoint == "receiver") calls.flatMap(_.argument.filter(_.argumentIndex == 0).l)
+          else if (r.endpoint == "call") calls
+          else if (r.endpoint.startsWith("arg:")) {
+            val idx = try r.endpoint.stripPrefix("arg:").toInt catch { case _: Throwable => -999 }
+            calls.flatMap(_.argument.filter(_.argumentIndex == idx).l)
+          } else calls.flatMap(_.argument.filter(_.argumentIndex > 0).l)
+        }
         else if (r.field == "code") cpg.call.code(r.sink).argument.filter(_.argumentIndex > 0)
         else if (r.field == "assign_field")
           // PLAN.md 4단계: 대입문 LHS 가 <operator>.fieldAccess 이고 그 필드명이 규칙에 매칭될 때.
@@ -367,7 +465,18 @@ def readLines(p: String): List[String] =
             }
           }
         else cpg.call.name(r.sink).argument.filter(_.argumentIndex > 0)
-      val flows = sinks.reachableByFlows(sources).l
+      val sinkList = sinks.l
+      val flowSources =
+        if (srcMode == "java_local") {
+          val sinkMethodIds = sinkList.flatMap(n => enclosingMethodOf(n).map(_.id)).toSet
+          sources.filter(n => enclosingMethodOf(n).exists(m => sinkMethodIds.contains(m.id)))
+        }
+        else if (srcMode == "java_file") {
+          val sinkFiles = sinkList.map(fileOf).filter(_.nonEmpty).toSet
+          sources.filter(n => sinkFiles.contains(fileOf(n)))
+        }
+        else sources
+      val flows = sinkList.reachableByFlows(flowSources).l
       val pats = sanPatternsFor(r.cat)
       for (f <- flows) {
         val elems = f.elements
@@ -396,6 +505,7 @@ def readLines(p: String): List[String] =
             }.toList
             val srcKind =
               if (paramSources.exists(_.id == elems.head.id)) "public_parameter"
+              else if (internalParamSources.exists(_.id == elems.head.id)) "internal_parameter"
               else if (callSources.exists(_.id == elems.head.id)) "explicit_source_api"
               else if (javaStateSources.exists(_.id == elems.head.id)) "instance_state"
               else if (faSources.exists(_.id == elems.head.id)) "parameter_field_access"
@@ -404,7 +514,8 @@ def readLines(p: String): List[String] =
               fileName, r.cat, r.cwe,
               elems.head.code.take(160), sinkDisplayCode.take(160), lineOf(lastNode),
               fileOf(elems.head), lineOf(elems.head), srcKind,
-              steps, hits.nonEmpty, hits.take(6), r.sink, r.field)
+              methodNameOf(lastNode), methodFullNameOf(lastNode), methodSignatureOf(lastNode),
+              steps, hits.nonEmpty, hits.take(6), r.sink, r.field, r.endpoint, r.ruleId)
           }
         }
       }
@@ -429,6 +540,7 @@ def readLines(p: String): List[String] =
   sb.append(s"""{"arm":"${esc(arm)}","n_rules":${rules.size},"n_source_rules":${srcRules.size},""")
   sb.append(s""""n_prop_rules":${propFlows.size},"n_sanitizer_patterns":${sanAll.size},""")
   sb.append(s""""n_call_sources":${callSources.size},"n_param_sources":${paramSources.size},""")
+  sb.append(s""""n_internal_parameter_sources":${internalParamSources.size},""")
   sb.append(s""""n_java_state_sources":${javaStateSources.size},""")
   sb.append(s""""src_mode":"${esc(srcMode)}","n_fieldaccess_sources":${faSources.size},""")
   sb.append("\"parsed\":[")
@@ -449,7 +561,11 @@ def readLines(p: String): List[String] =
     s""""source":"${esc(f.src)}","sink":"${esc(f.snk)}","line":${f.line},""" +
     s""""source_file":"${esc(f.srcFile)}","source_line":${f.srcLine},""" +
     s""""source_kind":"${esc(f.srcKind)}",""" +
+    s""""sink_method":"${esc(f.sinkMethod)}",""" +
+    s""""sink_method_full_name":"${esc(f.sinkMethodFullName)}",""" +
+    s""""sink_method_signature":"${esc(f.sinkMethodSignature)}",""" +
     s""""rule_pattern":"${esc(f.rulePat)}","rule_field":"${esc(f.ruleField)}",""" +
+    s""""rule_endpoint":"${esc(f.ruleEndpoint)}","rule_id":"${esc(f.ruleId)}",""" +
     s""""sanitized":${f.sanitized},"sanitizer_hits":[${hitsJson}],""" +
     s""""path":[${pathJson}]}"""
   }.mkString(","))

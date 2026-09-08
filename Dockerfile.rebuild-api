@@ -1,14 +1,18 @@
 # ScanOps Rebuild 모델 API — CPU 전용 (LLM 호출은 llm_client가 RunPod로 라우팅)
 # 2026-07 rebuild Qwen3.5-9B 단일 모델 (워커: runpod/Dockerfile.rebuild)
-FROM python:3.11-slim
+FROM python:3.11-slim@sha256:9534e5a8e315485d4061ed659af0fd78a284c015f9b73661b41d6bab25604534
 
 WORKDIR /app
-RUN pip install --no-cache-dir fastapi "uvicorn[standard]" pydantic requests
+RUN pip install --no-cache-dir fastapi "uvicorn[standard]" pydantic requests "tree-sitter-language-pack==1.12.2"
 
 COPY scanops/ scanops/
 COPY scripts/api_rebuild.py scripts/benchmark_qwen_rag.py scripts/benchmark_core.py scripts/grok_client.py scripts/
 # benchmark_qwen_rag는 RAG 참고 CVE(search_cves)용 lazy import 의존.
+# joern/langmap.py만 — Joern JVM 자체는 별도 워커(RunPod)에 있고 여긴 언어문자열 매핑만 필요.
+COPY joern/langmap.py joern/langmap.py
+# §21/§23 API 판단 캐시 시드값 — 볼륨 마운트 없이 뜨는 첫 컨테이너용 기본값(런타임에 갱신됨).
+COPY rebuild/out/graph_spec_api_cache.json rebuild/out/graph_spec_api_cache.json
 
 ENV PORT=8100
 EXPOSE 8100
-CMD ["sh", "-c", "uvicorn scripts.api_rebuild:app --host 0.0.0.0 --port ${PORT}"]
+CMD ["sh", "-c", "exec uvicorn scripts.api_rebuild:app --host 0.0.0.0 --port ${PORT} --workers 1"]
