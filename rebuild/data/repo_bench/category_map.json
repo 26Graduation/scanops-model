@@ -1,0 +1,17 @@
+{
+  "_note": "juice-shop 챌린지 카테고리 → 허용 CWE 집합. 정답표 카테고리는 챌린지 분류이고 스캐너는 CWE 를 낸다. 이 표는 **부지표(위치+카테고리)에만** 쓰인다 — 주지표는 위치만이다(사양 §6-d). 작성 시점: 20건 파일럿 라벨은 봤고 전체 arm 결과는 보기 전. 특정 출력에 맞춰 넓히지 않았다.",
+  "_wildcard": "Miscellaneous 는 챌린지 분류상 잡다한 묶음이라 어떤 CWE 든 허용한다.",
+  "Injection": ["CWE-89", "CWE-943", "CWE-78", "CWE-77", "CWE-94", "CWE-917", "CWE-74", "CWE-1336"],
+  "XSS": ["CWE-79", "CWE-80", "CWE-116"],
+  "Broken Access Control": ["CWE-284", "CWE-285", "CWE-862", "CWE-863", "CWE-639", "CWE-425", "CWE-566"],
+  "Broken Authentication": ["CWE-287", "CWE-307", "CWE-521", "CWE-916", "CWE-327", "CWE-328", "CWE-798", "CWE-522", "CWE-640"],
+  "Sensitive Data Exposure": ["CWE-200", "CWE-22", "CWE-538", "CWE-548", "CWE-532", "CWE-359", "CWE-497", "CWE-798"],
+  "Unvalidated Redirects": ["CWE-601"],
+  "Improper Input Validation": ["CWE-20", "CWE-915", "CWE-1321"],
+  "Observability Failures": ["CWE-532", "CWE-200", "CWE-548", "CWE-538", "CWE-778"],
+  "Broken Anti Automation": ["CWE-307", "CWE-799", "CWE-770", "CWE-837"],
+  "Security through Obscurity": ["CWE-656", "CWE-200", "CWE-615"],
+  "Vulnerable Components": ["CWE-1104", "CWE-937", "CWE-1035"],
+  "Miscellaneous": ["*"],
+  "Cryptographic Issues": ["CWE-327", "CWE-328", "CWE-326", "CWE-330", "CWE-338"]
+}

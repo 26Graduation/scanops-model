@@ -1,0 +1,56 @@
+{"case_id": "owasph_3", "label": "vuln", "cat": "cmdi", "joern_verdict": "vuln", "categories": ["cmdi"], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_4", "label": "safe", "cat": "cmdi", "joern_verdict": "vuln", "categories": ["cmdi"], "sanitized_categories": []}
+{"case_id": "owasph_6", "label": "vuln", "cat": "cmdi", "joern_verdict": "vuln", "categories": ["cmdi"], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_9", "label": "safe", "cat": "cmdi", "joern_verdict": "vuln", "categories": ["cmdi"], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_10", "label": "vuln", "cat": "crypto", "joern_verdict": "vuln", "categories": ["crypto", "xss"], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_11", "label": "safe", "cat": "crypto", "joern_verdict": "vuln", "categories": ["crypto", "xss"], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_12", "label": "vuln", "cat": "crypto", "joern_verdict": "vuln", "categories": ["crypto", "xss"], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_13", "label": "vuln", "cat": "crypto", "joern_verdict": "vuln", "categories": ["crypto", "xss"], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_14", "label": "vuln", "cat": "crypto", "joern_verdict": "vuln", "categories": ["crypto", "xss"], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_15", "label": "safe", "cat": "crypto", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_21", "label": "safe", "cat": "hash", "joern_verdict": "vuln", "categories": ["pathtraver", "xss"], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_23", "label": "vuln", "cat": "hash", "joern_verdict": "vuln", "categories": ["hash", "xss"], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_25", "label": "safe", "cat": "hash", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_26", "label": "vuln", "cat": "hash", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_27", "label": "safe", "cat": "hash", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_28", "label": "vuln", "cat": "hash", "joern_verdict": "vuln", "categories": ["hash", "xss"], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_29", "label": "safe", "cat": "hash", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_31", "label": "vuln", "cat": "ldapi", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_34", "label": "vuln", "cat": "ldapi", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_35", "label": "vuln", "cat": "ldapi", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_36", "label": "safe", "cat": "ldapi", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_37", "label": "safe", "cat": "ldapi", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_41", "label": "safe", "cat": "pathtraver", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_45", "label": "safe", "cat": "pathtraver", "joern_verdict": "vuln", "categories": ["pathtraver"], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_46", "label": "safe", "cat": "pathtraver", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_47", "label": "safe", "cat": "pathtraver", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_48", "label": "safe", "cat": "pathtraver", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_50", "label": "vuln", "cat": "securecookie", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_52", "label": "vuln", "cat": "securecookie", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_54", "label": "vuln", "cat": "securecookie", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_57", "label": "safe", "cat": "securecookie", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_61", "label": "vuln", "cat": "sqli", "joern_verdict": "vuln", "categories": ["sqli", "xss"], "sanitized_categories": []}
+{"case_id": "owasph_63", "label": "vuln", "cat": "sqli", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_67", "label": "safe", "cat": "sqli", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_69", "label": "vuln", "cat": "sqli", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_71", "label": "vuln", "cat": "trustbound", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_73", "label": "vuln", "cat": "trustbound", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_74", "label": "safe", "cat": "trustbound", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_75", "label": "safe", "cat": "trustbound", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_77", "label": "safe", "cat": "trustbound", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_78", "label": "vuln", "cat": "trustbound", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_79", "label": "safe", "cat": "trustbound", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_80", "label": "safe", "cat": "weakrand", "joern_verdict": "vuln", "categories": ["weakrand", "xss"], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_82", "label": "safe", "cat": "weakrand", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": []}
+{"case_id": "owasph_83", "label": "vuln", "cat": "weakrand", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": []}
+{"case_id": "owasph_87", "label": "vuln", "cat": "weakrand", "joern_verdict": "vuln", "categories": ["weakrand", "xss"], "sanitized_categories": []}
+{"case_id": "owasph_89", "label": "safe", "cat": "weakrand", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": []}
+{"case_id": "owasph_90", "label": "safe", "cat": "xpathi", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_93", "label": "vuln", "cat": "xpathi", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_95", "label": "vuln", "cat": "xpathi", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_96", "label": "vuln", "cat": "xpathi", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"]}
+{"case_id": "owasph_100", "label": "safe", "cat": "xss", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": []}
+{"case_id": "owasph_102", "label": "vuln", "cat": "xss", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": []}
+{"case_id": "owasph_103", "label": "vuln", "cat": "xss", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": []}
+{"case_id": "owasph_104", "label": "safe", "cat": "xss", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": []}
+{"case_id": "owasph_108", "label": "safe", "cat": "xss", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": []}

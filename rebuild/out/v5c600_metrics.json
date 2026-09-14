@@ -1,0 +1,107 @@
+{
+  "spec": "rebuild/V5_TRAIN_RUN_SPEC.md §5·§10, D-28",
+  "tag": "v5c600",
+  "pair_cb": {
+    "v5c600|P2": {
+      "acc_cb": 0.65,
+      "acc_X": 0.59,
+      "acc_Y": 0.71,
+      "pos_gap": 0.12,
+      "tie": 0.16,
+      "n": 200
+    },
+    "v5c600|P0": {
+      "acc_cb": 0.31,
+      "pos_gap": null,
+      "tie": 0.505,
+      "n": 200
+    },
+    "v3s42@750|P2": {
+      "acc_cb": 0.58,
+      "acc_X": 0.655,
+      "acc_Y": 0.505,
+      "pos_gap": 0.15,
+      "tie": 0.26,
+      "n": 200
+    },
+    "v3s42@750|P0": {
+      "acc_cb": 0.34,
+      "pos_gap": null,
+      "tie": 0.52,
+      "n": 200
+    },
+    "v1|P2": {
+      "acc_cb": 0.605,
+      "acc_X": 0.56,
+      "acc_Y": 0.65,
+      "pos_gap": 0.09,
+      "tie": 0.155,
+      "n": 200
+    },
+    "v1|P0": {
+      "acc_cb": 0.46,
+      "pos_gap": null,
+      "tie": 0.33,
+      "n": 200
+    }
+  },
+  "contrasts": {
+    "형식 학습 기여": {
+      "a": "v5c600+P2",
+      "b": "v3s42@750+P2",
+      "n": 200,
+      "delta": 0.07,
+      "ci95": [
+        0.015,
+        0.1275
+      ],
+      "ci_lower_gt_0": true
+    },
+    "형식 전체 효과": {
+      "a": "v5c600+P2",
+      "b": "v3s42@750+P0",
+      "n": 200,
+      "delta": 0.31,
+      "ci95": [
+        0.2375,
+        0.3875
+      ],
+      "ci_lower_gt_0": true
+    },
+    "형식 전이": {
+      "a": "v5c600+P0",
+      "b": "v3s42@750+P0",
+      "n": 200,
+      "delta": -0.03,
+      "ci95": [
+        -0.11,
+        0.05
+      ],
+      "ci_lower_gt_0": false
+    },
+    "제품 관점(v1 대비)": {
+      "a": "v5c600+P2",
+      "b": "v1+P2",
+      "n": 200,
+      "delta": 0.045,
+      "ci95": [
+        -0.015,
+        0.105
+      ],
+      "ci_lower_gt_0": false
+    }
+  },
+  "bench_auc": {},
+  "fpr_safe": {
+    "v5c600": 0.435,
+    "v1": 0.065,
+    "v3s42@750": 0.5675
+  },
+  "adopt_conditions": {
+    "rank_cb>=0.60": true,
+    "pos_gap<=0.20": true,
+    "학습기여 CI하한>0": true,
+    "FPR-safe<=v1+0.05": false
+  },
+  "verdict": "NO-ADOPT"
+}

@@ -21,3 +21,6 @@ tqdm
 
 # 개발
 pytest
+
+# Java repository context parser (bundled grammars)
+tree-sitter-language-pack==1.12.2

@@ -1,0 +1,239 @@
+{
+  "summary": {
+    "schema": "scanops.cwe-bench-java.g3-llm.v1",
+    "model": "Qwen/Qwen3.5-9B Q4_K_M base (Apache-2.0)",
+    "external_transfer": false,
+    "prompt_sha256_16": "d91fa59450be5f4f",
+    "n_files": 15,
+    "n_expected_files": 266,
+    "complete": false,
+    "n_truth_files": 6,
+    "binary": {
+      "tp": 0,
+      "fp": 1,
+      "fn": 6,
+      "tn": 8,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "exact_cwe": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 6,
+      "tn": 9,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "parse_failures": 1,
+    "elapsed_this_run": 687.397,
+    "checkpoint": "rebuild/out/java_qwen38/g3_qwen35_base_dev15_20260906.jsonl",
+    "bounded_run": true,
+    "label_caveat": "non-fix main files are treated as negative and may contain unrelated unlabeled flaws"
+  },
+  "rows": [
+    {
+      "project_slug": "codehaus-plexus__plexus-utils_CVE-2017-1000487_3.0.15",
+      "file": "src/main/java/org/codehaus/plexus/util/cli/shell/BourneShell.java",
+      "truth": true,
+      "expected_cwe": "CWE-78",
+      "label": "safe",
+      "cwe": "",
+      "chunks": 1,
+      "raws": [
+        "<think>\n\n</think>\n\nVULNERABILITY: NONE\nSEVERITY: NONE\nCVSS: 0.0\nREASON: The code implements shell command execution with specific quoting and escaping logic to prevent shell injection, rather than directly invoking a shell with untrusted input."
+      ],
+      "elapsed": 35.639
+    },
+    {
+      "project_slug": "codehaus-plexus__plexus-utils_CVE-2017-1000487_3.0.15",
+      "file": "src/main/java/org/codehaus/plexus/util/cli/shell/Shell.java",
+      "truth": true,
+      "expected_cwe": "CWE-78",
+      "label": "safe",
+      "cwe": "",
+      "chunks": 1,
+      "raws": [
+        "<think>\n\n</think>\n\nVULNERABILITY: NONE\nSEVERITY: NONE\nCVSS: 0.0\nREASON: The code is a utility class for constructing shell command lines and does not execute code directly or handle untrusted input in a way that leads to command injection within this specific file."
+      ],
+      "elapsed": 48.008
+    },
+    {
+      "project_slug": "codehaus-plexus__plexus-utils_CVE-2017-1000487_3.0.15",
+      "file": "src/main/java/org/codehaus/plexus/util/cli/Commandline.java",
+      "truth": true,
+      "expected_cwe": "CWE-78",
+      "label": "safe",
+      "cwe": "",
+      "chunks": 2,
+      "raws": [
+        "<think>\n\n</think>\n\nVULNERABILITY: NONE\nSEVERITY: NONE\nCVSS: 0.0\nREASON: The provided code snippet is a utility class for constructing command lines and does not contain direct execution logic, input validation of external data, or unsafe deserialization that would constitute a vulnerability in this context.",
+        "<think>\n\n</think>\n\nVULNERABILITY: NONE\nSEVERITY: NONE\nCVSS: 0.0\nREASON: The code manages command-line arguments and environment variables for process execution but does not contain direct injection flaws, as it relies on external utilities for parsing and validation, and the provided snippet lacks the execution context to confirm unsafe string concatenation in the final command construction."
+      ],
+      "elapsed": 98.069
+    },
+    {
+      "project_slug": "jmrozanec__cron-utils_CVE-2021-41269_9.1.5",
+      "file": "src/main/java/com/cronutils/parser/CronParser.java",
+      "truth": true,
+      "expected_cwe": "CWE-94",
+      "label": "safe",
+      "cwe": "",
+      "chunks": 1,
+      "raws": [
+        "<think>\n\n</think>\n\nVULNERABILITY: NONE\nSEVERITY: NONE\nCVSS: 0.0\nREASON: The code performs input validation and sanitization (trimming, checking for empty strings, validating field counts) before processing, preventing injection or parsing errors."
+      ],
+      "elapsed": 21.755
+    },
+    {
+      "project_slug": "perwendel__spark_CVE-2018-9159_2.7.1",
+      "file": "src/main/java/spark/resource/ClassPathResource.java",
+      "truth": true,
+      "expected_cwe": "CWE-22",
+      "label": "safe",
+      "cwe": "",
+      "chunks": 1,
+      "raws": [
+        "<think>\n\n</think>\n\nVULNERABILITY: NONE\nSEVERITY: NONE\nCVSS: 0.0\nREASON: The code safely uses standard Java class loader APIs to resolve resources and does not contain direct user input handling or unsafe operations."
+      ],
+      "elapsed": 24.816
+    },
+    {
+      "project_slug": "jmrozanec__cron-utils_CVE-2021-41269_9.1.5",
+      "file": "src/main/java/com/cronutils/validation/CronValidator.java",
+      "truth": true,
+      "expected_cwe": "CWE-94",
+      "label": "parse_fail",
+      "cwe": "",
+      "chunks": 1,
+      "raws": [
+        "<think>\nThinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A Java code snippet (`CronValidator.java`).\n    *   Task: Analyze for security vulnerabilities.\n    *   Output Format: Strictly specific format (`VULNERABILITY: ...`, `SEVERABILITY: ...`, `CVSS: ...`, `REASON: ...`).\n\n2.  **Analyze the Code:**\n    *   Package: `com.cronutils.validation`.\n    *   Imports: `com.cronutils.model.*`, `javax.validation.*`.\n    *   Class: `CronValidator` implements `ConstraintValidator<Cron, String>`.\n    *   Method `initialize`: Sets the `type` from the annotation.\n    *   Method `isValid`:\n        *   Checks if `value` is null (returns true).\n        *   Creates a `CronDefinition` based on `type`."
+      ],
+      "elapsed": 101.529
+    },
+    {
+      "project_slug": "codehaus-plexus__plexus-utils_CVE-2017-1000487_3.0.15",
+      "file": "src/main/java/org/codehaus/plexus/util/AbstractScanner.java",
+      "truth": false,
+      "expected_cwe": "CWE-78",
+      "label": "safe",
+      "cwe": "",
+      "chunks": 2,
+      "raws": [
+        "<think>\n\n</think>\n\nVULNERABILITY: NONE\nSEVERITY: NONE\nCVSS: 0.0\nREASON: The provided code snippet is a utility class for file pattern matching and normalization that does not process untrusted input directly or execute dynamic code, and the logic for handling file separators is standard and safe.",
+        "<think>\n\n</think>\n\nVULNERABILITY: NONE\nSEVERITY: NONE\nCVSS: 0.0\nREASON: The code implements pattern matching logic for file inclusion/exclusion without direct user input handling or unsafe operations that lead to known vulnerabilities."
+      ],
+      "elapsed": 117.275
+    },
+    {
+      "project_slug": "codehaus-plexus__plexus-utils_CVE-2017-1000487_3.0.15",
+      "file": "src/main/java/org/codehaus/plexus/util/Base64.java",
+      "truth": false,
+      "expected_cwe": "CWE-78",
+      "label": "safe",
+      "cwe": "",
+      "chunks": 2,
+      "raws": [
+        "<think>\n\n</think>\n\nVULNERABILITY: NONE\nSEVERITY: NONE\nCVSS: 0.0\nREASON: The provided code snippet is a standard Base64 encoding/decoding utility that does not contain exploitable security vulnerabilities in the visible portion.",
+        "<think>\n\n</think>\n\nVULNERABILITY: NONE\nSEVERITY: NONE\nCVSS: 0.0\nREASON: The provided code implements standard Base64 encoding and decoding logic without direct user input handling, network interaction, or insecure cryptographic operations that would constitute a vulnerability."
+      ],
+      "elapsed": 139.277
+    },
+    {
+      "project_slug": "codehaus-plexus__plexus-utils_CVE-2017-1000487_3.0.15",
+      "file": "src/main/java/org/codehaus/plexus/util/CollectionUtils.java",
+      "truth": false,
+      "expected_cwe": "CWE-78",
+      "label": "safe",
+      "cwe": "",
+      "chunks": 1,
+      "raws": [
+        "<think>\n\n</think>\n\nVULNERABILITY: NONE\nSEVERITY: NONE\nCVSS: 0.0\nREASON: The code implements standard utility logic for merging maps and collections without direct user input handling, network operations, or unsafe dynamic code execution."
+      ],
+      "elapsed": 41.122
+    },
+    {
+      "project_slug": "codehaus-plexus__plexus-utils_CVE-2017-1000487_3.0.15",
+      "file": "src/main/java/org/codehaus/plexus/util/CachedMap.java",
+      "truth": false,
+      "expected_cwe": "CWE-78",
+      "label": "safe",
+      "cwe": "",
+      "chunks": 2,
+      "raws": [
+        "<think>\n\n</think>\n\nVULNERABILITY: NONE\nSEVERITY: NONE\nCVSS: 0.0\nREASON: The code implements a caching mechanism for Map operations without introducing new security vulnerabilities, relying on the backing map's behavior and standard Java concurrency patterns.",
+        "<think>\nThinking Process:\n\n1.  **Analyze the Request:**\n    *   Input: A snippet of Java code (part of a class, likely a wrapper around a backing map).\n    *   Task: Analyze for security vulnerabilities.\n    *   Output Format: Strictly specific format (VULNERABILITY, SEVERITY, CVSS, REASON).\n\n2.  **Analyze the Code:**\n    *   The code shows methods: `putAll`, `clear`, `keySet`, `values`, `entrySet`, `equals`, `hashCode`.\n    *   It appears to be a wrapper class around a `_backingMap`.\n    *   `putAll`: Delegates to `_backingMap.putAll(map)` and calls `flush()`.\n    *   `clear`: Delegates to `_backingMap.clear()` and calls `flush()`.\n    *   `keySet`, `values`, `entry"
+      ],
+      "elapsed": 229.485
+    },
+    {
+      "project_slug": "codehaus-plexus__plexus-utils_CVE-2017-1000487_3.0.15",
+      "file": "src/main/java/org/codehaus/plexus/util/DirectoryWalkListener.java",
+      "truth": false,
+      "expected_cwe": "CWE-78",
+      "label": "safe",
+      "cwe": "",
+      "chunks": 1,
+      "raws": [
+        "<think>\n\n</think>\n\nVULNERABILITY: NONE\nSEVERITY: NONE\nCVSS: 0.0\nREASON: This file defines a listener interface for directory walking operations and contains no executable logic or data processing that could be exploited."
+      ],
+      "elapsed": 28.665
+    },
+    {
+      "project_slug": "codehaus-plexus__plexus-utils_CVE-2017-1000487_3.0.15",
+      "file": "src/main/java/org/codehaus/plexus/util/DirectoryScanner.java",
+      "truth": false,
+      "expected_cwe": "CWE-78",
+      "label": "safe",
+      "cwe": "",
+      "chunks": 3,
+      "raws": [
+        "<think>\n\n</think>\n\nVULNERABILITY: NONE\nSEVERITY: NONE\nCVSS: 0.0\nREASON: The provided code snippet is a utility class for directory scanning with input validation checks (null, existence, directory type) and does not contain exploitable security vulnerabilities in the visible portion.",
+        "<think>\n\n</think>\n\nVULNERABILITY: NONE\nSEVERITY: NONE\nCVSS: 0.0\nREASON: The code performs directory traversal and file scanning logic without any user-controlled input handling, deserialization, or unsafe operations that would constitute a security vulnerability.",
+        "<think>\n\n</think>\n\nVULNERABILITY: NONE\nSEVERITY: NONE\nCVSS: 0.0\nREASON: The code performs standard file system operations and path resolution without exposing sensitive data, executing arbitrary code, or bypassing security controls."
+      ],
+      "elapsed": 171.967
+    },
+    {
+      "project_slug": "codehaus-plexus__plexus-utils_CVE-2017-1000487_3.0.15",
+      "file": "src/main/java/org/codehaus/plexus/util/DirectoryWalker.java",
+      "truth": false,
+      "expected_cwe": "CWE-78",
+      "label": "safe",
+      "cwe": "",
+      "chunks": 1,
+      "raws": [
+        "<think>\n\n</think>\n\nVULNERABILITY: NONE\nSEVERITY: NONE\nCVSS: 0.0\nREASON: The code performs standard directory traversal with input validation for the base directory existence and type, and uses pattern matching for includes/excludes without direct user-controlled file path injection or unsafe deserialization."
+      ],
+      "elapsed": 98.063
+    },
+    {
+      "project_slug": "codehaus-plexus__plexus-utils_CVE-2017-1000487_3.0.15",
+      "file": "src/main/java/org/codehaus/plexus/util/ExceptionUtils.java",
+      "truth": false,
+      "expected_cwe": "CWE-78",
+      "label": "safe",
+      "cwe": "",
+      "chunks": 2,
+      "raws": [
+        "<think>\n\n</think>\n\nVULNERABILITY: NONE\nSEVERITY: NONE\nCVSS: 0.0\nREASON: The code performs reflection on user-provided exceptions to find causes, but it does not execute arbitrary code or expose sensitive data; it only reads return values of known methods and fields.",
+        "<think>\n\n</think>\n\nVULNERABILITY: NONE\nSEVERITY: NONE\nCVSS: 0.0\nREASON: The code performs standard exception inspection and stack trace generation without untrusted input processing or unsafe operations."
+      ],
+      "elapsed": 134.605
+    },
+    {
+      "project_slug": "codehaus-plexus__plexus-utils_CVE-2017-1000487_3.0.15",
+      "file": "src/main/java/org/codehaus/plexus/util/Expand.java",
+      "truth": false,
+      "expected_cwe": "CWE-78",
+      "label": "vuln",
+      "cwe": "CWE-22",
+      "chunks": 1,
+      "raws": [
+        "<think>\n\n</think>\n\nVULNERABILITY: CWE-22 (Improper Limitation of a Pathname to a Restricted Directory)\nSEVERITY: HIGH\nCVSS: 7.5\nREASON: The code extracts files from a zip archive without validating that the resolved file paths remain within the intended destination directory, allowing attackers to overwrite arbitrary files on the system via path traversal sequences (e.g., \"../\")."
+      ],
+      "elapsed": 83.681
+    }
+  ]
+}

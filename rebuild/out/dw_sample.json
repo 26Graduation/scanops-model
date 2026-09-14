@@ -1,0 +1,1825 @@
+{
+  "seed": 42,
+  "quota": {
+    "CleanVul": 120,
+    "PrimeVul": 70,
+    "내부test": 10
+  },
+  "n_pairs": 200,
+  "n_label_swapped": 102,
+  "n_vuln_is_a": 97,
+  "by_bench": {
+    "CleanVul": 120,
+    "PrimeVul": 70,
+    "내부test": 10
+  },
+  "by_lang": {
+    "Python": 24,
+    "Java": 40,
+    "C/C++": 119,
+    "JS/TS": 14,
+    "PHP": 3
+  },
+  "pairs": [
+    {
+      "case_id": "cvh_1829",
+      "bench": "CleanVul",
+      "lang": "Python",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9952,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_163",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.991,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_1203",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9751,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_1868",
+      "bench": "CleanVul",
+      "lang": "Python",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.992,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_1865",
+      "bench": "CleanVul",
+      "lang": "Python",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9919,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_51",
+      "bench": "CleanVul",
+      "lang": "JS/TS",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9976,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_284",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9881,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_1382",
+      "bench": "CleanVul",
+      "lang": "Python",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9783,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_152",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9978,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_1352",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9994,
+      "changed_lines": 6
+    },
+    {
+      "case_id": "cvh_905",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9843,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_1058",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9761,
+      "changed_lines": 8
+    },
+    {
+      "case_id": "cvh_246",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9667,
+      "changed_lines": 4
+    },
+    {
+      "case_id": "cvh_1353",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9992,
+      "changed_lines": 4
+    },
+    {
+      "case_id": "cvh_285",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9881,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_517",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9916,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_272",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9699,
+      "changed_lines": 12
+    },
+    {
+      "case_id": "cvh_968",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.988,
+      "changed_lines": 4
+    },
+    {
+      "case_id": "cvh_1636",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9959,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_631",
+      "bench": "CleanVul",
+      "lang": "JS/TS",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9706,
+      "changed_lines": 6
+    },
+    {
+      "case_id": "cvh_1579",
+      "bench": "CleanVul",
+      "lang": "Python",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9654,
+      "changed_lines": 3
+    },
+    {
+      "case_id": "cvh_612",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9996,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_1469",
+      "bench": "CleanVul",
+      "lang": "JS/TS",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9993,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_1634",
+      "bench": "CleanVul",
+      "lang": "JS/TS",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9823,
+      "changed_lines": 4
+    },
+    {
+      "case_id": "cvh_1238",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9849,
+      "changed_lines": 4
+    },
+    {
+      "case_id": "cvh_121",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9591,
+      "changed_lines": 3
+    },
+    {
+      "case_id": "cvh_891",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9941,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_155",
+      "bench": "CleanVul",
+      "lang": "Python",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9647,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_158",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9567,
+      "changed_lines": 23
+    },
+    {
+      "case_id": "cvh_1866",
+      "bench": "CleanVul",
+      "lang": "Python",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9983,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_699",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.991,
+      "changed_lines": 3
+    },
+    {
+      "case_id": "cvh_407",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9883,
+      "changed_lines": 8
+    },
+    {
+      "case_id": "cvh_1241",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9844,
+      "changed_lines": 4
+    },
+    {
+      "case_id": "cvh_1628",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9895,
+      "changed_lines": 3
+    },
+    {
+      "case_id": "cvh_1599",
+      "bench": "CleanVul",
+      "lang": "Python",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9938,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_513",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9698,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_983",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9865,
+      "changed_lines": 4
+    },
+    {
+      "case_id": "cvh_651",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9689,
+      "changed_lines": 17
+    },
+    {
+      "case_id": "cvh_223",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9887,
+      "changed_lines": 1
+    },
+    {
+      "case_id": "cvh_1069",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9566,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_1853",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9944,
+      "changed_lines": 4
+    },
+    {
+      "case_id": "cvh_26",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9859,
+      "changed_lines": 5
+    },
+    {
+      "case_id": "cvh_1463",
+      "bench": "CleanVul",
+      "lang": "Python",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9741,
+      "changed_lines": 11
+    },
+    {
+      "case_id": "cvh_201",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9557,
+      "changed_lines": 1
+    },
+    {
+      "case_id": "cvh_888",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9557,
+      "changed_lines": 8
+    },
+    {
+      "case_id": "cvh_551",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9939,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_800",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9983,
+      "changed_lines": 3
+    },
+    {
+      "case_id": "cvh_359",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9752,
+      "changed_lines": 6
+    },
+    {
+      "case_id": "cvh_70",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9662,
+      "changed_lines": 6
+    },
+    {
+      "case_id": "cvh_1168",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9757,
+      "changed_lines": 6
+    },
+    {
+      "case_id": "cvh_1852",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9808,
+      "changed_lines": 8
+    },
+    {
+      "case_id": "cvh_1431",
+      "bench": "CleanVul",
+      "lang": "JS/TS",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9736,
+      "changed_lines": 4
+    },
+    {
+      "case_id": "cvh_324",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9535,
+      "changed_lines": 11
+    },
+    {
+      "case_id": "cvh_1810",
+      "bench": "CleanVul",
+      "lang": "Python",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9553,
+      "changed_lines": 8
+    },
+    {
+      "case_id": "cvh_314",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9786,
+      "changed_lines": 3
+    },
+    {
+      "case_id": "cvh_593",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9613,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_1896",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9892,
+      "changed_lines": 3
+    },
+    {
+      "case_id": "cvh_765",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9963,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_756",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9703,
+      "changed_lines": 11
+    },
+    {
+      "case_id": "cvh_1520",
+      "bench": "CleanVul",
+      "lang": "Python",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9857,
+      "changed_lines": 4
+    },
+    {
+      "case_id": "cvh_1267",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9806,
+      "changed_lines": 4
+    },
+    {
+      "case_id": "cvh_1901",
+      "bench": "CleanVul",
+      "lang": "Python",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9657,
+      "changed_lines": 6
+    },
+    {
+      "case_id": "cvh_655",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9885,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_670",
+      "bench": "CleanVul",
+      "lang": "Python",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9887,
+      "changed_lines": 1
+    },
+    {
+      "case_id": "cvh_237",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9854,
+      "changed_lines": 10
+    },
+    {
+      "case_id": "cvh_1885",
+      "bench": "CleanVul",
+      "lang": "Python",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9973,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_1263",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9836,
+      "changed_lines": 9
+    },
+    {
+      "case_id": "cvh_1494",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9972,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_1298",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9584,
+      "changed_lines": 10
+    },
+    {
+      "case_id": "cvh_1447",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9547,
+      "changed_lines": 8
+    },
+    {
+      "case_id": "cvh_455",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9815,
+      "changed_lines": 1
+    },
+    {
+      "case_id": "cvh_762",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9972,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_909",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9943,
+      "changed_lines": 7
+    },
+    {
+      "case_id": "cvh_1193",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9973,
+      "changed_lines": 3
+    },
+    {
+      "case_id": "cvh_64",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9823,
+      "changed_lines": 4
+    },
+    {
+      "case_id": "cvh_467",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9764,
+      "changed_lines": 1
+    },
+    {
+      "case_id": "cvh_408",
+      "bench": "CleanVul",
+      "lang": "Python",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9956,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_1334",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.952,
+      "changed_lines": 14
+    },
+    {
+      "case_id": "cvh_1040",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9719,
+      "changed_lines": 5
+    },
+    {
+      "case_id": "cvh_478",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.997,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_21",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9788,
+      "changed_lines": 3
+    },
+    {
+      "case_id": "cvh_115",
+      "bench": "CleanVul",
+      "lang": "JS/TS",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9982,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_653",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9826,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_13",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.979,
+      "changed_lines": 3
+    },
+    {
+      "case_id": "cvh_1247",
+      "bench": "CleanVul",
+      "lang": "Python",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9751,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_1676",
+      "bench": "CleanVul",
+      "lang": "JS/TS",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9814,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_672",
+      "bench": "CleanVul",
+      "lang": "Python",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9508,
+      "changed_lines": 3
+    },
+    {
+      "case_id": "cvh_85",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9993,
+      "changed_lines": 4
+    },
+    {
+      "case_id": "cvh_599",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9839,
+      "changed_lines": 52
+    },
+    {
+      "case_id": "cvh_81",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9961,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_1419",
+      "bench": "CleanVul",
+      "lang": "Python",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.99,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_913",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9772,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_1025",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9789,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_261",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9776,
+      "changed_lines": 4
+    },
+    {
+      "case_id": "cvh_50",
+      "bench": "CleanVul",
+      "lang": "JS/TS",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9936,
+      "changed_lines": 1
+    },
+    {
+      "case_id": "cvh_794",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9827,
+      "changed_lines": 3
+    },
+    {
+      "case_id": "cvh_1338",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9927,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_1513",
+      "bench": "CleanVul",
+      "lang": "JS/TS",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9989,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_1522",
+      "bench": "CleanVul",
+      "lang": "Python",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9845,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_87",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9965,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_276",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9931,
+      "changed_lines": 4
+    },
+    {
+      "case_id": "cvh_569",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9519,
+      "changed_lines": 4
+    },
+    {
+      "case_id": "cvh_1283",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9966,
+      "changed_lines": 10
+    },
+    {
+      "case_id": "cvh_1131",
+      "bench": "CleanVul",
+      "lang": "Python",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9761,
+      "changed_lines": 4
+    },
+    {
+      "case_id": "cvh_59",
+      "bench": "CleanVul",
+      "lang": "Python",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9952,
+      "changed_lines": 4
+    },
+    {
+      "case_id": "cvh_80",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9779,
+      "changed_lines": 4
+    },
+    {
+      "case_id": "cvh_611",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9996,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_1864",
+      "bench": "CleanVul",
+      "lang": "Python",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.96,
+      "changed_lines": 9
+    },
+    {
+      "case_id": "cvh_107",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9994,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_411",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9824,
+      "changed_lines": 13
+    },
+    {
+      "case_id": "cvh_753",
+      "bench": "CleanVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9915,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_936",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9854,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_550",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9885,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_874",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9963,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_1531",
+      "bench": "CleanVul",
+      "lang": "JS/TS",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9876,
+      "changed_lines": 4
+    },
+    {
+      "case_id": "cvh_937",
+      "bench": "CleanVul",
+      "lang": "Java",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9983,
+      "changed_lines": 6
+    },
+    {
+      "case_id": "cvh_662",
+      "bench": "CleanVul",
+      "lang": "Python",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9798,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_1608",
+      "bench": "CleanVul",
+      "lang": "JS/TS",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9795,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "cvh_1821",
+      "bench": "CleanVul",
+      "lang": "Python",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9554,
+      "changed_lines": 8
+    },
+    {
+      "case_id": "cvh_632",
+      "bench": "CleanVul",
+      "lang": "JS/TS",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9693,
+      "changed_lines": 6
+    },
+    {
+      "case_id": "pv_89c2b3b74918_210484",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9898,
+      "changed_lines": 1
+    },
+    {
+      "case_id": "pv_505d9dcb0f7d_197135",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9843,
+      "changed_lines": 14
+    },
+    {
+      "case_id": "pv_c57f9dcf1934_206043",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9975,
+      "changed_lines": 3
+    },
+    {
+      "case_id": "pv_83a95bd8c856_215921",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9866,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "pv_839b1bcf0450_211915",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9991,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "pv_b31c504645a8_215038",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9973,
+      "changed_lines": 1
+    },
+    {
+      "case_id": "pv_b224e2f5739f_204137",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9861,
+      "changed_lines": 4
+    },
+    {
+      "case_id": "pv_48f0ea79f991_200379",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9838,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "pv_c75b9281a5b9_204073",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9876,
+      "changed_lines": 1
+    },
+    {
+      "case_id": "pv_ed4b7d5d1b30_216767",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9822,
+      "changed_lines": 6
+    },
+    {
+      "case_id": "pv_900348bb8bc9_207703",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.985,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "pv_1eeffc5daf5a_206771",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9859,
+      "changed_lines": 4
+    },
+    {
+      "case_id": "pv_04c2a47ffb13_212414",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9964,
+      "changed_lines": 6
+    },
+    {
+      "case_id": "pv_a3727a8bac0a_201343",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9926,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "pv_e84d8353f134_204535",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9685,
+      "changed_lines": 6
+    },
+    {
+      "case_id": "pv_ba0166708ef4_215391",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.965,
+      "changed_lines": 7
+    },
+    {
+      "case_id": "pv_328fc47ea0bc_215374",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9804,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "pv_efe4186e6a1b_204814",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9637,
+      "changed_lines": 4
+    },
+    {
+      "case_id": "pv_4606c28f494a_198703",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9961,
+      "changed_lines": 3
+    },
+    {
+      "case_id": "pv_0c8a2a2cd105_195801",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9955,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "pv_fc739a058d99_200695",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9912,
+      "changed_lines": 1
+    },
+    {
+      "case_id": "pv_8cd68c54e064_217547",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9995,
+      "changed_lines": 4
+    },
+    {
+      "case_id": "pv_4c4d0e2da07b_209026",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9811,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "pv_8b51dc729147_201353",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.994,
+      "changed_lines": 1
+    },
+    {
+      "case_id": "pv_7bab09631c2a_198692",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9529,
+      "changed_lines": 6
+    },
+    {
+      "case_id": "pv_c79ccba517db_194994",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9968,
+      "changed_lines": 1
+    },
+    {
+      "case_id": "pv_c8c2a057fdc7_214909",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9887,
+      "changed_lines": 4
+    },
+    {
+      "case_id": "pv_c111ed9b0355_206815",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9965,
+      "changed_lines": 8
+    },
+    {
+      "case_id": "pv_04c9b00ba835_210527",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9934,
+      "changed_lines": 1
+    },
+    {
+      "case_id": "pv_35f0fabb4c17_195091",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9734,
+      "changed_lines": 4
+    },
+    {
+      "case_id": "pv_a74702c630e1_196276",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9692,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "pv_6e3855aed7ba_211179",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9824,
+      "changed_lines": 8
+    },
+    {
+      "case_id": "pv_be7679007c3d_214335",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9621,
+      "changed_lines": 13
+    },
+    {
+      "case_id": "pv_3b0462726e7e_213528",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9806,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "pv_a09d2d00af53_203614",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9978,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "pv_366ad48d076c_210453",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9661,
+      "changed_lines": 8
+    },
+    {
+      "case_id": "pv_84d4b53122e0_197565",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9983,
+      "changed_lines": 5
+    },
+    {
+      "case_id": "pv_e84d8353f134_204534",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9849,
+      "changed_lines": 5
+    },
+    {
+      "case_id": "pv_fd607a3439fc_198695",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9933,
+      "changed_lines": 6
+    },
+    {
+      "case_id": "pv_ecb6f9c894d3_216965",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9893,
+      "changed_lines": 5
+    },
+    {
+      "case_id": "pv_8c6f391a2282_195056",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9944,
+      "changed_lines": 1
+    },
+    {
+      "case_id": "pv_524de6cc35d3_200934",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9707,
+      "changed_lines": 3
+    },
+    {
+      "case_id": "pv_649f1ee6c705_215400",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9722,
+      "changed_lines": 12
+    },
+    {
+      "case_id": "pv_e746adbfcfee_195073",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9959,
+      "changed_lines": 1
+    },
+    {
+      "case_id": "pv_b03c9f252526_195334",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9705,
+      "changed_lines": 6
+    },
+    {
+      "case_id": "pv_47abea041f89_204495",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9992,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "pv_817b8b9c5396_200163",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9887,
+      "changed_lines": 1
+    },
+    {
+      "case_id": "pv_a2d859e3fc97_202719",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9822,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "pv_a5e2f9b0a236_215103",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9523,
+      "changed_lines": 16
+    },
+    {
+      "case_id": "pv_eb50fb8f3bf6_200320",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9995,
+      "changed_lines": 4
+    },
+    {
+      "case_id": "pv_9d2231c5d74e_207753",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9915,
+      "changed_lines": 1
+    },
+    {
+      "case_id": "pv_2793769ff107_200305",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9797,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "pv_c8c083cb7506_195295",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9986,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "pv_20a98e817713_201872",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9867,
+      "changed_lines": 6
+    },
+    {
+      "case_id": "pv_f5a038e68930_196801",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9982,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "pv_362ec9daadb9_210420",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9993,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "pv_790a85dbd4a8_200781",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.969,
+      "changed_lines": 9
+    },
+    {
+      "case_id": "pv_d61a767d6842_206044",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.993,
+      "changed_lines": 3
+    },
+    {
+      "case_id": "pv_58926dffbe81_208535",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9521,
+      "changed_lines": 4
+    },
+    {
+      "case_id": "pv_65b605665997_202304",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9752,
+      "changed_lines": 3
+    },
+    {
+      "case_id": "pv_893fb99b606e_195231",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9936,
+      "changed_lines": 3
+    },
+    {
+      "case_id": "pv_a72cd07f2983_211181",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.997,
+      "changed_lines": 1
+    },
+    {
+      "case_id": "pv_c08eadca1bdf_204544",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9927,
+      "changed_lines": 10
+    },
+    {
+      "case_id": "pv_4b81ccebaeee_204412",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9821,
+      "changed_lines": 3
+    },
+    {
+      "case_id": "pv_e1134d375e2c_212822",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9662,
+      "changed_lines": 1
+    },
+    {
+      "case_id": "pv_a062006b9de0_211563",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.98,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "pv_35bf0b7b048d_196611",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9813,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "pv_02080f6b1802_208522",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9604,
+      "changed_lines": 5
+    },
+    {
+      "case_id": "pv_d6d86830705f_200287",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9945,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "pv_cc08cbc84d46_206555",
+      "bench": "PrimeVul",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9975,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "CVE-2023-3565",
+      "bench": "내부test",
+      "lang": "PHP",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9671,
+      "changed_lines": 24
+    },
+    {
+      "case_id": "CVE-2023-5452",
+      "bench": "내부test",
+      "lang": "PHP",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9505,
+      "changed_lines": 24
+    },
+    {
+      "case_id": "CVE-2023-47016",
+      "bench": "내부test",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9524,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "CVE-2023-46931",
+      "bench": "내부test",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.98,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "CVE-2023-4655",
+      "bench": "내부test",
+      "lang": "JS/TS",
+      "vuln_is_a": true,
+      "label_swapped": true,
+      "sim": 0.9647,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "CVE-2024-0639",
+      "bench": "내부test",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9615,
+      "changed_lines": 4
+    },
+    {
+      "case_id": "CVE-2023-46001",
+      "bench": "내부test",
+      "lang": "C/C++",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9565,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "CVE-2015-10129",
+      "bench": "내부test",
+      "lang": "PHP",
+      "vuln_is_a": true,
+      "label_swapped": false,
+      "sim": 0.9927,
+      "changed_lines": 2
+    },
+    {
+      "case_id": "CVE-2023-49076",
+      "bench": "내부test",
+      "lang": "JS/TS",
+      "vuln_is_a": false,
+      "label_swapped": true,
+      "sim": 0.9783,
+      "changed_lines": 14
+    },
+    {
+      "case_id": "CVE-2023-4778",
+      "bench": "내부test",
+      "lang": "C/C++",
+      "vuln_is_a": false,
+      "label_swapped": false,
+      "sim": 0.9796,
+      "changed_lines": 2
+    }
+  ]
+}

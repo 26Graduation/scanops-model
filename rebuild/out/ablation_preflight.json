@@ -1,0 +1,188 @@
+{
+  "phase": 0,
+  "pass": true,
+  "failures": [],
+  "0_1_cache_files": {
+    "v1_logprob_cleanvul_v2_report.jsonl": {
+      "exists": true,
+      "n": 2706
+    },
+    "v1_logprob_cleanvul_v2_tune.jsonl": {
+      "exists": true,
+      "n": 676
+    },
+    "v3s42_logprob_cleanvul_v2_report.jsonl": {
+      "exists": true,
+      "n": 2706
+    },
+    "v3s42_logprob_cleanvul_v2_tune.jsonl": {
+      "exists": true,
+      "n": 676
+    }
+  },
+  "0_2_splits": {
+    "report": {
+      "n": 2706,
+      "case_id_unique": true,
+      "case_id_duplicates": [],
+      "n_pairs": 1353,
+      "by_language": {
+        "Java": 890,
+        "C": 814,
+        "Python": 576,
+        "JavaScript": 412,
+        "C++": 14
+      },
+      "by_lang_group": {
+        "Java": 890,
+        "C/C++": 828,
+        "Python": 576,
+        "JS/TS": 412
+      },
+      "by_label": {
+        "vuln": 1353,
+        "safe": 1353
+      }
+    },
+    "tune": {
+      "n": 676,
+      "case_id_unique": true,
+      "case_id_duplicates": [],
+      "n_pairs": 338,
+      "by_language": {
+        "Java": 222,
+        "C": 202,
+        "Python": 144,
+        "JavaScript": 102,
+        "C++": 6
+      },
+      "by_lang_group": {
+        "Java": 222,
+        "C/C++": 208,
+        "Python": 144,
+        "JS/TS": 102
+      },
+      "by_label": {
+        "vuln": 338,
+        "safe": 338
+      }
+    }
+  },
+  "0_3_lang_key": {
+    "probe": {
+      "C": null,
+      "C++": null,
+      "Java": "java",
+      "JavaScript": "node",
+      "Python": "python"
+    },
+    "supported": [
+      "Java",
+      "JavaScript",
+      "Python"
+    ],
+    "unsupported_returns_None": [
+      "C",
+      "C++"
+    ]
+  },
+  "0_3_measurable_subset": {
+    "report": {
+      "n_total": 2706,
+      "n_graph_measurable": 1878,
+      "pct": 69.4,
+      "n_graph_unmeasurable": 828,
+      "by_language_measurable": {
+        "Java": 890,
+        "Python": 576,
+        "JavaScript": 412
+      },
+      "by_language_unmeasurable": {
+        "C": 814,
+        "C++": 14
+      }
+    },
+    "tune": {
+      "n_total": 676,
+      "n_graph_measurable": 468,
+      "pct": 69.2,
+      "n_graph_unmeasurable": 208,
+      "by_language_measurable": {
+        "Java": 222,
+        "Python": 144,
+        "JavaScript": 102
+      },
+      "by_language_unmeasurable": {
+        "C": 202,
+        "C++": 6
+      }
+    }
+  },
+  "0_4_primevul": {
+    "report": {
+      "exists": true,
+      "n": 288,
+      "by_language": {
+        "C": 268,
+        "C++": 20
+      },
+      "n_graph_measurable": 0
+    },
+    "tune": {
+      "exists": true,
+      "n": 72,
+      "by_language": {
+        "C": 68,
+        "C++": 4
+      },
+      "n_graph_measurable": 0
+    }
+  },
+  "0_4_verdict": "PrimeVul은 graph 미지원 언어 전량 → graph arm 측정 불가. 판정 대상에서 제외",
+  "0_case_id_match": {
+    "v1_report": {
+      "n_bench": 2706,
+      "n_logprob": 2706,
+      "n_logprob_unique": 2706,
+      "n_matched": 2706,
+      "n_missing_in_logprob": 0,
+      "missing_sample": [],
+      "n_extra_in_logprob": 0,
+      "extra_sample": [],
+      "has_score_field": true
+    },
+    "v1_tune": {
+      "n_bench": 676,
+      "n_logprob": 676,
+      "n_logprob_unique": 676,
+      "n_matched": 676,
+      "n_missing_in_logprob": 0,
+      "missing_sample": [],
+      "n_extra_in_logprob": 0,
+      "extra_sample": [],
+      "has_score_field": true
+    },
+    "v3s42_report": {
+      "n_bench": 2706,
+      "n_logprob": 2706,
+      "n_logprob_unique": 2706,
+      "n_matched": 2706,
+      "n_missing_in_logprob": 0,
+      "missing_sample": [],
+      "n_extra_in_logprob": 0,
+      "extra_sample": [],
+      "has_score_field": true
+    },
+    "v3s42_tune": {
+      "n_bench": 676,
+      "n_logprob": 676,
+      "n_logprob_unique": 676,
+      "n_matched": 676,
+      "n_missing_in_logprob": 0,
+      "missing_sample": [],
+      "n_extra_in_logprob": 0,
+      "extra_sample": [],
+      "has_score_field": true
+    }
+  }
+}

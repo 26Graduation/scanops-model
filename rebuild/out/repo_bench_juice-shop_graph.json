@@ -1,0 +1,1365 @@
+{
+  "repo": "juice-shop",
+  "n_files": 257,
+  "code_graph_seconds": 0.07,
+  "multi_graph_seconds": 0.21,
+  "code_graph_evidence": [
+    {
+      "category": "ssrf",
+      "verdict": "unknown",
+      "filename": "lib/startup/validatePreconditions.ts",
+      "variable": "domain",
+      "sink": "fetch",
+      "source": "unknown source",
+      "path": [
+        "domain"
+      ],
+      "summary": "Could not prove whether domain is user-controlled before it reaches fetch.",
+      "confidence": 0.45
+    },
+    {
+      "category": "ssrf",
+      "verdict": "unknown",
+      "filename": "lib/webhook.ts",
+      "variable": "webhook",
+      "sink": "fetch",
+      "source": "unknown source",
+      "path": [
+        "webhook"
+      ],
+      "summary": "Could not prove whether webhook is user-controlled before it reaches fetch.",
+      "confidence": 0.45
+    },
+    {
+      "category": "ssrf",
+      "verdict": "unknown",
+      "filename": "routes/profileImageUrlUpload.ts",
+      "variable": "url",
+      "sink": "fetch",
+      "source": "unknown source",
+      "path": [
+        "url",
+        "req"
+      ],
+      "summary": "Could not prove whether url is user-controlled before it reaches fetch.",
+      "confidence": 0.45
+    }
+  ],
+  "code_graph_vuln_files": [],
+  "multi_graph_verdicts": {
+    "app.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/Models/backup.model.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/Models/challenge.model.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/Models/deliveryMethod.model.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/Models/hint.model.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/Models/product.model.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/Models/review.model.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/Models/securityQuestion.model.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/Services/address.service.ts": {
+      "verdict": "unknown",
+      "category": "CWE-918 Server-Side Request Forgery",
+      "reason": "ssrf sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "frontend/src/app/Services/administration.service.ts": {
+      "verdict": "unknown",
+      "category": "CWE-918 Server-Side Request Forgery",
+      "reason": "ssrf sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "frontend/src/app/Services/basket.service.ts": {
+      "verdict": "unknown",
+      "category": "CWE-918 Server-Side Request Forgery",
+      "reason": "ssrf sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "frontend/src/app/Services/captcha.service.ts": {
+      "verdict": "unknown",
+      "category": "CWE-918 Server-Side Request Forgery",
+      "reason": "ssrf sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "frontend/src/app/Services/challenge.service.ts": {
+      "verdict": "unknown",
+      "category": "CWE-918 Server-Side Request Forgery",
+      "reason": "ssrf sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "frontend/src/app/Services/chat.service.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/Services/code-fixes.service.ts": {
+      "verdict": "unknown",
+      "category": "CWE-918 Server-Side Request Forgery",
+      "reason": "ssrf sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "frontend/src/app/Services/code-snippet.service.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/Services/complaint.service.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/Services/configuration.service.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/Services/conversation-storage.service.ts": {
+      "verdict": "vuln",
+      "category": "CWE-330 Insecure Randomness",
+      "reason": "보안 토큰에 예측 가능한 난수"
+    },
+    "frontend/src/app/Services/country-mapping.service.ts": {
+      "verdict": "unknown",
+      "category": "CWE-918 Server-Side Request Forgery",
+      "reason": "ssrf sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "frontend/src/app/Services/ctf-system-wide-notification.service.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/Services/data-subject.service.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/Services/delivery.service.ts": {
+      "verdict": "unknown",
+      "category": "CWE-918 Server-Side Request Forgery",
+      "reason": "ssrf sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "frontend/src/app/Services/feedback.service.ts": {
+      "verdict": "unknown",
+      "category": "CWE-918 Server-Side Request Forgery",
+      "reason": "ssrf sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "frontend/src/app/Services/hint.service.ts": {
+      "verdict": "unknown",
+      "category": "CWE-918 Server-Side Request Forgery",
+      "reason": "ssrf sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "frontend/src/app/Services/image-captcha.service.ts": {
+      "verdict": "unknown",
+      "category": "CWE-918 Server-Side Request Forgery",
+      "reason": "ssrf sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "frontend/src/app/Services/keys.service.ts": {
+      "verdict": "unknown",
+      "category": "CWE-918 Server-Side Request Forgery",
+      "reason": "ssrf sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "frontend/src/app/Services/languages.service.ts": {
+      "verdict": "unknown",
+      "category": "CWE-918 Server-Side Request Forgery",
+      "reason": "ssrf sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "frontend/src/app/Services/local-backup.service.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/Services/order-history.service.ts": {
+      "verdict": "unknown",
+      "category": "CWE-918 Server-Side Request Forgery",
+      "reason": "ssrf sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "frontend/src/app/Services/payment.service.ts": {
+      "verdict": "unknown",
+      "category": "CWE-918 Server-Side Request Forgery",
+      "reason": "ssrf sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "frontend/src/app/Services/photo-wall.service.ts": {
+      "verdict": "unknown",
+      "category": "CWE-918 Server-Side Request Forgery",
+      "reason": "ssrf sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "frontend/src/app/Services/product-review.service.ts": {
+      "verdict": "unknown",
+      "category": "CWE-918 Server-Side Request Forgery",
+      "reason": "ssrf sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "frontend/src/app/Services/product.service.ts": {
+      "verdict": "unknown",
+      "category": "CWE-918 Server-Side Request Forgery",
+      "reason": "ssrf sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "frontend/src/app/Services/quantity.service.ts": {
+      "verdict": "unknown",
+      "category": "CWE-918 Server-Side Request Forgery",
+      "reason": "ssrf sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "frontend/src/app/Services/recycle.service.ts": {
+      "verdict": "unknown",
+      "category": "CWE-918 Server-Side Request Forgery",
+      "reason": "ssrf sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "frontend/src/app/Services/request.interceptor.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/Services/security-answer.service.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/Services/security-question.service.ts": {
+      "verdict": "unknown",
+      "category": "CWE-918 Server-Side Request Forgery",
+      "reason": "ssrf sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "frontend/src/app/Services/snack-bar-helper.service.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/Services/socket-io.service.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/Services/track-order.service.ts": {
+      "verdict": "unknown",
+      "category": "CWE-918 Server-Side Request Forgery",
+      "reason": "ssrf sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "frontend/src/app/Services/two-factor-auth-service.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/Services/user.service.ts": {
+      "verdict": "unknown",
+      "category": "CWE-918 Server-Side Request Forgery",
+      "reason": "ssrf sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "frontend/src/app/Services/vuln-lines.service.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/Services/wallet.service.ts": {
+      "verdict": "unknown",
+      "category": "CWE-918 Server-Side Request Forgery",
+      "reason": "ssrf sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "frontend/src/app/Services/window-ref.service.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/about/about.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/accounting/accounting.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/address-create/address-create.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/address-select/address-select.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/address/address.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/administration/administration.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/app.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/app.guard.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/app.routing.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/basket/basket.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/challenge-solved-notification/challenge-solved-notification.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/challenge-status-badge/challenge-status-badge.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/change-password/change-password.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/chatbot/chat-conversation/chat-conversation.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/chatbot/chat-input-box/chat-input-box.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/chatbot/chat-welcome-page/chat-welcome-page.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/chatbot/chat-welcome-screen/chat-welcome-screen.component.ts": {
+      "verdict": "vuln",
+      "category": "CWE-330 Insecure Randomness",
+      "reason": "보안 토큰에 예측 가능한 난수"
+    },
+    "frontend/src/app/chatbot/chat.model.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/chatbot/chatbot.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/coding-challenge-page/coding-challenge-page.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/coding-challenge-page/coding-challenge.types.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/coding-challenge-page/components/coding-challenge-find-it/coding-challenge-find-it.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/coding-challenge-page/components/coding-challenge-find-it/format-selected-lines.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/coding-challenge-page/components/coding-challenge-fix-it/coding-challenge-fix-it.component.ts": {
+      "verdict": "vuln",
+      "category": "CWE-330 Insecure Randomness",
+      "reason": "보안 토큰에 예측 가능한 난수"
+    },
+    "frontend/src/app/coding-challenge-page/components/coding-challenge-section/coding-challenge-section.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/coding-challenge-page/helpers/handle-verdict.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/complaint/complaint.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/contact/contact.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/ctf-system-wide-notification/ctf-system-wide-notification.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/data-export/data-export.component.ts": {
+      "verdict": "unknown",
+      "category": "CWE-79 Cross-Site Scripting",
+      "reason": "xss sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "frontend/src/app/delivery-method/delivery-method.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/deluxe-user/deluxe-user.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/error-page/error-page.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/faucet/faucet.component.ts": {
+      "verdict": "unknown",
+      "category": "CWE-918 Server-Side Request Forgery",
+      "reason": "ssrf sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "frontend/src/app/faucet/faucet.module.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/feedback-details/feedback-details.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/forgot-password/forgot-password.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/last-login-ip/last-login-ip.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/login/login.component.ts": {
+      "verdict": "vuln",
+      "category": "CWE-798 Hardcoded Credentials",
+      "reason": "하드코딩된 자격증명/시크릿"
+    },
+    "frontend/src/app/mat-search-bar/abstract-value-accessor.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/mat-search-bar/mat-search-bar.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/navbar/navbar.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/nft-unlock/nft-unlock.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/oauth/oauth.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/order-completion/order-completion.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/order-history/order-history.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/order-summary/order-summary.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/password-strength-info/password-strength-info.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/password-strength/password-strength.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/payment-method/payment-method.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/payment/payment.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/photo-wall/mime-type.validator.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/photo-wall/photo-wall.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/privacy-policy/privacy-policy.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/privacy-security/privacy-security.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/product-details/product-details.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/product-review-edit/product-review-edit.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/product/product.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/purchase-basket/purchase-basket.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/qr-code/qr-code.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/recycle/recycle.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/register/register.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/roles.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/saved-address/saved-address.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/saved-payment-methods/saved-payment-methods.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/score-board/components/challenge-card/challenge-card.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/score-board/components/challenges-unavailable-warning/challenges-unavailable-warning.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/score-board/components/coding-challenge-progress-score-card/coding-challenge-progress-score-card.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/score-board/components/difficulty-overview-score-card/difficulty-overview-score-card.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/score-board/components/difficulty-stars/difficulty-stars.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/score-board/components/filter-settings/components/category-filter/category-filter.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/score-board/components/filter-settings/components/score-board-additional-settings-dialog/score-board-additional-settings-dialog.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/score-board/components/filter-settings/filter-settings.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/score-board/components/filter-settings/pipes/difficulty-selection-summary.pipe.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/score-board/components/hacking-challenge-progress-score-card/hacking-challenge-progress-score-card.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/score-board/components/score-card/score-card.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/score-board/components/tutorial-mode-warning/tutorial-mode-warning.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/score-board/components/warning-card/warning-card.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/score-board/filter-settings/FilterSetting.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/score-board/filter-settings/query-params-converters.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/score-board/helpers/challenge-filtering.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/score-board/helpers/challenge-sorting.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/score-board/score-board.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/score-board/types/EnrichedChallenge.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/search-result/search-result.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/server-started-notification/server-started-notification.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/shared/codemirror-extensions.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/shared/codemirror-theme.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/sidenav/sidenav.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/token-sale/token-sale.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/track-result/track-result.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/two-factor-auth-enter/two-factor-auth-enter.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/two-factor-auth/two-factor-auth.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/user-details/user-details.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/wallet-web3/wallet-web3.component.ts": {
+      "verdict": "unknown",
+      "category": "CWE-918 Server-Side Request Forgery",
+      "reason": "ssrf sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "frontend/src/app/wallet-web3/wallet-web3.module.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/wallet/wallet.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/web3-sandbox/web3-sandbox.component.ts": {
+      "verdict": "unknown",
+      "category": "CWE-918 Server-Side Request Forgery",
+      "reason": "ssrf sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "frontend/src/app/web3-sandbox/web3-sandbox.module.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/welcome-banner/welcome-banner.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "frontend/src/app/welcome/welcome.component.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "lib/accuracy.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "lib/antiCheat.ts": {
+      "verdict": "safe",
+      "category": "CWE-22 Path Traversal",
+      "reason": "pathtraver sink에 정화/안전 API 적용됨",
+      "strong": true
+    },
+    "lib/challengeUtils.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "lib/codingChallenges.ts": {
+      "verdict": "unknown",
+      "category": "CWE-78 OS Command Injection",
+      "reason": "cmdi sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "lib/config.schema.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "lib/insecurity.ts": {
+      "verdict": "vuln",
+      "category": "CWE-330 Insecure Randomness",
+      "reason": "보안 토큰에 예측 가능한 난수"
+    },
+    "lib/is-docker.ts": {
+      "verdict": "unknown",
+      "category": "CWE-22 Path Traversal",
+      "reason": "pathtraver sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "lib/is-heroku.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "lib/is-windows.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "lib/logger.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "lib/noUpdate.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "lib/scripts/lintConfig.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "lib/startup/cleanupFtpFolder.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "lib/startup/customizeApplication.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "lib/startup/customizeEasterEgg.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "lib/startup/registerWebsocketEvents.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "lib/startup/restoreOverwrittenFilesWithOriginals.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "lib/startup/validateConfig.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "lib/startup/validateDependencies.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "lib/startup/validateDependenciesBasic.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "lib/startup/validatePreconditions.ts": {
+      "verdict": "safe",
+      "category": "CWE-918 Server-Side Request Forgery",
+      "reason": "ssrf sink에 정화/안전 API 적용됨",
+      "strong": true
+    },
+    "lib/utils.ts": {
+      "verdict": "vuln",
+      "category": "CWE-328 Weak Hash",
+      "reason": "비밀번호/토큰에 약한 해시(MD5/SHA1)"
+    },
+    "lib/webhook.ts": {
+      "verdict": "unknown",
+      "category": "CWE-918 Server-Side Request Forgery",
+      "reason": "ssrf sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "lib/xml.ts": {
+      "verdict": "unknown",
+      "category": "CWE-94 Code Injection",
+      "reason": "codei sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "models/address.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "models/basket.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "models/basketitem.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "models/captcha.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "models/card.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "models/challenge.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "models/challengeDependency.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "models/complaint.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "models/delivery.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "models/feedback.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "models/hint.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "models/imageCaptcha.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "models/index.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "models/memory.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "models/privacyRequests.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "models/product.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "models/quantity.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "models/recycle.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "models/relations.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "models/securityAnswer.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "models/securityQuestion.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "models/user.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "models/wallet.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/2fa.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/address.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/angular.ts": {
+      "verdict": "safe",
+      "category": "CWE-22 Path Traversal",
+      "reason": "pathtraver sink에 정화/안전 API 적용됨",
+      "strong": true
+    },
+    "routes/appConfiguration.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/appVersion.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/authenticatedUsers.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/b2bOrder.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/basket.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/basketItems.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/captcha.ts": {
+      "verdict": "unknown",
+      "category": "CWE-330 Insecure Randomness",
+      "reason": "난수지만 보안 용도 불명 → LLM 위임"
+    },
+    "routes/changePassword.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/chat.ts": {
+      "verdict": "vuln",
+      "category": "CWE-89 SQL Injection",
+      "reason": "사용자 입력이 정화 없이 sqli sink에 도달"
+    },
+    "routes/checkKeys.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/continueCode.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/countryMapping.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/coupon.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/createProductReviews.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/currentUser.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/dataErasure.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/dataExport.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/delivery.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/deluxe.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/easterEgg.ts": {
+      "verdict": "unknown",
+      "category": "CWE-22 Path Traversal",
+      "reason": "pathtraver sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "routes/fileServer.ts": {
+      "verdict": "safe",
+      "category": "CWE-22 Path Traversal",
+      "reason": "pathtraver sink에 정화/안전 API 적용됨",
+      "strong": true
+    },
+    "routes/fileUpload.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/imageCaptcha.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/keyServer.ts": {
+      "verdict": "unknown",
+      "category": "CWE-22 Path Traversal",
+      "reason": "pathtraver sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "routes/languages.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/likeProductReviews.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/logfileServer.ts": {
+      "verdict": "unknown",
+      "category": "CWE-22 Path Traversal",
+      "reason": "pathtraver sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "routes/login.ts": {
+      "verdict": "vuln",
+      "category": "CWE-89 SQL Injection",
+      "reason": "사용자 입력이 정화 없이 sqli sink에 도달"
+    },
+    "routes/memory.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/metrics.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/nftMint.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/order.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/orderHistory.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/payment.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/premiumReward.ts": {
+      "verdict": "unknown",
+      "category": "CWE-22 Path Traversal",
+      "reason": "pathtraver sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "routes/privacyPolicyProof.ts": {
+      "verdict": "unknown",
+      "category": "CWE-22 Path Traversal",
+      "reason": "pathtraver sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "routes/profileImageFileUpload.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/profileImageUrlUpload.ts": {
+      "verdict": "safe",
+      "category": "CWE-918 Server-Side Request Forgery",
+      "reason": "ssrf sink에 정화/안전 API 적용됨",
+      "strong": true
+    },
+    "routes/quarantineServer.ts": {
+      "verdict": "unknown",
+      "category": "CWE-22 Path Traversal",
+      "reason": "pathtraver sink 존재하나 source 흐름 판정 불가 → LLM 위임"
+    },
+    "routes/recycles.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/redirect.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/repeatNotification.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/resetPassword.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/restoreProgress.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/saveLoginIp.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/search.ts": {
+      "verdict": "vuln",
+      "category": "CWE-89 SQL Injection",
+      "reason": "사용자 입력이 정화 없이 sqli sink에 도달"
+    },
+    "routes/securityQuestion.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/showProductReviews.ts": {
+      "verdict": "vuln",
+      "category": "CWE-89 SQL Injection",
+      "reason": "사용자 입력이 정화 없이 sqli sink에 도달"
+    },
+    "routes/trackOrder.ts": {
+      "verdict": "vuln",
+      "category": "CWE-89 SQL Injection",
+      "reason": "사용자 입력이 정화 없이 sqli sink에 도달"
+    },
+    "routes/updateProductReviews.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/updateUserProfile.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/userProfile.ts": {
+      "verdict": "vuln",
+      "category": "CWE-94 Code Injection",
+      "reason": "사용자 입력이 정화 없이 codei sink에 도달"
+    },
+    "routes/verify.ts": {
+      "verdict": "vuln",
+      "category": "CWE-328 Weak Hash",
+      "reason": "비밀번호/토큰에 약한 해시(MD5/SHA1)"
+    },
+    "routes/videoHandler.ts": {
+      "verdict": "vuln",
+      "category": "CWE-22 Path Traversal",
+      "reason": "사용자 입력이 정화 없이 pathtraver sink에 도달"
+    },
+    "routes/vulnCodeFixes.ts": {
+      "verdict": "safe",
+      "category": "CWE-22 Path Traversal",
+      "reason": "pathtraver sink에 정화/안전 API 적용됨",
+      "strong": true
+    },
+    "routes/vulnCodeSnippet.ts": {
+      "verdict": "vuln",
+      "category": "CWE-22 Path Traversal",
+      "reason": "사용자 입력이 정화 없이 pathtraver sink에 도달"
+    },
+    "routes/wallet.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "routes/web3Wallet.ts": {
+      "verdict": "unknown",
+      "category": "?",
+      "reason": "위험 sink 미검출 → LLM 위임"
+    },
+    "server.ts": {
+      "verdict": "safe",
+      "category": "CWE-22 Path Traversal",
+      "reason": "pathtraver sink에 정화/안전 API 적용됨",
+      "strong": true
+    }
+  },
+  "multi_graph_vuln_files": [
+    "frontend/src/app/Services/conversation-storage.service.ts",
+    "frontend/src/app/chatbot/chat-welcome-screen/chat-welcome-screen.component.ts",
+    "frontend/src/app/coding-challenge-page/components/coding-challenge-fix-it/coding-challenge-fix-it.component.ts",
+    "frontend/src/app/login/login.component.ts",
+    "lib/insecurity.ts",
+    "lib/utils.ts",
+    "routes/chat.ts",
+    "routes/login.ts",
+    "routes/search.ts",
+    "routes/showProductReviews.ts",
+    "routes/trackOrder.ts",
+    "routes/userProfile.ts",
+    "routes/verify.ts",
+    "routes/videoHandler.ts",
+    "routes/vulnCodeSnippet.ts"
+  ],
+  "multi_graph_counts": {
+    "vuln": 15,
+    "safe": 7,
+    "unknown": 235
+  }
+}

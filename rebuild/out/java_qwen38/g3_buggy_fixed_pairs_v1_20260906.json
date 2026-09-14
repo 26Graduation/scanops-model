@@ -1,0 +1,706 @@
+{
+  "summary": {
+    "schema": "scanops.cwe-bench-java.g3-buggy-fixed-pairs.v1",
+    "engine": "fixed-java-cpg",
+    "external_llm_invoked": false,
+    "projects": 3,
+    "buggy_target_alerts": 13,
+    "fixed_target_alerts": 12,
+    "projects_clean_after_fix": 1,
+    "exact_fingerprints_persisting": 8
+  },
+  "runs": [
+    {
+      "project_slug": "perwendel__spark_CVE-2018-9159_2.7.1",
+      "cwe": "CWE-22",
+      "buggy_commit": "5316c0d0f057daaf556c3907c20df975f7bf8a8a",
+      "final_fix_commit": "ce9e11517eca69e58ed4378d1e47a02bd06863cc",
+      "n_java_files_fixed": 179,
+      "buggy_target_alerts": 10,
+      "fixed_target_alerts": 10,
+      "exact_fingerprints_persisting": 8,
+      "fixed_target_findings": [
+        {
+          "file": "src/main/java/spark/utils/ResourceUtils.java",
+          "category": "pathtraver",
+          "cwe": "CWE-22",
+          "source": "String newPattern",
+          "sink": "new File(toURI(resourceUrl).getSchemeSpecificPart())",
+          "line": 219,
+          "source_file": "src/main/java/spark/utils/StringUtils.java",
+          "source_line": 131,
+          "source_kind": "public_parameter",
+          "rule_pattern": ".*\\bjava\\.io\\.File\\.<init>.*",
+          "rule_field": "full",
+          "sanitized": false,
+          "sanitizer_hits": [],
+          "path": [
+            {
+              "file": "src/main/java/spark/utils/StringUtils.java",
+              "line": 131,
+              "code": "String newPattern",
+              "role": "source"
+            },
+            {
+              "file": "src/main/java/spark/utils/StringUtils.java",
+              "line": 132,
+              "code": "newPattern",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/spark/utils/StringUtils.java",
+              "line": 142,
+              "code": "newPattern",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/spark/utils/StringUtils.java",
+              "line": 142,
+              "code": "sb",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/spark/utils/StringUtils.java",
+              "line": 146,
+              "code": "sb",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/spark/utils/StringUtils.java",
+              "line": 148,
+              "code": "sb",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/spark/utils/StringUtils.java",
+              "line": 148,
+              "code": "sb.toString()",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/spark/utils/StringUtils.java",
+              "line": 148,
+              "code": "return sb.toString();",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/spark/utils/StringUtils.java",
+              "line": 131,
+              "code": "RET",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/spark/utils/ResourceUtils.java",
+              "line": 339,
+              "code": "StringUtils.replace(location, \" \", \"%20\")",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/spark/utils/ResourceUtils.java",
+              "line": 339,
+              "code": "$obj15",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/spark/utils/ResourceUtils.java",
+              "line": 339,
+              "code": "<empty>",
+              "role": "intermediate"
+            }
+          ]
+        },
+        {
+          "file": "src/main/java/spark/resource/ClassPathResource.java",
+          "category": "pathtraver",
+          "cwe": "CWE-22",
+          "source": "this.path",
+          "sink": "this.classLoader.getResource(this.path)",
+          "line": 129,
+          "source_file": "src/main/java/spark/resource/ClassPathResource.java",
+          "source_line": 129,
+          "source_kind": "instance_state",
+          "rule_pattern": ".*\\b(java\\.lang\\.)?(ClassLoader|Class)\\.getResource(AsStream)?.*",
+          "rule_field": "full",
+          "sanitized": false,
+          "sanitizer_hits": [],
+          "path": [
+            {
+              "file": "src/main/java/spark/resource/ClassPathResource.java",
+              "line": 129,
+              "code": "this.path",
+              "role": "source"
+            },
+            {
+              "file": "src/main/java/spark/resource/ClassPathResource.java",
+              "line": 129,
+              "code": "this.classLoader",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/spark/resource/ClassPathResource.java",
+              "line": 123,
+              "code": "this",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/spark/resource/ClassPathResourceHandler.java",
+              "line": 73,
+              "code": "resource",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/spark/resource/ClassPathResourceHandler.java",
+              "line": 82,
+              "code": "resource",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/spark/resource/ClassPathResourceHandler.java",
+              "line": 82,
+              "code": "resource",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/spark/resource/ClassPathResource.java",
+              "line": 123,
+              "code": "this",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/spark/resource/ClassPathResource.java",
+              "line": 129,
+              "code": "this.classLoader",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/spark/resource/ClassPathResource.java",
+              "line": 129,
+              "code": "this.path",
+              "role": "sink"
+            }
+          ]
+        },
+        {
+          "file": "src/main/java/spark/resource/ClassPathResource.java",
+          "category": "pathtraver",
+          "cwe": "CWE-22",
+          "source": "this.path",
+          "sink": "this.classLoader.getResource(this.path)",
+          "line": 168,
+          "source_file": "src/main/java/spark/resource/ClassPathResource.java",
+          "source_line": 168,
+          "source_kind": "instance_state",
+          "rule_pattern": ".*\\b(java\\.lang\\.)?(ClassLoader|Class)\\.getResource(AsStream)?.*",
+          "rule_field": "full",
+          "sanitized": false,
+          "sanitizer_hits": [],
+          "path": [
+            {
+              "file": "src/main/java/spark/resource/ClassPathResource.java",
+              "line": 168,
+              "code": "this.path",
+              "role": "source"
+            }
+          ]
+        },
+        {
+          "file": "src/main/java/spark/resource/ExternalResource.java",
+          "category": "pathtraver",
+          "cwe": "CWE-22",
+          "source": "this.file",
+          "sink": "new FileInputStream(file)",
+          "line": 67,
+          "source_file": "src/main/java/spark/resource/ExternalResource.java",
+          "source_line": 67,
+          "source_kind": "instance_state",
+          "rule_pattern": ".*\\bFile(InputStream|Reader|Writer)\\.<init>.*",
+          "rule_field": "full",
+          "sanitized": false,
+          "sanitizer_hits": [],
+          "path": [
+            {
+              "file": "src/main/java/spark/resource/ExternalResource.java",
+              "line": 67,
+              "code": "this.file",
+              "role": "source"
+            }
+          ]
+        },
+        {
+          "file": "src/main/java/spark/utils/ResourceUtils.java",
+          "category": "pathtraver",
+          "cwe": "CWE-22",
+          "source": "this.path",
+          "sink": "new File(resourceUrl.getFile())",
+          "line": 222,
+          "source_file": "src/main/java/spark/resource/ClassPathResource.java",
+          "source_line": 127,
+          "source_kind": "instance_state",
+          "rule_pattern": ".*\\bjava\\.io\\.File\\.<init>.*",
+          "rule_field": "full",
+          "sanitized": false,
+          "sanitizer_hits": [],
+          "path": [
+            {
+              "file": "src/main/java/spark/resource/ClassPathResource.java",
+              "line": 127,
+              "code": "this.path",
+              "role": "source"
+            },
+            {
+              "file": "src/main/java/spark/resource/ClassPathResource.java",
+              "line": 127,
+              "code": "this.clazz",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/spark/resource/ClassPathResource.java",
+              "line": 123,
+              "code": "this",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/spark/resource/ClassPathResourceHandler.java",
+              "line": 73,
+              "code": "resource",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/spark/resource/ClassPathResourceHandler.java",
+              "line": 82,
+              "code": "resource",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/spark/resource/ClassPathResourceHandler.java",
+              "line": 82,
+              "code": "resource",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/spark/resource/AbstractFileResolvingResource.java",
+              "line": 65,
+              "code": "this",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/spark/resource/AbstractFileResolvingResource.java",
+              "line": 68,
+              "code": "this",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/spark/resource/AbstractResource.java",
+              "line": 84,
+              "code": "this",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/spark/resource/AbstractResource.java",
+              "line": 84,
+              "code": "this",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/spark/resource/AbstractFileResolvingResource.java",
+              "line": 68,
+              "code": "this",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/spark/resource/AbstractFileResolvingResource.java",
+              "line": 71,
+              "code": "this",
+              "role": "intermediate"
+            }
+          ]
+        },
+        {
+          "file": "src/main/java/spark/resource/ClassPathResource.java",
+          "category": "pathtraver",
+          "cwe": "CWE-22",
+          "source": "this.path",
+          "sink": "this.clazz.getResource(this.path)",
+          "line": 127,
+          "source_file": "src/main/java/spark/resource/ClassPathResource.java",
+          "source_line": 127,
+          "source_kind": "instance_state",
+          "rule_pattern": ".*\\b(java\\.lang\\.)?(ClassLoader|Class)\\.getResource(AsStream)?.*",
+          "rule_field": "full",
+          "sanitized": false,
+          "sanitizer_hits": [],
+          "path": [
+            {
+              "file": "src/main/java/spark/resource/ClassPathResource.java",
+              "line": 127,
+              "code": "this.path",
+              "role": "source"
+            }
+          ]
+        },
+        {
+          "file": "src/main/java/spark/resource/ClassPathResource.java",
+          "category": "pathtraver",
+          "cwe": "CWE-22",
+          "source": "this.path",
+          "sink": "this.classLoader.getResourceAsStream(this.path)",
+          "line": 147,
+          "source_file": "src/main/java/spark/resource/ClassPathResource.java",
+          "source_line": 147,
+          "source_kind": "instance_state",
+          "rule_pattern": ".*\\b(java\\.lang\\.)?(ClassLoader|Class)\\.getResource(AsStream)?.*",
+          "rule_field": "full",
+          "sanitized": false,
+          "sanitizer_hits": [],
+          "path": [
+            {
+              "file": "src/main/java/spark/resource/ClassPathResource.java",
+              "line": 147,
+              "code": "this.path",
+              "role": "source"
+            }
+          ]
+        },
+        {
+          "file": "src/main/java/spark/utils/ResourceUtils.java",
+          "category": "pathtraver",
+          "cwe": "CWE-22",
+          "source": "URI resourceUri",
+          "sink": "new File(resourceUri.getSchemeSpecificPart())",
+          "line": 258,
+          "source_file": "src/main/java/spark/utils/ResourceUtils.java",
+          "source_line": 250,
+          "source_kind": "public_parameter",
+          "rule_pattern": ".*\\bjava\\.io\\.File\\.<init>.*",
+          "rule_field": "full",
+          "sanitized": false,
+          "sanitizer_hits": [],
+          "path": [
+            {
+              "file": "src/main/java/spark/utils/ResourceUtils.java",
+              "line": 250,
+              "code": "URI resourceUri",
+              "role": "source"
+            },
+            {
+              "file": "src/main/java/spark/utils/ResourceUtils.java",
+              "line": 251,
+              "code": "resourceUri",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/spark/utils/Assert.java",
+              "line": 65,
+              "code": "Object object",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/spark/utils/Assert.java",
+              "line": 66,
+              "code": "object",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/spark/utils/Assert.java",
+              "line": 65,
+              "code": "Object object",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/spark/utils/ResourceUtils.java",
+              "line": 251,
+              "code": "resourceUri",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/spark/utils/ResourceUtils.java",
+              "line": 252,
+              "code": "resourceUri",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/spark/utils/ResourceUtils.java",
+              "line": 258,
+              "code": "resourceUri",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/spark/utils/ResourceUtils.java",
+              "line": 258,
+              "code": "resourceUri.getSchemeSpecificPart()",
+              "role": "sink"
+            }
+          ]
+        },
+        {
+          "file": "src/main/java/spark/resource/ClassPathResource.java",
+          "category": "pathtraver",
+          "cwe": "CWE-22",
+          "source": "this.path",
+          "sink": "this.clazz.getResource(this.path)",
+          "line": 166,
+          "source_file": "src/main/java/spark/resource/ClassPathResource.java",
+          "source_line": 166,
+          "source_kind": "instance_state",
+          "rule_pattern": ".*\\b(java\\.lang\\.)?(ClassLoader|Class)\\.getResource(AsStream)?.*",
+          "rule_field": "full",
+          "sanitized": false,
+          "sanitizer_hits": [],
+          "path": [
+            {
+              "file": "src/main/java/spark/resource/ClassPathResource.java",
+              "line": 166,
+              "code": "this.path",
+              "role": "source"
+            }
+          ]
+        },
+        {
+          "file": "src/main/java/spark/resource/ClassPathResource.java",
+          "category": "pathtraver",
+          "cwe": "CWE-22",
+          "source": "this.path",
+          "sink": "this.clazz.getResourceAsStream(this.path)",
+          "line": 145,
+          "source_file": "src/main/java/spark/resource/ClassPathResource.java",
+          "source_line": 145,
+          "source_kind": "instance_state",
+          "rule_pattern": ".*\\b(java\\.lang\\.)?(ClassLoader|Class)\\.getResource(AsStream)?.*",
+          "rule_field": "full",
+          "sanitized": false,
+          "sanitizer_hits": [],
+          "path": [
+            {
+              "file": "src/main/java/spark/resource/ClassPathResource.java",
+              "line": 145,
+              "code": "this.path",
+              "role": "source"
+            }
+          ]
+        }
+      ],
+      "runner": {
+        "rc": 0,
+        "elapsed": 12.26,
+        "timed_out": false,
+        "error": null,
+        "rule_errors": []
+      }
+    },
+    {
+      "project_slug": "codehaus-plexus__plexus-utils_CVE-2017-1000487_3.0.15",
+      "cwe": "CWE-78",
+      "buggy_commit": "3b271b43f9e5021b4232fc2ffdfb4e469c7f8685",
+      "final_fix_commit": "b38a1b3a4352303e4312b2bb601a0d7ec6e28f41",
+      "n_java_files_fixed": 127,
+      "buggy_target_alerts": 2,
+      "fixed_target_alerts": 2,
+      "exact_fingerprints_persisting": 0,
+      "fixed_target_findings": [
+        {
+          "file": "src/main/java/org/codehaus/plexus/util/cli/Commandline.java",
+          "category": "cmdi",
+          "cwe": "CWE-78",
+          "source": "this.envVars",
+          "sink": "Runtime.getRuntime().exec(getCommandline(), environment, workingDir)",
+          "line": 670,
+          "source_file": "src/main/java/org/codehaus/plexus/util/cli/Commandline.java",
+          "source_line": 490,
+          "source_kind": "instance_state",
+          "rule_pattern": ".*\\bRuntime\\.exec.*",
+          "rule_field": "full",
+          "sanitized": false,
+          "sanitizer_hits": [],
+          "path": [
+            {
+              "file": "src/main/java/org/codehaus/plexus/util/cli/Commandline.java",
+              "line": 490,
+              "code": "this.envVars",
+              "role": "source"
+            },
+            {
+              "file": "src/main/java/org/codehaus/plexus/util/cli/Commandline.java",
+              "line": 490,
+              "code": "name",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/org/codehaus/plexus/util/cli/Commandline.java",
+              "line": 490,
+              "code": "this.envVars.get(name)",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/org/codehaus/plexus/util/cli/Commandline.java",
+              "line": 490,
+              "code": "(String) envVars.get(name)",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/org/codehaus/plexus/util/cli/Commandline.java",
+              "line": 490,
+              "code": "value",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/org/codehaus/plexus/util/cli/Commandline.java",
+              "line": 491,
+              "code": "name + \"=\" + value",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/org/codehaus/plexus/util/cli/Commandline.java",
+              "line": 491,
+              "code": "environmentVars[i]",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/org/codehaus/plexus/util/cli/Commandline.java",
+              "line": 494,
+              "code": "environmentVars",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/org/codehaus/plexus/util/cli/Commandline.java",
+              "line": 494,
+              "code": "return environmentVars;",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/org/codehaus/plexus/util/cli/Commandline.java",
+              "line": 474,
+              "code": "RET",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/org/codehaus/plexus/util/cli/Commandline.java",
+              "line": 647,
+              "code": "this.getEnvironmentVariables()",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/org/codehaus/plexus/util/cli/Commandline.java",
+              "line": 647,
+              "code": "environment",
+              "role": "intermediate"
+            }
+          ]
+        },
+        {
+          "file": "src/main/java/org/codehaus/plexus/util/cli/Commandline.java",
+          "category": "cmdi",
+          "cwe": "CWE-78",
+          "source": "this.executable",
+          "sink": "Runtime.getRuntime().exec(getCommandline(), environment, workingDir)",
+          "line": 655,
+          "source_file": "src/main/java/org/codehaus/plexus/util/cli/Commandline.java",
+          "source_line": 414,
+          "source_kind": "instance_state",
+          "rule_pattern": ".*\\bRuntime\\.exec.*",
+          "rule_field": "full",
+          "sanitized": false,
+          "sanitizer_hits": [],
+          "path": [
+            {
+              "file": "src/main/java/org/codehaus/plexus/util/cli/Commandline.java",
+              "line": 414,
+              "code": "this.executable",
+              "role": "source"
+            },
+            {
+              "file": "src/main/java/org/codehaus/plexus/util/cli/Commandline.java",
+              "line": 414,
+              "code": "return executable;",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/org/codehaus/plexus/util/cli/Commandline.java",
+              "line": 412,
+              "code": "RET",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/org/codehaus/plexus/util/cli/Commandline.java",
+              "line": 503,
+              "code": "this.getLiteralExecutable()",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/org/codehaus/plexus/util/cli/Commandline.java",
+              "line": 503,
+              "code": "executable",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/org/codehaus/plexus/util/cli/Commandline.java",
+              "line": 505,
+              "code": "executable",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/org/codehaus/plexus/util/cli/Commandline.java",
+              "line": 510,
+              "code": "executable",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/org/codehaus/plexus/util/cli/Commandline.java",
+              "line": 510,
+              "code": "result[0]",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/org/codehaus/plexus/util/cli/Commandline.java",
+              "line": 511,
+              "code": "result",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/org/codehaus/plexus/util/cli/Commandline.java",
+              "line": 512,
+              "code": "result",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/org/codehaus/plexus/util/cli/Commandline.java",
+              "line": 512,
+              "code": "return result;",
+              "role": "intermediate"
+            },
+            {
+              "file": "src/main/java/org/codehaus/plexus/util/cli/Commandline.java",
+              "line": 500,
+              "code": "RET",
+              "role": "intermediate"
+            }
+          ]
+        }
+      ],
+      "runner": {
+        "rc": 0,
+        "elapsed": 14.13,
+        "timed_out": false,
+        "error": null,
+        "rule_errors": []
+      }
+    },
+    {
+      "project_slug": "jmrozanec__cron-utils_CVE-2021-41269_9.1.5",
+      "cwe": "CWE-94",
+      "buggy_commit": "34493c66edb490396202edad66c5f8cc5717d494",
+      "final_fix_commit": "d6707503ec2f20947f79e38f861dba93b39df9da",
+      "n_java_files_fixed": 190,
+      "buggy_target_alerts": 1,
+      "fixed_target_alerts": 0,
+      "exact_fingerprints_persisting": 0,
+      "fixed_target_findings": [],
+      "runner": {
+        "rc": 0,
+        "elapsed": 10.41,
+        "timed_out": false,
+        "error": null,
+        "rule_errors": []
+      }
+    }
+  ]
+}

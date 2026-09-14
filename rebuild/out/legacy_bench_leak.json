@@ -1,0 +1,26 @@
+{
+  "cvefixes157": {
+    "src": "data/cvefixes_benchmark.jsonl",
+    "n_in": 157,
+    "n_dropped_leak_vs_train_v3": 0,
+    "n_dropped_length_filter": 0,
+    "n_out": 157,
+    "labels": {
+      "safe": 77,
+      "vuln": 80
+    },
+    "balanced": false
+  },
+  "cybernative154": {
+    "src": "data/cybernative_benchmark.jsonl",
+    "n_in": 154,
+    "n_dropped_leak_vs_train_v3": 0,
+    "n_dropped_length_filter": 0,
+    "n_out": 154,
+    "labels": {
+      "safe": 77,
+      "vuln": 77
+    },
+    "balanced": true
+  }
+}

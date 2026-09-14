@@ -1,0 +1,40 @@
+{
+  "verdict": "CRITIC-KILL",
+  "n_target": 98,
+  "n_scored": 71,
+  "unparsed": 27,
+  "unparsed_rate": 0.2755,
+  "T1_accuracy": 0.4648,
+  "T1_trivial_always_NO": 0.4648,
+  "T1_margin": 0.0,
+  "T1_required_margin": 0.15,
+  "T1_pass": false,
+  "T2_ident_inclusion": 0.8265,
+  "T2_n": 98,
+  "T2_pass": true,
+  "T3_status": "FAIL",
+  "T3_detail": {
+    "pairs_scored": 29,
+    "inner_pair_disagreement": 0.0,
+    "overall_yes_rate": 0.0
+  },
+  "critic_yes": 0,
+  "critic_no": 71,
+  "by_lang": {
+    "Java": {
+      "n": 19,
+      "acc": 0.4737,
+      "yes": 0
+    },
+    "JavaScript": {
+      "n": 8,
+      "acc": 0.25,
+      "yes": 0
+    },
+    "Python": {
+      "n": 44,
+      "acc": 0.5,
+      "yes": 0
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "pass": false,
+  "checks": {
+    "model_is_qwen38_max": true,
+    "critic_default_off": true,
+    "java_prompt_and_frontend": true,
+    "cross_file_vulnerability": false,
+    "safe_file_filtered": true,
+    "sink_line_present": true,
+    "path_present": true,
+    "frontend_cache": false
+  },
+  "findings": [],
+  "cache_path": "rebuild/out/java_qwen38/g0_product_cache_v1.json",
+  "model": "qwen3.8-max"
+}

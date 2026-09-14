@@ -1,0 +1,222 @@
+{
+  "base": "primevul",
+  "tags": [
+    "v3s42",
+    "v1"
+  ],
+  "weights_grid": [
+    {
+      "w": [
+        0.0,
+        1.0
+      ],
+      "auc_tune": 0.5806,
+      "f1max_tune": 0.6792,
+      "tau_f1max": -1.761,
+      "capped_f1_tune": 0.5231,
+      "tau_capped": 0.482,
+      "capped_fpr_tune": 0.3333
+    },
+    {
+      "w": [
+        0.1,
+        0.9
+      ],
+      "auc_tune": 0.5787,
+      "f1max_tune": 0.6792,
+      "tau_f1max": -1.829,
+      "capped_f1_tune": 0.5231,
+      "tau_capped": 0.375,
+      "capped_fpr_tune": 0.3333
+    },
+    {
+      "w": [
+        0.2,
+        0.8
+      ],
+      "auc_tune": 0.5826,
+      "f1max_tune": 0.6792,
+      "tau_f1max": -1.705,
+      "capped_f1_tune": 0.5,
+      "tau_capped": 0.418,
+      "capped_fpr_tune": 0.3333
+    },
+    {
+      "w": [
+        0.3,
+        0.7
+      ],
+      "auc_tune": 0.5795,
+      "f1max_tune": 0.6733,
+      "tau_f1max": -1.335,
+      "capped_f1_tune": 0.5,
+      "tau_capped": 0.386,
+      "capped_fpr_tune": 0.3333
+    },
+    {
+      "w": [
+        0.4,
+        0.6
+      ],
+      "auc_tune": 0.5779,
+      "f1max_tune": 0.6796,
+      "tau_f1max": -1.542,
+      "capped_f1_tune": 0.5231,
+      "tau_capped": 0.26,
+      "capped_fpr_tune": 0.3333
+    },
+    {
+      "w": [
+        0.5,
+        0.5
+      ],
+      "auc_tune": 0.5795,
+      "f1max_tune": 0.6792,
+      "tau_f1max": -2.1,
+      "capped_f1_tune": 0.5231,
+      "tau_capped": 0.322,
+      "capped_fpr_tune": 0.3333
+    },
+    {
+      "w": [
+        0.6,
+        0.4
+      ],
+      "auc_tune": 0.5795,
+      "f1max_tune": 0.6792,
+      "tau_f1max": -2.168,
+      "capped_f1_tune": 0.5231,
+      "tau_capped": 0.234,
+      "capped_fpr_tune": 0.3333
+    },
+    {
+      "w": [
+        0.7,
+        0.3
+      ],
+      "auc_tune": 0.5756,
+      "f1max_tune": 0.6857,
+      "tau_f1max": -1.998,
+      "capped_f1_tune": 0.5231,
+      "tau_capped": 0.324,
+      "capped_fpr_tune": 0.3333
+    },
+    {
+      "w": [
+        0.8,
+        0.2
+      ],
+      "auc_tune": 0.5787,
+      "f1max_tune": 0.6857,
+      "tau_f1max": -2.145,
+      "capped_f1_tune": 0.5455,
+      "tau_capped": 0.253,
+      "capped_fpr_tune": 0.3333
+    },
+    {
+      "w": [
+        0.9,
+        0.1
+      ],
+      "auc_tune": 0.5787,
+      "f1max_tune": 0.6857,
+      "tau_f1max": -2.292,
+      "capped_f1_tune": 0.5312,
+      "tau_capped": 0.387,
+      "capped_fpr_tune": 0.3056
+    },
+    {
+      "w": [
+        1.0,
+        0.0
+      ],
+      "auc_tune": 0.5721,
+      "f1max_tune": 0.6731,
+      "tau_f1max": -2.439,
+      "capped_f1_tune": 0.5455,
+      "tau_capped": 0.163,
+      "capped_fpr_tune": 0.3333
+    }
+  ],
+  "chosen": {
+    "w": [
+      0.8,
+      0.2
+    ],
+    "auc_tune": 0.5787,
+    "f1max_tune": 0.6857,
+    "tau_f1max": -2.145,
+    "capped_f1_tune": 0.5455,
+    "tau_capped": 0.253,
+    "capped_fpr_tune": 0.3333
+  },
+  "report": {
+    "auc": 0.5806,
+    "at_tau_capped": {
+      "n": 288,
+      "n_vuln": 144,
+      "n_safe": 144,
+      "recall": 0.4236,
+      "fpr": 0.3403,
+      "precision": 0.5545,
+      "f1": 0.4803,
+      "parse_fail": 0,
+      "tau": 0.253
+    },
+    "at_tau_f1max": {
+      "n": 288,
+      "n_vuln": 144,
+      "n_safe": 144,
+      "recall": 0.9931,
+      "fpr": 0.9931,
+      "precision": 0.5,
+      "f1": 0.6651,
+      "parse_fail": 0,
+      "tau": -2.145
+    },
+    "trivial_all_vuln": {
+      "n": 288,
+      "n_vuln": 144,
+      "n_safe": 144,
+      "recall": 1.0,
+      "fpr": 1.0,
+      "precision": 0.5,
+      "f1": 0.6667,
+      "parse_fail": 0
+    },
+    "pairwise_at_tau_capped": {
+      "n_pairs": 144,
+      "pair_correct": {
+        "n": 14,
+        "rate": 0.0972
+      },
+      "pair_vulnerable": {
+        "n": 47,
+        "rate": 0.3264
+      },
+      "pair_benign": {
+        "n": 81,
+        "rate": 0.5625
+      },
+      "pair_reversed": {
+        "n": 2,
+        "rate": 0.0139
+      },
+      "pair_parse_fail": 0
+    }
+  },
+  "single_model_report": {
+    "v3s42": {
+      "auc": 0.5802,
+      "capped_f1": 0.4322,
+      "capped_fpr": 0.2847,
+      "f1max": 0.6684
+    },
+    "v1": {
+      "auc": 0.5618,
+      "capped_f1": 0.4553,
+      "capped_fpr": 0.3194,
+      "f1max": 0.6683
+    }
+  }
+}

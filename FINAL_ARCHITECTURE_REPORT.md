@@ -1,0 +1,1132 @@
+# ScanOps — 최종 아키텍처·측정 보고서
+
+> 작성 2026-08-17. 이 문서의 **모든 성능 문장에는 (수치, 파일, 절)** 이 붙는다.
+> 판정은 각 세션에서 **사전 등록한 기준** 그대로 적는다.
+
+## §-1 세션 STATUS (2026-08-17 **네 번째** 무인 세션 마감, 05:40 KST)
+
+**목표: "PR 변경 맥락을 읽는 LLM + 레포 전체를 훑는 멀티파일 코드그래프" 라는 듀얼 엔진 주장을 측정으로 검정한다.**
+
+| 항목 | 값 |
+|---|---|
+| Phase B 레포 벤치 | **완주** — juice-shop 257 TS 파일 × 3 arm. 판정 **`GRAPH-TIE`**(구속력 없음, 표본 부족) |
+| **가장 중요한 결과** | **벤치가 포화됐다** — 세 arm recall 전부 1.0000. **지표를 사후에 바꾸지 않았다**(D-43) |
+| 실제로 가른 값 | 경보율 **S1 0.4475 < S2 0.5525 < C1 0.6187** / **S2−S1 = 새 탐지 0개, 추가 경보 27개 파일** |
+| 멀티파일 `code_graph` | **vuln 판정 0건** — sink 패턴 5개뿐(React/DOM XSS 3 + fetch/axios 2). Express·sequelize·Angular 미발화 |
+| Joern 프로젝트 CPG | **성공** — 257파일 1개 CPG, 149초, `-Xmx 4g`, 폴백 없음, import 해결 11,130건 |
+| Phase C `[DIFF]` 이식 | **완료** — `SCANOPS_PR_DIFF_MARKER` 기본 on, 회귀 4종 통과. **게이트 통과가 아니라 제품 판단** |
+| Phase A 단건 헤드투헤드 | **미측정** — 배치 5건(2,308유닛) 제출 후 5시간 동안 `succeeded 0`. 수거 못 함(§아래) |
+| Phase D 발표 패키지 | **완료** — `presentation/` 표4·그림4·아키텍처·한계Q&A 15개·5분 대본·계획서 정정 |
+| pod | **0** (RunPod 가용 GPU 0 → 로컬 llama.cpp Metal 로 전량 대체) |
+| 비용 | Anthropic **$1.51 수거분** + **미수거 배치 5건**(추정 ~$11, 아래) · RunPod **≈$0.005** |
+| 결정 로그 | `rebuild/out/SESSION_DECISIONS_20260817D.md` **D-32 ~ D-43** |
+| 사전등록 | `rebuild/DUAL_ENGINE_RUN_SPEC.md` — **스캔 전 커밋 `72d18e0`** |
+
+**정직하게 적어야 할 것 세 가지**
+
+1. **레포 벤치는 arm 을 가르지 못했다.** 정답 파일이 9개인데 세 arm 모두 파일의 45~62% 를
+   취약이라고 답해서 recall 이 전부 1.0 이 됐다. **사전등록 설계의 결함**이고, 결과를 본 뒤
+   지표를 바꾸지 않았다. 다음 세션에서 **정답 파일 수**와 **라인 단위 출력 서식**을 **동시에** 고쳐야 한다(D-43).
+2. **Phase A 를 수거하지 못했다.** 배치 5건은 제출됐고 처리 중이다 —
+   **비용은 발생하지만 이번 세션에 결과를 못 받았다.** batch id 는 `rebuild/out/h2h_batch_*.id` 에 있고
+   다음 세션에서 `python rebuild/headtohead.py collect <name>` 으로 이어서 수거하면 된다.
+3. **8시간을 넘겼다** (약 9시간). 로컬 GPU 가 RunPod 대체라 파일당 ~20초가 걸렸고,
+   S1 스캔만 54분이었다. 부분 결과로 채점하면 정답 파일 9개 중 7개가 미스캔이라 비교가 성립하지 않아
+   완주를 택했다.
+
+**미완**
+- Phase B C2(Claude STRONG) — 사양 §4 우선순위 ⑤. ②③④ 배치가 예산을 선점해 제출하지 않았다.
+- WebGoat·pygoat 정답표 — 기계 판독 마커가 없어 뺐다(D-42). **이것이 표본 부족의 직접 원인이다.**
+- `taint_v4.sc` 의 파일 키가 basename 이라 중복 2건에서 관대/엄격 두 값을 남겼다(D-39).
+
+---
+
+## §-1b 세션 STATUS (2026-08-17 두 번째 무인 세션 마감, 18:30 KST)
+
+**목표: "패치 전후 구분" 능력을 올린다. 데이터·베이스는 그대로, 입력 형식/학습 목적만 바꾼다.**
+
+| 항목 | 값 |
+|---|---|
+| Phase 1 (추론 형식) | 사전등록 계산값 **`PROMPT-WIN`** → **계측기 결함 발견, 행동 안 함** |
+| Phase 1′ (위치 상쇄) | **`CB-PARTIAL`** — 살아남은 형식은 **P2(`[DIFF]` 마커)** 뿐 |
+| Phase 2 (형식 학습 v5) | **`NO-ADOPT`** — 막은 것은 **과잉 경보**(FPR-safe 0.435 vs v1 0.065) |
+| Phase 3 (제품 반영) | **하지 않았다.** `api_rebuild.py` **한 줄도 안 고쳤다** |
+| pod | **0** (A6000 15:43 · A100 18:17, 둘 다 204) |
+| 비용 | $23.59 → **$18.31** = **$5.28** (상한 $12 의 44%) |
+| 결정 로그 | `rebuild/out/SESSION_DECISIONS_20260817C.md` **D-19 ~ D-31** |
+
+**오늘 측정된 것 (§3-5 · `DIFF_AWARE_RESULTS.md`):**
+
+1. **재학습 없이 프롬프트만 고치면 쌍 판별이 0.4600 → 0.6050** (+0.1450 [+0.0650, +0.2225], 위치 상쇄 후).
+   **제품은 이미 `patch` 를 받아서 버리고 있다**(`api_rebuild.py:519` 가 줄 번호만 쓴다).
+2. **그 형식으로 학습하면 추가로 +0.0700 [+0.015, +0.128]** — 그러나 **안전 판본 오탐률이 6.7배**가 된다.
+   원인은 **학습 쌍 5,533개가 전부 (취약, 안전)** 이라는 것이고, 이 위험은 **학습 전에** 사양 §4 에 적고
+   판정 조건에 넣어 뒀다. **그 조건이 채택을 막았다.**
+3. **"두 판본을 나란히 보여주기"는 위치 편향을 만든다** — 취약본을 A 에 놓으면 0.925, B 에 놓으면 0.345.
+
+**이 세션에서 가장 중요한 것은 판정이 아니라 계측이었다.**
+사전등록한 누수 검정(라벨 셔플)은 **위치 편향을 못 잡는다.** 그대로 보고했다면
+**위치 편향을 "diff 이해"로 발표할 뻔했다.** 판정선을 바꾸지 않고 **계측 방법만 고쳐** 다시 쟀다(사양 §10).
+
+**사고 1건.** 대체 GPU 를 for 루프로 **생성 API** 호출해 pod 5개를 만들었다(D-22).
+2분 안에 4개 삭제, 낭비 ≈ $0.16. **자원 생성은 하나씩 확인하며, 가용성 탐색은 조회 API 로.**
+
+**미완 (사유):**
+- **v5 를 750 step 까지 못 돌렸다** — 조기 종료(patience 3)로 600 에서 멈췄고 레시피가 step150 을 골랐다(D-30).
+- **safe-safe 쌍이 데이터에 없다** — 과잉 경보 위험을 대체 지표로만 쟀다(사양 §4).
+- **위치 편향의 원인은 재지 않았다** — 왜 Version A 를 선호하는지는 범위 밖.
+- **근사 중복 누수는 하한만** — 3-shingle 역색인 + 상위 20 후보까지.
+
+---
+
+## §0 Executive Summary
+
+1. **만든 것**: 파인튜닝 LLM 단독 탐지(Qwen3.5-9B QLoRA) + 자체 정규식 graph 폴백 +
+   Joern v4 데이터흐름 **근거(evidence) 수집** + 외부 호출 0 온프레미스 배포 패키지.
+2. **측정한 것**: 내부 test AUC/F1은 `rebuild/out/test_report.json`,
+   외부 벤치는 CleanVul·PrimeVul(§3), Joern v4 단독 precision은
+   CleanVul 240건 **0.5909** (`joern_v4_eval_sample.json`, JOERN_HYBRID_REPORT_V4.md §4)와
+   OWASP taint 전용 110건 **0.5172** (`owasp_joern_v4_final_metrics.json`, §3-2).
+3. **죽인 것**: LLM Critic 노선 — CTX-1(2026-08-15) · V3(08-16) · V4(08-17) 세 번 모두
+   사전 등록 게이트에서 탈락. 마지막에는 **외부 상용 모델과 베이스 모델까지 같은 답**을 냈다(§4).
+4. **왜 죽었나**: 질문의 근거가 입력에 없었다 — sanitizer 패치 줄이 Joern 슬라이스에 등장하는
+   비율 **4.8%**, 쌍의 **38%** 는 vuln/safe 슬라이스가 글자까지 동일(§4).
+5. **남은 것**: Joern은 판정에서 빠지고 **evidence 전용**으로 남았다(§1). 온프레미스 스택은
+   실제로 기동해 데모 응답을 받았다(§5·§6). **아직 목표(precision 0.70)에 도달한 arm은 없다**(§3).
+
+---
+
+## §1 아키텍처
+
+### SaaS 경로
+```mermaid
+flowchart LR
+  U[코드/PR] --> B[백엔드 Spring]
+  B -->|analyze| M[model-api api_rebuild]
+  M -->|판정 관여| L[LLM Qwen3.5-9B QLoRA<br/>RunPod serverless]
+  L --> J{detected?}
+  J -- yes --> V[vuln]
+  J -- no --> G[자체 graph]
+  G -->|판정 관여 - 폴백| V
+  G -->|그 외| S[safe]
+  JO[Joern v4 워커] -.evidence 전용.-> V
+  JO -.evidence 전용.-> S
+  Q[(Qdrant CVE)] -.설명 전용.-> V
+```
+
+### 온프레미스 경로 (외부 호출 0)
+```mermaid
+flowchart LR
+  U[코드] --> B2[backend :8080]
+  B2 --> M2[model-api :8100]
+  M2 -->|판정 관여| L2[llama-server :8080<br/>GGUF 로컬]
+  M2 -.evidence 전용.-> J2[joern-worker :8200<br/>image :final]
+  M2 --> P[(postgres)]
+  subgraph 선택
+    Z[zap] ; QD[(qdrant)]
+  end
+```
+
+> **화살표 표기**: "판정 관여"는 `detected` 값을 바꿀 수 있는 경로,
+> "evidence 전용"은 응답에 근거만 싣고 판정을 바꾸지 않는 경로다.
+> Joern이 evidence 전용인 근거는 §3-1·§3-2의 precision 측정이다.
+
+---
+
+## §2 실험 연대기
+
+각 행은 **질문 / 사전등록 기준 / 결과 / 판정 / 배운 것**이다. 실패도 같은 크기로 적는다.
+
+| # | 실험 | 질문 | 사전등록 기준 | 결과 | 판정 | 배운 것 | 파일 |
+|---|---|---|---|---|---|---|---|
+| 1 | **V3 자율실행** | 여러 MUST 개선안이 듣는가 | 각 MUST별 사전등록 | MUST 전부 실패, F1 지표 무효 | 기각 | self-consistency만 유효 | `V3_RUN_SPEC` |
+| 2 | **CTX-1 문맥주입** | 같은 파일 문맥을 주면 나아지는가 | ①식별자 포함률 ≥60% ②쌍내부 이동 > 전체이동 | 포함률 **17.1%**, 0.198 vs 0.550 | **KILL** | 문맥에 정보가 없었다. AUC보다 **정보 유입을 먼저 재라** | `CTX_RESULTS.md` |
+| 3 | **ABLATION** | 자체 graph가 하이브리드에 기여하는가 | ΔF1 CI가 0을 배제 | ΔF1 −0.0014, CI 0 포함. unknown 91.6% | 기여 없음 | graph는 **거의 답을 안 한다** | `ABLATION_RESULTS.md` |
+| 4 | **Joern v1/v2** | Joern taint가 graph보다 나은가 | precision CI하한 ≥0.80(TRUST) / 점추정 ≥0.60(SIGNAL) | 전건 1,878건 precision **0.5068** CI [0.4715, **0.5434**] | **JOERN-NO-BETTER** | CI 상한이 0.60에 미달 = 통계적 배제. 규칙 v2로 과탐 절반 줄여도 precision 불변 | `JOERN_HYBRID_REPORT.md` §4-5 |
+| 5 | **Joern v3 + Critic** | 흐름 슬라이스를 LLM에 주면 sanitizer를 가리는가 | T1 마진 ≥0.15, T2 ≥0.60, T3 성립 | YES **0건**, T1 마진 **0.000**, T2 0.8265 | **CRITIC-KILL** + **V3-FAIL** | T2는 통과했으나 T1 마진 0 | `JOERN_HYBRID_REPORT_V3.md` |
+| 6 | **Joern v4 결함수정** | self/this 제외·sanitizer applies_to로 나아지는가 | precision 점추정 ≥0.70 | self/this source **35/98 → 0/89**, precision 0.5652→**0.5909** | **V4-FAIL** | 결함은 고쳐졌으나 다른 흐름이 자리를 채운다 | `JOERN_HYBRID_REPORT_V4.md` §2 |
+| 7 | **전략 A (외부 모델)** | 더 강한 모델이면 되는가 | 마진 ≥0.15, YES ≥5, UNP <0.20 | UNPARSED **0%**, YES **0**, 마진 **0.000** | 미통과 | **모델 탓 근거가 사라졌다** | `critic_v4_A_external_metrics.json` |
+| 8 | **전략 E (union 슬라이스)** | 순환 제거하면 되는가 | 위와 동일 | 흐름 1→3.9개로 넓혔으나 sanitizer 포함률 **4.8% 불변**, YES 0 | 미통과 | 넓히는 것으로는 해결 안 됨 | `critic_v4_E_union_external_metrics.json` |
+| 9 | **전략 D (베이스 모델)** | 어댑터 과적합인가 | 위와 동일 | UNPARSED 0%, YES **0**, 마진 0.000 | 미통과 | 형식은 어댑터 문제가 맞으나(v1 27.6% vs 베이스 0%) **판정은 안 바뀜** | `critic_v4_D_base_metrics.json` |
+| 10 | **OWASP taint 전용** (오늘) | taint 계열만 보면 Joern이 나은가 | 사전등록: precision/recall/FPR/F1 + 자명 기준선 | precision **0.5172** CI [0.4023, 0.6207] | 가설 **미지지** | taint 전용이라고 나아지지 않는다 | `owasp_joern_v4_final_metrics.json` |
+
+---
+
+## §3 성능표
+
+### §3-1 CleanVul_v2 (외부 벤치, 실제 커밋 유래) — 층화 240건
+
+| arm | precision | 95% CI | recall | FPR | F1 |
+|---|---|---|---|---|---|
+| **all-vuln (자명 기준선)** | 0.5000 | [0.4333, 0.5625] | 1.0000 | 1.0000 | **0.6667** |
+| LLM only | 0.5872 | [0.4954, 0.6789] | 0.5333 | 0.3750 | 0.5590 |
+| **LLM + 자체graph (현재 채택)** | 0.5909 | [0.5091, 0.6909] | 0.5417 | 0.3750 | 0.5652 |
+| Joern v3 단독 | 0.5652 | [0.4130, 0.6957] | 0.2167 | 0.1667 | 0.3133 |
+| **Joern v4 단독** | **0.5909** | [0.4318, 0.7273] | 0.2167 | 0.1500 | 0.3171 |
+| v4 + Critic | 0.5909 | [0.5076, 0.6742] | 0.6500 | 0.4500 | 0.6190 |
+
+출처: `rebuild/out/joern_v4_eval_sample.json`, JOERN_HYBRID_REPORT_V4.md §4.
+
+> **어떤 arm도 자명 기준선 F1 0.6667을 넘지 못한다**(최고 0.6190).
+> 이 벤치에서 **F1로 성능을 주장할 수 없다.** 대외 자료에는 AUC를 쓴다.
+
+### §3-2 OWASP Benchmark holdout (합성 벤치, taint 계열 전용) — 110건
+
+| arm | precision | 95% CI | recall | FPR | F1 |
+|---|---|---|---|---|---|
+| **all-vuln (자명 기준선)** | 0.5000 | [0.4091, 0.5909] | 1.0000 | 1.0000 | **0.6667** |
+| **Joern v4 단독** | **0.5172** | [0.4023, 0.6207] | 0.8182 | 0.7636 | 0.6338 |
+
+혼동행렬 TP=45 FP=42 FN=10 TN=13. 카테고리 분포: xss 76 / cmdi 10 / crypto 7 /
+pathtraver 6 / hash 4 / weakrand 4 / sqli 3. 출처: `rebuild/out/owasp_joern_v4_final_metrics.json`.
+
+**sanitizer 판정의 부분 성과**: `safe_sanitized` 23건 중 gold=safe가 13건(56.5%).
+sanitizer 로직이 없었다면 전부 vuln이 되어 precision은 0.5000(=자명)이므로,
+sanitizer가 **0.5000 → 0.5172** 만큼 기여했다.
+
+> **주의 (반드시 함께 읽을 것)**
+> - OWASP는 **합성 벤치**다. 자체 정규식 graph는 여기에 손튜닝된 이력이 있다.
+> - **Joern v4 쿼리는 OWASP를 보고 만들지 않았다.** `taint_v4.sc`·`sanitizers.json`은
+>   CleanVul 실패 사례에서만 도출됐다(커밋 이력 `49ce14d` 이전에 OWASP 참조 없음).
+> - **이 표의 숫자를 §3-1(CleanVul)과 섞지 않는다.** 벤치 성격이 다르다.
+
+> **가설 미지지**: "taint 계열만 보면 Joern이 낫다"는 기대가 있었으나,
+> precision 0.5172는 CleanVul의 0.5909보다도 낮다. recall은 0.8182로 훨씬 높지만
+> FPR이 0.7636이라 자명 기준선(FPR 1.0)에 가까워지는 방향이다.
+
+### §3-3 OWASP FPR 0.76 진단과 수정 (2026-08-17)
+
+**분할(사전 등록)**: 110건 → 진단 54 / 홀드아웃 56 (seed 42, 라벨 균형).
+카테고리는 `@WebServlet` 경로에서 추출 — 11종 각 10건(`rebuild/out/owasp_split_fix.json`).
+**홀드아웃은 패턴 수정이 끝난 뒤 1회만 열었다.**
+
+**진단셋에서 본 것** (`rebuild/out/owasp_diag_report_fix.json`):
+
+| 과탐 24건의 방어 유형 | 건수 |
+|---|---|
+| 출력 인코더 (ESAPI 등) | 17 |
+| 화이트리스트 검증 | 7 |
+| 감지된 방어 없음 | 6 |
+
+더 중요한 발견은 **어떤 규칙이 발화했는가**였다:
+
+| gold 카테고리 | 우리 규칙이 붙인 category | 과탐 건수 |
+|---|---|---|
+| securecookie | **xss** | 4 |
+| xpathi | **xss** | 4 |
+| crypto / sqli / weakrand / xss | **xss** 포함 | 각 2 |
+| hash / ldapi | **xss** | 각 1 |
+
+**과탐 24건 중 20건이 `xss` 규칙 발화다.** OWASP 테스트 서블릿이 전부
+`response.getWriter().println(...)`으로 끝나기 때문에, 실제 취약점 종류와 무관하게
+xss 흐름이 잡힌다. 그리고 safe 변형은 그 출력을 인코딩한다.
+
+**수정 (일반 의미 패턴만, `applies_to: ["xss"]` 한정)**:
+`ESAPI.encoder().encodeFor*` / `URLEncoder.encode` / `HtmlUtils.htmlEscape`.
+OWASP 특정 문자열(테스트명·변수명)은 넣지 않았다.
+인코딩은 SQLi·cmdi를 막지 못하므로 xss 외 카테고리에는 적용하지 않는다.
+
+> 주의: ESAPI 적중의 상당수는 **로깅·Base64 출력** 경로였다
+> (`.println(ESAPI.encoder().encodeForHTML(e.getMessage()))`). 그래서 전역 적용은 하지 않았다.
+
+**홀드아웃 56건 (1회, 사전 등록 기준)**
+
+| 지표 | 어제 전건 110 | **오늘 홀드아웃 56** |
+|---|---|---|
+| precision | 0.5172 | **0.5610** [0.4146, 0.7073] |
+| recall | 0.8182 | **0.8214** |
+| **FPR** | 0.7636 | **0.6429** |
+| F1 | 0.6338 | 0.6667 |
+
+혼동행렬 TP=23 FP=18 FN=5 TN=10, `safe_sanitized` 15건.
+
+### 판정 = **`NOT-IMPROVED`**
+
+사전 등록 기준은 `FPR ≤ 0.50 AND recall ≥ 0.75`.
+recall은 통과(0.8214)했으나 **FPR 0.6429로 미달**이다.
+→ 규칙대로 **패턴은 유지하고 결과를 그대로 적는다.**
+
+FPR은 0.7636 → 0.6429로 내려갔고 precision도 올랐지만, **기준선을 넘지 못했다.**
+그리고 F1 0.6667은 자명 기준선(all-vuln)과 **정확히 같다**.
+
+**CleanVul 회귀 검사** (`joern_v4fix_raw_cleanvul_v2_sample.jsonl`, 240건):
+precision 0.5909 / recall 0.2167 / FPR 0.1500 — **v4와 완전히 동일, 변화 0건.**
+추가한 인코더 패턴이 CleanVul 코드에는 등장하지 않아 악화가 없다.
+(= OWASP 특정 튜닝이 아니라는 방증)
+
+## §4 CleanVul 벤치에 대한 발견 — 사실만
+
+### §4-1 측정한 숫자 (Critic 대상 98건 / safe 측 48건, tune split)
+
+| 측정 | 값 | 뜻 |
+|---|---|---|
+| sanitizer 성 패치의 **그 줄이 Joern 슬라이스에 등장** | **1/21 (4.8%)** | union으로 넓혀도 동일 |
+| safe 측 패치가 **sanitizer 호출 추가가 아님** | **26/48 (54.2%)** | sink 교체·리팩터링·시그니처 축소 등 |
+| 쌍의 vuln/safe 슬라이스가 **글자까지 동일** | **16/42 (38%)** | 같은 입력에 다른 답을 요구한 셈 |
+| Critic이 고칠 수 있는 상한 (슬라이스에 sanitizer 토큰 존재 ∧ gold=safe) | **5/98 (5.1%)** | 완벽한 Critic이어도 이 이상 불가 |
+
+출처: JOERN_HYBRID_REPORT_V4.md §3-2·§3-4.
+
+### §4-2 대표 사례 `cvh_124`
+
+패치는 **한 줄**이었다:
+```diff
++            body = StringEscapeUtils.escapeHtml4andJS(body);
+```
+그런데 sink는 `mapper.readValue(body, PushEvent.class)` — **Jackson 역직렬화**다.
+HTML 이스케이프는 역직렬화를 안전하게 만들지 않는다.
+
+**세 모델이 독립적으로 같은 답(NO)을 냈고, 그중 둘은 이유까지 댔다**:
+- 베이스 Qwen3.5-9B: "the `escapeHtml4andJS` function only sanitizes HTML/JS characters
+  but does not validate or deserialize the JSON structure"
+- 외부 Claude Haiku 4.5: 같은 취지
+- v1 어댑터: NO (근거는 카테고리 문구 재생)
+
+### §4-3 CleanVul이 무엇을 라벨링한 데이터인가 (Q1)
+
+공식 출처: **arXiv:2411.17274**, *"CleanVul: Automatic Function-Level Vulnerability Detection
+in Code Commits Using LLM Heuristics"* (초록 원문 확인, <https://arxiv.org/abs/2411.17274>).
+
+초록에서 확인된 사실(인용):
+> "the automatic and indiscriminate labeling of **all changes in vulnerability-fixing commits (VFCs)**
+> as vulnerability-related… not all changes in a commit aimed at fixing vulnerabilities pertain to
+> security threats; many are routine updates like bug fixes or test improvements"
+
+> "the first methodology that uses the Large Language Model (LLM) with a heuristic enhancement to
+> **automatically identify vulnerability-fixing changes from VFCs**, achieving an F1-score of 0.82"
+
+> "CleanVul, a high-quality dataset comprising 8,198 functions… demonstrating **Correctness (90.6%)**"
+
+**따라서**: CleanVul의 라벨은 "**이 변경이 취약점을 고치는 변경인가**"를 LLM 휴리스틱(VulSifter,
+그 과제에서 F1 0.82)으로 판정한 결과다. "**이 sink가 이제 안전한가**"를 정적 분석으로 판정한 것이 아니다.
+
+**이 벤치가 무엇을 재는지**:
+CleanVul은 **함수 단위 취약점 존재 여부**를 재기에는 적합하다(Correctness 90.6%).
+그러나 **"이 데이터흐름이 sanitize 되었는가"를 묻는 질문**에는 부분적으로만 맞는다 —
+취약점 수정은 sanitizer 추가만이 아니라 **sink 교체·구조 변경**으로도 이뤄지고,
+우리 측정에서 그런 유형이 54.2%였기 때문이다.
+
+> **라벨이 틀렸다는 주장이 아니다.** 우리가 던진 질문("SANITIZED YES/NO")이
+> 라벨이 담은 의미의 **일부만** 덮는다는 뜻이다.
+> 이것이 §2 #5·#7·#8·#9에서 네 번 연속 YES 0건이 나온 구조적 이유다.
+
+### §4-4 자기 정정
+
+JOERN_HYBRID_REPORT_V3.md는 T2=0.8265를 근거로 "정보 전달은 성공했다"고 적었다.
+**이 문장은 2026-08-17에 철회됐다.** T2는 "바뀐 줄의 **식별자**가 슬라이스 텍스트에 있는가"를
+셌는데, `self`·`kwargs`·`results` 같은 흔한 이름이면 자동 통과한다.
+**판단 근거(sanitizer 호출 자체)로 다시 재면 4.8%다**(§4-1).
+
+---
+
+## §5 온프레미스 배포
+
+파일: `scanops-infra/docker-compose.onprem.yml`, `.env.onprem.example`, `README_onprem.md`
+
+### §5-1 실측 사양 (2026-08-17, macOS M3 / Docker Desktop 7.65GiB 할당)
+
+| 서비스 | 메모리 실측 | cold start (healthy까지) | 비고 |
+|---|---|---|---|
+| `llama-server` (Qwen3.5-9B Q4_K_M) | **5.43 GiB** | 약 60초 | CPU 추론. GGUF 5.68GB를 볼륨 마운트 |
+| `joern-worker` (:final) | **22.8 MiB** (유휴) | 약 20초 | 분석 중에는 JVM 힙까지 최대 8GB (`JOERN_MEM_LIMIT`) |
+| `model-api` (api_rebuild) | **52.4 MiB** | 약 30초 | joern healthy 후 기동 |
+| `postgres` | — | 약 10초 | 데모에서는 미기동(§9) |
+
+**권장 최소 사양**: RAM 16GB(LLM 5.5GB + Joern 힙 4~8GB + OS), 디스크 20GB(이미지 + GGUF).
+측정 환경의 Docker 할당은 7.65GiB였고, **이 상태로 세 서비스가 동시에 healthy** 했다.
+
+### §5-2 외부 호출 차단
+
+`.env.onprem.example`에서 다음을 **전부 빈 값**으로 둔다:
+`RUNPOD_ENDPOINT_ID`, `RUNPOD_API_KEY`, `OPENAI_API_KEY`, `CLAUDE_API_KEY`, `GEMINI_API_KEY`,
+`ANTHROPIC_API_KEY`, `GITHUB_APP_ID`, `GITHUB_APP_PRIVATE_KEY`, `GITHUB_WEBHOOK_SECRET`, `GITHUB_TOKEN`.
+
+- `RUNPOD_ENDPOINT_ID`가 비면 `llm_client.use_runpod()`가 False가 되어 `LLAMA_SERVER_URL`로 폴백한다
+  (`scanops/core/llm_client.py:30-36`).
+- 백엔드 `application.yml`에서 확인된 **외부 참조 1건**: OAuth `redirect-uri` 기본값이
+  `https://scanops-backend-production.up.railway.app/...` 이다. `.env.onprem`에서
+  `GITHUB_OAUTH_REDIRECT_URI=http://localhost:8080/...`로 덮는다.
+  **다만 OAuth 로그인 자체는 github.com에 접속해야 동작한다** — 온프레미스에서 GitHub 로그인을
+  쓰려면 외부 접속이 필요하다. 에어갭에서는 사내 IdP/로컬 계정으로 대체해야 한다(§7).
+
+### §5-3 기동 중 발견해 고친 결함 2건 (오늘)
+
+| # | 증상 | 원인 | 수정 |
+|---|---|---|---|
+| 1 | `model-api`가 재시작 루프 | compose가 미설정 변수를 **빈 문자열**로 넘기는데 `hybrid._load_tuned`가 `float("")` 실행 | 빈 문자열/파싱 실패를 폴백으로 (`ac562d0`) |
+| 2 | 모든 Joern 요청이 `unknown` | `tmpfs: /tmp`가 **noexec**라 Joern이 zstd 네이티브 바이너리를 실행 못 함 (`"the configured temp directory (/tmp) is mounted with noexec flag"`) | `/tmp:size=4g,exec` |
+
+두 결함 모두 **실제로 띄워보지 않았으면 발견되지 않았다.** `config` 통과만으로는 잡히지 않는다.
+
+---
+
+## §6 데모 응답 3건 (프로덕션 모델, 2026-08-17 재실행)
+
+전문은 `scanops-infra/demo/response_{a,b,c}_fix.json`, 조건·해석은 `demo/NOTES_fix.md`.
+
+### 프로덕션 모델을 확보했다
+
+`rebuild/out/adapter/` → `llama.cpp/convert_lora_to_gguf.py` → `models/adapter_v1_fix.gguf` (58.2MB).
+llama-server에 `--lora`로 얹어 검증:
+
+| 검증 | 값 |
+|---|---|
+| 내부 test 20건 예측 일치율 (`rebuild/out/v1_logprob_test.jsonl` 대비) | **95.0% (19/20)** |
+| 4줄 서식 파싱 성공률 | **100% (20/20)** |
+| 사전 등록 채택 기준 | ≥ 90% → **통과, 경로 A 채택** |
+
+SHA256 — 베이스 `03b74727a860a56338e042c4420bb3f04b2fec5734175f4cb9fa853daf52b7e8`,
+어댑터 `a35c9b086127e48bf2c01a4b14b3d21f8063cabdd09f14401654e330b735c2c7`.
+
+### 결과 — 어제(베이스 단독)와 나란히
+
+| 샘플 | 어제 detected | **오늘 detected** | 오늘 vulnerability | joern flow | 어제 elapsed | **오늘 elapsed** |
+|---|---|---|---|---|---|---|
+| (a) Java SQLi | false | **true** | CWE-89 | **6스텝** | 77.4s | **20.0s** |
+| (b) Python cmdi | false | **true** | CWE-78 | 0스텝(safe) | 142.4s | **21.6s** |
+| (c) Java 안전(PreparedStatement) | false | **false** | NONE | 5스텝 | 174.4s | **16.3s** |
+
+세 건 모두 `source="llm"`, `status="DONE"`, `joern_evidence.advisory_only=true`,
+`parse_retried=false`(첫 호출에서 4줄 서식이 나왔다).
+
+> **어제 미탐의 원인이 "베이스 모델을 끼웠기 때문"이라는 §6의 진단이 확인됐다.**
+> 같은 코드·같은 스택에서 어댑터만 얹으니 (a)(b)를 탐지하고 (c)는 탐지하지 않는다.
+
+### 읽을 때 주의
+
+- **(c)에서 Joern은 여전히 `vuln`(5스텝)**이다. `PreparedStatement.setString` 흐름인데도
+  살아남은 흐름이 있다. 정책이 `JOERN-NO-BETTER`라 **판정에 관여하지 않고** `advisory_only`로만
+  실려, 최종 `detected`는 LLM이 낸 `false`다. §3의 precision 측정을 코드로 반영한 결과다.
+- **이 3건은 데모이지 벤치가 아니다.** 성능 수치는 §3의 표를 본다.
+
+## §7 한계와 다음 단계 (근거 순)
+
+### 7-1 지금 상태에서 말할 수 있는 것 / 없는 것
+
+| 말할 수 있다 | 말할 수 없다 |
+|---|---|
+| 내부 test split에서 F1 80.5 (`rebuild/out/test_report.json`) | 그 숫자가 외부 데이터에서 재현된다 |
+| 외부 CleanVul 240건에서 LLM+graph arm precision 0.5909 (§3-1) | precision 0.70(사업계획서 "오탐 1/3") 달성 |
+| Joern v4가 taint 흐름과 sanitizer 적중을 **근거로** 제시한다 (§6 재검증) | Joern이 판정 정확도를 올린다 (§3-1·§3-2 둘 다 미달) |
+| 외부 호출 0 스택이 실제로 기동한다 (§5-1 실측) | 에어갭에서 GitHub OAuth 로그인이 된다 (§5-2) |
+
+### 7-2 다음 단계 — 근거가 강한 순
+
+1. **Critic 노선 종료 유지.** 상한이 5.1%로 측정됐다(§4-1). 재개하려면 먼저
+   **"패치가 흐름 안에 있는 벤치"** 를 만들어야 한다 — CleanVul에서 그 조건을 만족하는
+   쌍만 추리면 소수(4.8%)라 새 데이터가 필요하다.
+2. **Joern은 evidence 전용으로 고정.** 판정 개입은 두 벤치 모두에서 미달이다.
+   evidence의 값어치는 §6 재검증처럼 "왜 그렇게 봤는지"를 보여주는 데 있다.
+3. **모델 쪽**: self-consistency(V3에서 유일하게 유효했던 것, `V3_RUN_SPEC`)의
+   비용/이득 재측정. 오늘 세션에서는 다루지 않았다.
+4. **원가 실측**: 이번 세션 RunPod 소진 $0(GPU 호출 0). 온프레미스는 하드웨어 원가만.
+   SaaS 원가는 별도 측정이 필요하다.
+
+### 7-3 미완 (§9와 중복 없이)
+
+- v1 어댑터 GGUF로의 데모 — 로컬에 파일이 없다.
+- 백엔드(Spring) 컨테이너 기동 — 시간상 미실행(§9).
+- 전건 1,878건 v4 확장 — 사전등록 `V4-FAIL`이라 **의도적으로** 안 함.
+
+---
+
+## §8 사업계획서 정정 목록 (누적, 최신)
+
+| # | 계획서 표현 | 실측 | 상태 |
+|---|---|---|---|
+| 1 | "오탐률 1/3 (precision ~0.70+)" | CleanVul 240건 최고 arm precision **0.5909** (§3-1), OWASP **0.5172** (§3-2). **2026-08-17 재측정으로 이 항목은 §8-2 로 대체됐다** — 과제에 따라 성립/불성립이 갈리고, 패치 전후 과제에서는 **오탐이 아니라 미탐이 주 실패**다(P-B 52.9%/78.5%) | **§8-2 참조** |
+| 2 | "F1 80.5" | 내부 test split 기준. **외부 벤치에서는 어떤 arm도 자명 기준선 F1 0.6667을 못 넘음** | **조건 명시 필요** |
+| 3 | "지식그래프가 오탐을 걸러낸다" | ABLATION ΔF1 −0.0014, CI 0 포함, unknown 91.6% | **기여 없음** |
+| 4 | "Joern CPG 하이브리드로 정밀도 향상" | v1~v4 전부 사전등록 게이트 미달 (§2 #4·#6·#10) | **미달, evidence 전용으로 축소** |
+| 5 | "LLM이 흐름을 검증한다(Critic)" | 세 번 KILL. 상한 5.1% (§4-1) | **종료** |
+| 6 | "온프레미스 완전 격리" | 스택 기동 확인(§5-1). 단 **GitHub OAuth는 외부 접속 필요**(§5-2) | **조건부 사실** |
+
+> 대외 자료에는 **AUC**를 쓰고, F1을 쓸 때는 **자명 기준선(all-vuln F1 0.6667)** 을 함께 적는다.
+
+---
+
+## §9 용어 사전
+
+| 용어 | 뜻 |
+|---|---|
+| **자명 기준선(trivial baseline)** | "전부 취약"이라고 답하는 분류기. 1:1 균형 데이터에서 F1 0.6667 |
+| **precision / recall / FPR** | 정밀도 = 취약 판정 중 실제 취약 비율 / 재현율 = 실제 취약 중 잡은 비율 / 오경보율 = 안전한 것 중 취약이라 한 비율 |
+| **taint flow** | 사용자 입력(source)이 위험 지점(sink)까지 흐르는 데이터 경로 |
+| **sanitizer** | 그 흐름 중간에서 값을 검증·이스케이프·파라미터화하는 호출 |
+| **CPG** | Code Property Graph. Joern이 만드는 코드 표현 |
+| **사전 등록(pre-registration)** | 측정 **전에** 성공/실패 기준을 문서에 적고, 결과를 본 뒤 바꾸지 않는 규율 |
+| **evidence 전용** | 응답에 근거만 싣고 `detected` 값을 바꾸지 않는 경로. `advisory_only: true`로 표시 |
+| **CRITIC-KILL / V3-FAIL / V4-FAIL** | 각 세션에서 사전 등록한 게이트를 통과하지 못했다는 판정 이름 |
+
+---
+
+## §10 재현 명령어
+
+```bash
+# 온프레미스 기동 (프로젝트명 격리 필수 — 기존 컨테이너와 섞이지 않게)
+cd scanops-infra
+cp .env.onprem.example .env.onprem     # GGUF_DIR 를 실제 경로로
+docker compose -p scanops-onprem-demo -f docker-compose.onprem.yml \
+  --env-file .env.onprem --profile llm up -d joern-worker llama-server model-api
+
+# 데모
+curl -X POST localhost:8100/analyze -H "Content-Type: application/json" \
+  -H "X-API-Key: onprem-local-key" -d @demo/a_java_sqli.json
+
+# 정리 (프로젝트명 반드시 지정)
+docker compose -p scanops-onprem-demo -f docker-compose.onprem.yml down -v
+
+# 벤치 재현 (scanops-model)
+python3 joern/bench_owasp_final.py                  # OWASP taint 110건
+python3 joern/bench_joern_v4.py sample              # CleanVul 240건
+python3 joern/eval_v4.py sample
+./joern/setup_local.sh status                       # 로컬 macOS astgen 링크
+
+# ── 2026-08-17 세션: 운영점·쌍 분석 (전부 CPU·$0, 기존 out/*.jsonl 만 읽는다) ──
+python3 rebuild/oppoint_analyze.py          # PRECISION-UNREACHABLE (사양 §1~§7)
+python3 rebuild/oppoint_op.py v1 val        # OP-0/A/B/C × 5벤치, OP-INSUFFICIENT (사양 §8)
+python3 rebuild/oppoint_envelope.py v1      # AUC 포락선 + 곡선 전수 (사후 참고)
+python3 rebuild/lang_breakdown.py v1        # 언어별 AUC
+python3 rebuild/pair_discrimination.py v1   # 쌍 구성 + 쌍 내 순위 정확도
+python3 rebuild/pair_cue_analysis.py v1     # 패치 크기·어휘 변화 대조
+python3 rebuild/pair_cue_joint.py v1        # 위 둘 동시 통제 + 토큰 목록 민감도
+python3 rebuild/pair_cue_lang.py v1         # 언어·코드 길이 통제
+python3 rebuild/pair_similarity.py v1       # 쌍 내 유사도 (핵심 — §3-4)
+python3 rebuild/length_baseline.py v1       # 길이 기준선 + 길이 층화 AUC
+python3 rebuild/build_legacy_bench.py       # CVEfixes157/CyberNative154 재구성 + 누수검사
+
+# 서빙 경로 점수 대조 (llama-server 가 8080 에 떠 있어야 한다)
+./llama.cpp/build/bin/llama-server -m models/Qwen3.5-9B-Q4_K_M.gguf \
+  --lora models/adapter_v1_fix.gguf -c 8192 --port 8080 -ngl 99 &
+python3 rebuild/verify_serving_score.py 20
+
+# v4 판정 (v4 채점 산출물이 있을 때)
+python3 rebuild/v4_judge.py v4s42
+```
+
+---
+
+## §11 결정 로그 (세션별 원문)
+
+| 세션 | 파일 | 결정 로그 |
+|---|---|---|
+| Joern 하이브리드 v1/v2 | `JOERN_HYBRID_REPORT.md` | §8 |
+| sanitizer v3 + Critic | `JOERN_HYBRID_REPORT_V3.md` | §8 |
+| v4 + 전략 A/D/E | `JOERN_HYBRID_REPORT_V4.md` | §8 (D-0 ~ D-5) |
+| CTX-1 문맥주입 | `rebuild/out/CTX_RESULTS.md` | §6·§7 |
+| ABLATION | `rebuild/out/ABLATION_RESULTS.md` | §0·§8 |
+| **2026-08-17 무인 세션 (V4-TRAIN + 운영점 + 쌍 분석)** | `rebuild/out/SESSION_DECISIONS_20260817B.md` | **D-0 ~ D-17** |
+| ↳ 결과 문서 | `rebuild/out/OPPOINT_RESULTS.md`, `rebuild/out/TRAIN_V4_RESULTS.md` | 각 §0 |
+
+---
+
+## §5-4 사양 실측 (2026-08-17, 프로덕션 모델 = 베이스 + LoRA)
+
+### 지연
+
+| 측정 | n | 평균 | 표준편차 | 범위 |
+|---|---|---|---|---|
+| 데모 샘플(짧은 스니펫 136~312자) | 3 | **19.3s** | 2.8s | 16.3 ~ 21.6s |
+| 내부 test(실제 CVE 함수 365~7,005자) | 5 | **88.3s** | 42.9s | 55.5 ~ 163.1s |
+
+> **CPU: 위 값(실측, Apple M3 / Docker Desktop, Metal 가속 불가 — 컨테이너에서 GPU 미사용).**
+> **GPU: 미실측** (Linux + CUDA 환경이 필요하다. compose에 `gpu` 프로파일은 있으나 검증하지 못했다.)
+
+### 메모리 피크 (docker stats, 유휴~분석 중)
+
+| 서비스 | 피크 |
+|---|---|
+| llama-server (9B Q4_K_M + LoRA) | **5.58 GiB** |
+| model-api | 41.6 MiB |
+| joern-worker | 25.0 MiB |
+
+### 측정 중 발생한 문제 (미해결)
+
+내부 test 10건 중 **5건이 HTTP 502**로 실패했고, 그 사이 `llama-server`가 **1회 재시작**했다
+(`RestartCount=1`, `OOMKilled=false`, `ExitCode=0`).
+
+- 컨텍스트 초과가 원인일 것으로 추정했으나 **단정할 수 없다** — 해당 test 코드의 최대 길이가
+  7,005자(≈1,751토큰)로 `LLAMA_CTX=4096` 안에 들어간다.
+- 대응: `.env.onprem.example`의 `LLAMA_CTX` 기본값을 **8192**로 올렸다(여유 확보).
+  **원인은 확정하지 못했다** — §9에 미완으로 남긴다.
+- 성공한 5건은 전부 `detected=true`였다.
+
+---
+
+## §5-5 모델 공급과 로컬 인증 (2026-08-17 추가)
+
+### 모델 공급 — 오프라인 번들이 기본
+
+| 방식 | 파일 | 망분리 환경 |
+|---|---|---|
+| **오프라인 번들 (기본)** | `models/` 에 GGUF 를 두고 `models/MODELS.sha256` 으로 검증. `scripts/verify_models.sh` | **가능** |
+| 편의 스크립트 (선택) | `scripts/fetch_model.sh` — `MODEL_URL`/`MODEL_SHA256`/`MODEL_AUTH_HEADER` 환경변수 | **쓰지 않는다** |
+
+현재 매니페스트(`models/MODELS.sha256`):
+```
+03b74727a860a56338e042c4420bb3f04b2fec5734175f4cb9fa853daf52b7e8  Qwen3.5-9B-Q4_K_M.gguf
+a35c9b086127e48bf2c01a4b14b3d21f8063cabdd09f14401654e330b735c2c7  adapter_v1_fix.gguf
+```
+검증: `./scripts/verify_models.sh models` → 두 파일 OK 확인.
+
+> **어댑터가 없으면 판정 4줄 서식이 나오지 않아 전부 미탐이 된다**(§6 어제 데모).
+> `.env.onprem` 의 `LORA_ARG=--lora /models/adapter_v1_fix.gguf` 를 비우지 않는다.
+
+### 로컬 인증 — 이미 있다, 추가 구현 불필요
+
+백엔드에 **이메일+비밀번호 로그인이 이미 구현돼 있다**:
+
+| 항목 | 위치 |
+|---|---|
+| 회원가입 | `POST /api/auth/register` (`AuthController.java`) |
+| 로그인 → JWT | `POST /api/auth/login` (`AuthController.java:56`) |
+| 비밀번호 해시 | `config/PasswordConfig.java` |
+| 경로 허용 | `SecurityConfig.java:41` — `/api/**` 가 `permitAll` |
+
+따라서 **온프레미스에서 GitHub OAuth 없이 로컬 계정으로 로그인할 수 있다.**
+`SCANOPS_ADMIN_TOKEN` 같은 별도 프로파일을 만들 필요가 없었다.
+
+### 외부 접속이 필요한 항목 (갱신)
+
+| 기능 | 외부 접속 | 온프레미스 대안 |
+|---|---|---|
+| 이메일 로그인 / JWT | **불필요** | 그대로 사용 |
+| GitHub OAuth 로그인 | **필요** (github.com) | 이메일 로그인 사용 |
+| GitHub 저장소 스캔(clone) | **필요** | model-api 직접 호출 또는 로컬 경로 |
+| LLM 추론 | 불필요 | 컨테이너 내 llama-server |
+| Joern 분석 | 불필요 | 컨테이너 내 joern-worker |
+| CVE 참고(Qdrant) | 불필요 | `qdrant` 프로파일 (판정 미관여) |
+
+---
+
+## §5-6 백엔드·프론트 원격 동기화 (2026-08-17, 세션 중 요청)
+
+세션 도중 "백/프론트 지금 깃에 있는 걸 받아 확인하라"는 요청이 있어 두 레포를 원격과 맞췄다.
+
+| 레포 | 이전 | **이후** | 들어온 내용 |
+|---|---|---|---|
+| `scanops-backend` | `787ae66` | **`845ea09`** (3커밋) | 토큰/DAST 구독형 과금(hold-commit-release, 팀 공유 풀), 토큰 계산 방식 수정, 스캔 줄 차감 |
+| `scanops-frontend` | `2708f5a` | **`5e70960`** (1커밋) | 토큰/DAST 구독 백엔드 연동 — 마이페이지 잔액·체크아웃·DAST 충전 |
+
+### 동기화 중 처리한 것
+
+1. **백엔드**: 내 `Dockerfile` 수정(temurin jammy)을 stash 후 fast-forward, 복원. 충돌 없음.
+2. **프론트**: 미커밋 7파일이 있어 유실 위험이 있었다. 확인 결과
+   **작업트리 내용이 `origin/main`과 완전히 일치**(diff 0파일)했다 —
+   그 미커밋 변경은 **원격 커밋의 내용이 이미 반영된 상태**였다. 유실 없음.
+3. **stale 락 2개 제거**: `.git/index.lock`, `.git/HEAD.lock` 둘 다 **8월 4일자 0바이트**였고
+   실행 중인 git 프로세스가 없었다. 이것이 이전 pull이 중간에 멈춘 원인으로 보인다.
+
+### 백엔드 기동 중 발견한 결함 (Flyway)
+
+기존 DB 볼륨이 남은 상태에서 최신 백엔드를 올리면 마이그레이션이 실패한다:
+
+```
+Migration of schema "public" to version "3 - rebuild ..." failed
+Message : ERROR: relation "idx_vulns_scan" already exists
+→ BeanCreationException: flywayInitializer → 컨테이너 재시작 루프
+```
+
+**온프레미스 최초 설치에서는 문제가 없다**(빈 DB). 그러나 **이전 버전 볼륨이 남아 있으면
+부팅이 실패**하므로, README에 "업그레이드 시 마이그레이션 상태 확인 또는 볼륨 초기화"를 적었다.
+
+### §5-7 백엔드 온프레미스 기동 검증 (최신 코드, 2026-08-17)
+
+`scanops-backend@845ea09`(pull 직후)로 빌드해 **5개 서비스 전부 healthy** 확인:
+
+```
+backend        Up (healthy)   :8080
+model-api      Up (healthy)   :8100
+llama-server   Up (healthy)   (내부 8080)
+joern-worker   Up (healthy)   (내부 8200)
+postgres       Up (healthy)
+```
+
+Flyway `Successfully applied 9` migrations → `Started ScanopsApplication`.
+
+**고친 결함 2건** (기동해보지 않았으면 못 찾았다):
+
+| # | 증상 | 원인 | 수정 |
+|---|---|---|---|
+| 1 | 백엔드 이미지 빌드 실패 (`no match for platform in manifest`) | `eclipse-temurin:17-jdk-alpine` / `17-jre-alpine` 이 **amd64 전용**이다(`docker manifest inspect` 확인). arm64 호스트에서 빌드 불가 | `17-jdk-jammy` / `17-jre-jammy`(멀티아치)로 교체 |
+| 2 | 백엔드 재시작 루프 (`relation "idx_vulns_scan" already exists`) | **V1__init_schema.sql:71 과 V3__rebuild_vulnerabilities.sql:28 이 같은 인덱스를 중복 생성**한다 → **빈 DB 에서도 V3 가 반드시 실패** | V3 를 `CREATE INDEX IF NOT EXISTS` 로 멱등화 |
+
+> 2번은 "이전 볼륨이 남아서"가 아니었다. 볼륨을 완전히 지우고 다시 올려도 재현됐고,
+> 마이그레이션 파일을 직접 대조해 중복을 확인했다. 다른 인덱스에는 중복이 없다(전수 확인).
+
+**로컬 인증 — GitHub OAuth 없이 동작 확인**
+
+```bash
+POST /api/auth/signup  {"email","password","name"}  → 200, JWT 발급 (269자)
+GET  /api/auth/me      Authorization: Bearer <JWT>  → 200
+  {"id":"22eba62c-…","plan":"FREE","name":"OnPrem Admin","email":"onprem@local.test"}
+```
+(경로는 `/register`가 아니라 **`/signup`** 이다 — `AuthController.java:37`)
+
+**`POST /api/scans` 계약 확인**
+
+```bash
+POST /api/scans {"targetUrl","ownerEmail","scanMode":"GITHUB_REPO"}
+→ HTTP 402 {"error":"토큰이 부족합니다… 필요 300, 잔액 0","purchaseTokens":3000,…}
+```
+인증을 통과하고 **최신 과금 로직(토큰 차감)까지 도달**했다. 스캔 자체는
+`GITHUB_REPO` 모드라 외부 clone 이 필요해 온프레미스에서는 완결되지 않는다(§5-5 표).
+온프레미스 코드 분석은 **model-api 직접 호출**(§6 데모)이 경로다.
+
+---
+
+## §9 미완·한계 (2026-08-17 갱신)
+
+| # | 항목 | 상태 | 사유 |
+|---|---|---|---|
+| 9-1 | 프로덕션 모델 데모 | ✅ **해결** | LoRA→GGUF 변환, 일치율 95.0%, 데모 재실행(§6) |
+| 9-2 | astgen Dockerfile 반영 | ✅ **불필요로 확인** | 공식 이미지에 이미 포함. `setup_local.sh`는 macOS 로컬 전용 |
+| 9-3 | 백엔드 기동 | ✅ **해결** | 결함 2건 수정 후 5서비스 healthy(§5-7) |
+| 9-4 | 로컬 인증 | ✅ **기존 구현 확인** | `/api/auth/signup`+JWT. 추가 구현 불필요 |
+| 9-5 | OWASP FPR 개선 | ⚠️ **NOT-IMPROVED** | FPR 0.7636→0.6429, 사전등록 기준 0.50 미달(§3-3) |
+| 9-6 | 내부 test 502 5건 | ❌ **원인 미확정** | llama-server 1회 재시작(ExitCode=0, OOM 아님). 컨텍스트 초과로 단정 불가 |
+| 9-7 | 회귀 검사 50건 | ⚠️ **10건으로 축소** | CPU 추론이 건당 55~163초라 시간 내 50건 불가. 5건 성공/5건 502 |
+| 9-8 | Slice-Detect 1회 테스트 | ❌ **미실행** | 선택 항목. 백엔드 기동·pull 대응에 시간 사용 |
+| 9-9 | GPU 사양 | ❌ **미실측** | Linux+CUDA 필요 |
+| 9-10 | 전건 1,878건 확장 | ❌ 미실행 | 사전등록 `V4-FAIL`이라 **의도적으로** 안 함 |
+
+---
+
+## §7-4 다음 단계 — 1순위 (근거 기반)
+
+**LLM의 외부 벤치 AUC 개선이 1순위다.** Joern 계열이 아니다.
+
+근거:
+- Joern은 **두 벤치 모두에서 판정 정확도를 못 올렸다**: CleanVul precision 0.5909(§3-1),
+  OWASP taint 전용 0.5172→홀드아웃 0.5610(§3-2·§3-3). 사전등록 기준을 세 번 미달했다.
+- Critic 노선은 상한이 **5.1%** 로 측정됐다(V4 §4-1).
+- 반면 판정을 실제로 움직이는 것은 LLM이다 — 데모 (a)(b)(c) 모두 `source="llm"`(§6).
+
+구체적 후보(V3 §10 기준):
+1. **#4 수렴 학습** — 학습 곡선이 수렴하지 않은 상태에서 조기 종료된 정황.
+2. **#2 자기증류(self-distillation)** — V3에서 self-consistency만 유일하게 유효했다.
+
+> Joern은 **taint 계열 구간의 evidence 품질**에만 기여한다.
+> 그 구간이 전체에서 차지하는 비중(ABLATION 기준 taint 계열 실CVE ≈ 9%)을 넘지 못한다.
+
+---
+
+## §3-4 LLM 단독 — 운영점별 성능 (v1, 5개 벤치, 2026-08-17 추가)
+
+> §3-1~§3-3 은 **하이브리드 arm**(LLM + graph/Joern)을 잰 표다.
+> 이 절은 **배포되는 LLM 단독 경로**를 임계값 축으로 분해한다.
+> 근거: `rebuild/out/OPPOINT_RESULTS.md`, `out/oppoint_op_v1.json`, `out/lang_breakdown_v1.json`.
+> 사전등록: `rebuild/OPPOINT_RUN_SPEC.md` §8 (커밋 `b6ea0d1`, **측정 전**).
+
+### 주 지표는 AUC — 자명 기준선과 함께 읽는다
+
+| 벤치 | n | 성격 | **AUC** | 자명 기준선 F1 | OP-0(현 배포) F1 |
+|---|---|---|---|---|---|
+| 내부 test | 1,197 | **쌍** (CVEfixes 홀드아웃, 472쌍) · 도메인 안 | **0.9052** | 0.6312 | **0.8054** |
+| CyberNative 154 | 154 | 비쌍·합성·독립 출처 | **0.9126** | 0.6667 | 0.7761 |
+| CVEfixes 157 | 157 | 비쌍·같은 코퍼스 계열 | **0.8732** | 0.6751 | **0.8046** |
+| CleanVul_v2 report | 2,706 | **전량 쌍** (커밋 diff) | **0.6165** | 0.6667 | 0.5146 |
+| PrimeVul report | 288 | **전량 쌍** (커밋 diff) | **0.5618** | 0.6667 | 0.3030 |
+
+> **AUC 의 자명 기준선을 0.5 로 잡는 것은 느슨하다.** 이 벤치들에는 취약 코드가 안전 코드보다
+> 짧은 경향이 있어, "짧을수록 취약"이라고만 답해도 0.5 를 넘는다. 그 값을 재서 병기한다
+> (`rebuild/out/length_baseline_v1.json`):
+>
+> | 벤치 | 모델 AUC | **길이만 쓰는 분류기 AUC** | **모델의 순수 기여분** |
+> |---|---|---|---|
+> | 내부 test | 0.9052 | 0.6470 | **+0.2582** |
+> | CyberNative 154 | 0.9126 | 0.6425 | **+0.2701** |
+> | CVEfixes 157 | 0.8732 | 0.5662 | **+0.3070** |
+> | CleanVul_v2 report | 0.6165 | 0.5195 | **+0.0970** |
+> | PrimeVul report | 0.5618 | 0.5177 | **+0.0441** |
+>
+> **다섯 벤치 모두에서 모델은 길이 기준선을 넘는다** — 순수한 잡음이 아니다.
+> 다만 **패치 전후 구분 두 벤치에서는 그 차이가 +0.04~+0.10 에 그친다.**
+>
+> 모델은 길이를 **라벨보다 세게** 쓴다(내부 test ρ(score,길이) −0.376 vs ρ(gold,길이) −0.189).
+> **그러나 길이를 통제하면 모델 성능은 거의 그대로이고 길이 기준선만 무너진다** —
+> 길이 5분위 층화 AUC: 모델 0.8927 / 0.9160 / 0.8719 / 0.6174 / 0.5725,
+> 길이만 0.5179 / 0.4830 / 0.4992 / 0.5265 / 0.4980.
+> **"모델이 길이 단서에 실려 있다"는 우려는 이 검사로 지지되지 않는다.**
+> **F1 의 자명 기준선은 0.6667(균형셋)이고, 커밋 쌍 벤치 2종은 어떤 운영점에서도 그것을 넘지 못한다.**
+> 그래서 대외 지표는 AUC 를 쓰고, F1 을 쓸 때는 반드시 자명 기준선을 병기한다.
+
+### 운영점별 (τ 는 tune 에서만 골랐다 — 사양 §8-3)
+
+| OP | τ | 정의 |
+|---|---|---|
+| **OP-0** | 0.000 | **현 배포**(greedy). argmax 일치율 0.951~0.988 로 확인 |
+| OP-A | −1.625 | tune 평균 F1 최대 (무제약) |
+| OP-B | 1.000 | tune 두 소스 FPR ≤ 0.15 아래 F1 최대 |
+| OP-C | 1.250 | tune 두 소스 FPR ≤ 0.10 아래 F1 최대 |
+
+precision / recall / FPR / F1 전체 표(부트스트랩 95% CI 포함)는 `OPPOINT_RESULTS.md` §2-2 에 있다.
+**요약(모든 수에 벤치·OP·recall 을 붙여 쓴다):**
+
+| 벤치 | OP-0 precision @ recall (FPR) | OP-B precision @ recall (FPR) |
+|---|---|---|
+| 내부 test | 0.8011 @ 0.8098 (0.172) | 0.8822 @ 0.6377 (0.073) |
+| CyberNative 154 | 0.9123 @ 0.6753 (0.065) | 0.9375 @ 0.5844 (0.039) |
+| CVEfixes 157 | 0.7447 @ 0.8750 (0.312) | 0.8358 @ 0.7000 (0.143) |
+| CleanVul_v2 report | 0.6129 @ 0.4435 (0.280) | 0.6274 @ 0.2203 (0.131) |
+| PrimeVul report | 0.5556 @ 0.2083 (0.167) | 1.0000 @ **0.0069** (0.000) ← 288건 중 1건 |
+
+**판정 `OP-INSUFFICIENT`**: 사전등록 게이트(내부 test recall ≥ 0.75 & FPR ≤ 0.15 **AND**
+CleanVul Δprecision CI 하한 > 0)를 통과한 OP 가 없다. **배포 운영점을 바꾸지 않았다.**
+
+### 격차의 정체 — **두 판본이 얼마나 비슷한가** (`rebuild/out/pair_*.json`)
+
+같은 커밋의 취약본·패치본 중 어느 쪽에 높은 점수를 주는가(우연 = 0.5)를,
+**쌍 안의 두 판본 유사도**(`difflib` 비율)로 잘라 본 것이다. 세 벤치 합산:
+
+| 쌍 내 유사도 | 쌍 수 | **순위 정확도** | **동점률** |
+|---|---|---|---|
+| 0.00–0.30 (사실상 다른 코드) | 290 | **0.8379** | 0.031 |
+| 0.30–0.60 | 268 | 0.7649 | 0.030 |
+| 0.60–0.85 | 327 | 0.6911 | 0.101 |
+| 0.85–0.95 | 411 | 0.6229 | 0.117 |
+| **0.95–1.01 (진짜 최소 패치)** | 673 | **0.4770** | **0.2957** |
+
+**모델은 "서로 다른 코드 두 개 중 어느 쪽이 취약한가"는 맞히고,
+"같은 함수의 패치 전후"는 못 맞힌다.** 마지막 구간은 우연 아래이고,
+두 판본에 소수점까지 같은 점수를 주는 비율이 29.6% 다.
+
+벤치별 쌍 내 유사도 중앙값:
+
+| 벤치 | 유사도 중앙값 | 성격 | AUC |
+|---|---|---|---|
+| 내부 test (CVE 묶음) | **0.394** | 같은 CVE 의 **서로 다른 코드 조각** | 0.9052 |
+| CyberNative 154 / CVEfixes 157 | 쌍 구성 아님 | 독립 표본 | 0.9126 / 0.8732 |
+| CleanVul_v2 report | 0.924 | **같은 함수의 패치 전후** | 0.6165 |
+| PrimeVul report | 0.979 | **같은 함수의 패치 전후** | 0.5618 |
+
+> **내부 test 의 "쌍"은 진짜 패치 쌍이 아니다.** `pair_id` 필드가 없어 `cve_id` 로 묶은 것인데,
+> 한 CVE 가 여러 함수를 건드리므로 취약본과 패치본이 다른 함수인 경우가 많다(42.4% 가 유사도 0.3 미만).
+> **"내부 test 쌍 판별 0.9068"을 쌍 판별 성능으로 인용하지 않는다.**
+
+**실패의 방향 — 과잉 경보가 아니라 과소 탐지다** (현 배포 운영점 τ=0, PrimeVul 논문 4분류):
+
+| 벤치 | 쌍 | P-C (둘 다 정답) | P-V (둘 다 취약=과잉) | **P-B (둘 다 안전=과소)** | P-R |
+|---|---|---|---|---|---|
+| 내부 test | 472 | 0.6441 | 0.1737 | 0.1695 | 0.0127 |
+| CleanVul_v2 report | 1,353 | 0.1914 | 0.2520 | **0.5285** | 0.0281 |
+| PrimeVul report | 144 | 0.0486 | 0.1597 | **0.7847** | 0.0069 |
+
+> **사업 서술이 하나 뒤집힌다.** 지금까지 "오탐률"을 문제로 잡아 왔다.
+> **패치 전후 과제에서 현 운영점의 실제 문제는 놓치는 것**이다(P-B 52.9% / 78.5%).
+> precision 이 0.61/0.56 으로 나쁘지 않아 보이는 이유도 여기 있다 — **거의 안 잡기 때문이다.**
+
+**기각되는 설명 둘:** ① "쌍 형식 학습 데이터 부족" — `train_v3` 의 **82.5% 가 이미 쌍**이고
+PrimeVul 이 **31.0%** 다. ② "도메인 밖이라서" — 독립 출처 CyberNative 에서 0.9126 이다.
+
+**말할 수 없는 것:** 인과. 그리고 "두 입력이 비슷하면 두 출력도 비슷하다"는 부분은 항등에 가깝다 —
+**놀라운 것은 방향이 우연 아래로 내려가고 동점이 29.6% 라는 것**이다.
+유사도 0.95+ 구간 673쌍은 CleanVul(564)·PrimeVul(98)에 치우쳐 있다.
+전체 근거와 한계는 `rebuild/out/OPPOINT_RESULTS.md` §1-4.
+
+### 언어별 분해 — "학습 언어 분포 재조정"은 근거가 약하다
+
+| 벤치 | 언어 | 학습 비중 | AUC |
+|---|---|---|---|
+| 내부 test | Java | 3.5% | **0.9686** |
+| | Python | 5.1% | 0.9322 |
+| | PHP | 17.4% | 0.9219 |
+| | JS/TS | 6.9% | 0.8852 |
+| | **C/C++** | **67.2%** | **0.8474** ← 최저 |
+| CleanVul_v2 report | Java | 3.5% | **0.6859** |
+| | Python | 5.1% | 0.6171 |
+| | **C/C++** | **67.2%** | **0.5874** |
+| | JS/TS | 6.9% | 0.5363 |
+| PrimeVul report (전량 C/C++) | C/C++ | 67.2% | **0.5618** ← 벤치 중 최저 |
+
+**두 벤치 모두에서 학습 비중이 가장 큰 C/C++ 가 AUC 최저이고, 비중이 가장 작은 Java 가 최고다.**
+학습 비중과 성능이 **역방향**이다. 따라서 "C/C++ 67% 편중을 재조정하면 좋아진다"는
+**단순한 형태로는 이 데이터가 지지하지 않는다.**
+(교란: 언어별 난이도가 다를 수 있다. 인과가 아니라 **레버의 근거가 약하다**는 뜻으로만 쓴다.)
+
+---
+
+## §7-5 다음 레버 — 근거와 비용 (2026-08-17 갱신)
+
+> §7-2 를 대체하지 않고 갱신한다. 오늘 측정으로 **한 후보의 근거가 약해졌고**,
+> 문제의 위치가 더 좁혀졌다.
+
+**오늘 좁혀진 문제 정의.** v1 은 내부 test·CyberNative·CVEfixes157 에서 **AUC 0.87~0.91**,
+CleanVul_v2·PrimeVul 에서 **0.56~0.62** 다(§3-4). 격차의 축은 "도메인 안/밖"이 아니다 —
+학습 코퍼스와 무관한 CyberNative 에서 0.9126 이 나왔다.
+**축을 특정했다**: 쌍 안의 두 판본이 얼마나 비슷한가다(§3-4).
+유사도 0.00–0.30 에서 순위 정확도 0.8379, **0.95 이상에서 0.4770(우연 아래)·동점 29.6%** 다.
+AUC 가 높은 세 벤치는 전부 "서로 다른 코드 두 개" 과제이고, 낮은 두 벤치만 "같은 함수의 패치 전후"다.
+**실제 PR 리뷰는 후자에 가깝다.**
+
+| # | 레버 | 근거 | 비용 | 판단 |
+|---|---|---|---|---|
+| ~~1~~ | ~~쌍 판별 실패의 원인 규명~~ | **오늘 4단계까지 실행했다** ($0, `pair_*.py` 5종). 결론: 축은 **쌍 안의 두 판본 유사도**다(§3-4). diff 크기·어휘 변화·언어·코드 길이도 예측력이 있으나 유사도로 대부분 정리된다 | $0 (완료) | **완료** |
+| ~~1~~ | ~~거의 같은 두 코드의 차이를 잡게 만드는 방법~~ | **2026-08-17 두 번째 세션에서 실행했다**(`DIFF_AWARE_RESULTS.md`). 결과: **추론 형식(`[DIFF]` 마커)만으로 +0.1450 [+0.0650, +0.2225]**, 그 형식으로 **학습하면 추가로 +0.0700 [+0.015, +0.128]**. 그러나 학습 쪽은 **과잉 경보로 `NO-ADOPT`** | 완료 | **완료** |
+| **1** | **학습 데이터에 "둘 다 안전한 변경" 쌍 추가 후 재학습** | 학습 쌍 5,533개가 **전부 (취약, 안전)** 이라 모델이 "차이가 있으면 하나는 취약"을 배운다 — FPR-safe 0.065 → 0.435. **이 결손을 메우는 것이 다음 관문** | 데이터 구축 + 재학습 ~$5 | **1순위** |
+| **1b** | 체크포인트를 **쌍 지표**로 고르기 | 현 레시피는 단건 `eval_gen_f1` 로 고른다. 그 기준이 step 150 을 골랐는데 쌍 과제에서는 그게 최악이었다(0.5250 vs step600 0.6500) | $0 (레시피 한 줄) | **1순위와 함께** |
+| **1c** | **`[DIFF]` 마커를 PR 경로 추론에 도입** (재학습 없이) | v1 그대로 **0.4600 → 0.6050**. 부품은 검증돼 있다(`rebuild/pr_diff_marker.py`). **사전등록 게이트(WIN/ADOPT)를 못 넘어 이번엔 붙이지 않았다** — 도입 여부는 사람이 정할 문제다 | 코드 한 곳 | **판단 필요** |
+| ~~1′~~ | ~~커밋 쌍 형식의 학습 데이터를 더 넣는다~~ | **기각.** 학습셋의 82.5% 가 이미 쌍이고 PrimeVul 이 31.0% 다 | — | **기각** |
+| **2** | 학습 언어 분포 재조정 (C/C++ 67% → 균등) | **약해졌다.** §3-4 언어별 분해에서 학습 비중과 AUC 가 **역방향**이다(C/C++ 67.2% → 두 벤치 모두 최저, Java 3.5% → 최고). PrimeVul 은 전량 C/C++ 이며 벤치 중 최저다 | 데이터 재샘플 + 재학습 ~$9 | **보류.** 하려면 가설을 다시 세워야 한다 |
+| **3** | 베이스 모델 교체 | 오늘 측정으로는 **찬반 근거가 없다.** 같은 베이스가 함수 단위에서는 0.9 를 낸다 — 베이스 용량 문제라는 신호가 아니다 | 재학습 전량 + 재평가. 최소 $30~ | **근거 생길 때까지 보류** |
+| ~~4~~ | ~~학습량 확대 + lr 1e-4 (#4)~~ | **실행했고 step 750 에서 `MID-GATE-STOP`.** CleanVul tune AUC 0.6263 vs v3s42@750 0.6381(Δ −0.0118, CI [−0.026,+0.002]). 부수 소득: lr 1e-4 가 GEN-F1 진동을 줄였다(step600 급락 0.406 → 0.675) | $4.10 (중단) | **중단.** `TRAIN_V4_RESULTS.md` |
+| **4b** | 학습량만 확대 (**lr 은 2e-4 고정**) — `DOSE` 외삽의 진짜 검정 | 위 실행이 lr 을 함께 바꿔 외삽 검정을 오염시켰다. **한 번에 하나만 바꾼다** | ~$9 | **§3-4 의 유사도 문제를 건드리지 않으므로 우선순위 낮음** |
+| **5** | 실제 저장소 코드 기반 **독립 벤치** 구축 | §3-4 의 상위 층 성능은 현재 **합성(CyberNative)·같은 코퍼스 계열(CVEfixes)** 로만 뒷받침된다. 이 공백을 메우지 않으면 대외 주장에 쓸 수 없다 | 데이터 수집·라벨링. GPU 거의 0 | **2순위 — 측정 인프라** |
+
+> §7-2 의 1·2(Critic 종료, Joern evidence 전용)는 그대로 유효하다. 오늘 바뀐 것 없다.
+
+---
+
+## §8-2 사업 목표·지표 정정 (2026-08-17 신설)
+
+> §8 은 "계획서 표현 vs 실측"을 항목별로 적은 표다. 이 절은 그중 **#1(precision 0.70)** 이
+> **어디에서 성립하고 어디에서 성립하지 않는지**를 벤치·운영점·recall 과 함께 확정한다.
+> 근거: `rebuild/out/OPPOINT_RESULTS.md`, `out/oppoint_op_v1.json`.
+
+### §8-2-1 "precision 0.70(오탐 1/3)"은 어디에서 성립하는가
+
+**현 배포 운영점(OP-0 = greedy)에서, v1 어댑터로 잰 값. 전부 50:50 균형셋 가정.**
+
+| 벤치 | 성격 | precision [95% CI] | 그때의 recall | FPR | **0.70 달성?** |
+|---|---|---|---|---|---|
+| CyberNative 154 | 비쌍·합성·독립 출처 | **0.9123** [0.836–0.982] | 0.6753 | 0.065 | **성립** |
+| 내부 test (1,197) | **쌍**(472쌍)·도메인 안 | **0.8011** [0.768–0.834] | 0.8098 | 0.172 | **성립** |
+| CVEfixes 157 | 비쌍·같은 코퍼스 계열 | **0.7447** [0.653–0.829] | 0.8750 | 0.312 | **성립** |
+| CleanVul_v2 report (2,706) | **전량 쌍** (커밋 diff) | 0.6129 [0.597–0.631] | 0.4435 | 0.280 | **불성립** |
+| PrimeVul report (288) | **전량 쌍** (커밋 diff) | 0.5556 [0.509–0.615] | 0.2083 | 0.167 | **불성립** |
+
+**임계값을 옮겨도 뒤의 두 벤치는 달라지지 않는다.** 곡선 전수 검사에서
+`precision ≥ 0.70 AND recall ≥ 0.10` 을 만족하는 τ 가 **0개**다(`OPPOINT_RESULTS.md` §1-1b).
+사전등록한 τ 를 적용한 결과도 CleanVul precision **0.6465 [0.608–0.688] @ recall 0.1419** 로 미달이다
+→ 판정 **`PRECISION-UNREACHABLE`**.
+
+### §8-2-2 그래서 §8 #1 을 이렇게 정정한다
+
+| 항목 | 정정 전 | **정정 후** |
+|---|---|---|
+| #1 | "오탐률 1/3 (precision ~0.70+)" — **미달** | **벤치 형식에 따라 갈린다.** **내부 test·CyberNative·CVEfixes157 3종**에서는 현 배포 운영점에서 성립(0.745~0.912, recall 0.68~0.88). **CleanVul_v2·PrimeVul 2종에서는 어떤 임계값으로도 불성립**(곡선 전체에 도달점 없음). **벤치를 명시하지 않은 "오탐률 X%" 주장은 쓰지 않는다** |
+
+### §8-2-2b 더 중요한 단서 — **제품이 실제로 하는 과제에서는 우연 수준이다**
+
+§3-4 쌍 유사도 표가 붙는 자리다. 위 §8-2-1 의 "성립" 3종은 전부
+**서로 다른 코드 두 개 중 어느 쪽이 취약한가**를 묻는 벤치다.
+**같은 함수의 패치 전후**를 구분하는 과제(CleanVul 0.924 / PrimeVul 0.979 유사도)에서
+v1 의 쌍 내 순위 정확도는 **0.4770(유사도 0.95+ 구간, 우연 아래)** 이고 동점률 29.6% 다.
+
+**PR 리뷰는 후자에 가깝다.** 따라서:
+
+> **"오탐률 1/3"을 대외 자료에 쓸 때는 어느 과제에서인지 명시한다.**
+> 코드 스니펫 단건 판정에서는 성립하고(§8-2-1), **패치 전후 구분에서는 성립하지 않는다.**
+
+**그리고 그 과제에서 더 큰 문제는 오탐이 아니라 미탐이다.** 현 운영점(τ=0)의 쌍 4분류에서
+**둘 다 "안전"이라고 답한 비율이 CleanVul 52.9% / PrimeVul 78.5%** 다(§3-4).
+**"오탐률 1/3"이라는 목표 자체가 이 과제에서는 잘못된 축을 겨냥한다** —
+지표를 정정할 때 이 점을 함께 적는다.
+
+이건 벤치 선택의 문제가 아니라 **제품 주장의 범위 문제**다. 근거: `rebuild/out/pair_similarity_v1.json`.
+
+### §8-2-2c "PR 자동 분석"이 실제로 재는 능력 (2026-08-17 두 번째 세션)
+
+§8-2-2b 가 "PR 리뷰는 패치 전후 구분에 가깝다"고 적었다. 그 능력을 직접 재고, 올려 보려 했다.
+
+| 구성 | 쌍 판별 (유사도 0.95+, 위치 상쇄) | 안전 판본 오탐률 |
+|---|---|---|
+| **현 배포 (v1, 현행 프롬프트)** | **0.4600** (우연 아래) | **0.065** |
+| v1 + `[DIFF]` 마커 (추론만 변경) | **0.6050** [0.545, 0.668] | 0.065 |
+| v5 (그 형식으로 학습, step600) | 0.6500 | **0.435** ✗ |
+
+**대외 문장에 쓸 때:**
+- **"PR 자동 분석"의 현재 실력은 0.4600 이다** — **우연(0.50) 아래**다. 이 수치 없이 기능을 광고하지 않는다.
+- **재학습 없이 프롬프트만 고치면 0.6050 이 된다**(+0.1450 [+0.0650, +0.2225]).
+  **아직 제품에 반영하지 않았다** — 사전등록 게이트를 못 넘었기 때문이며, 도입은 사람이 정할 일이다.
+- **"학습으로 더 올렸다"고 쓰지 않는다.** 올랐지만 **오탐이 6.7배**가 되어 채택하지 않았다.
+
+### §8-2-3 대외 지표 규칙 (이 문서 전체에 적용)
+
+1. **주 지표는 AUC** + **명시된 운영점 1개**(현행 = OP-0, τ=0, greedy).
+   AUC 는 임계값과 무관해 운영점 잡음에 흔들리지 않는다.
+2. **F1 을 쓸 때는 자명 기준선(균형셋 0.6667)을 같은 표에 적는다.**
+   커밋 쌍 벤치 2종은 어떤 운영점에서도 이 선을 넘지 못한다.
+3. **내부 test 와 외부 벤치를 같은 칸에 넣지 않는다.** 표를 분리하고 성격을 라벨로 붙인다.
+   내부 val 과 내부 test 는 같은 분포이므로 내부 숫자는 낙관적이다.
+4. **"오탐률 X%"는 (벤치 · 운영점 · 그때의 recall · 유병률 가정) 없이 쓰지 않는다.**
+   위 표는 전부 50:50 가정이다. 실제 PR 트래픽의 유병률은 그보다 낮고,
+   유병률이 낮으면 같은 (recall, FPR)에서 **precision 은 더 떨어진다.** 이 보정은 아직 재지 않았다.
+5. `ADOPT`(모델 채택)와 `TARGET-MET`(목표 AUC 도달)은 다른 이름이며 혼용하지 않는다.
+
+### §8-2-4 근거 파일
+
+| 주장 | 파일 |
+|---|---|
+| OP 별 5개 벤치 전체 표·CI | `rebuild/out/oppoint_op_v1.json`, `rebuild/out/OPPOINT_RESULTS.md` §2-2 |
+| 곡선 전수 검사·AUC 포락선 | `rebuild/out/oppoint_envelope_v1.json`, 같은 문서 §1-1 |
+| 사전등록한 τ 로의 `PRECISION-UNREACHABLE` | `rebuild/out/oppoint_metrics.json` |
+| 레거시 벤치 2종 누수 검사 | `rebuild/out/legacy_bench_leak.json` |
+| 언어별 AUC 분해 | `rebuild/out/lang_breakdown_v1.json` |
+| 서빙 경로 점수 대조 (판정 일치율 0.95 / 순위상관 0.9865 / 척도 편차 +0.334) | `rebuild/out/serving_score_check.json`, `OPPOINT_RESULTS.md` §2-0b |
+| 결정 로그 (이유·대안·되돌리는 법) | `rebuild/out/SESSION_DECISIONS_20260817B.md` (D-0~D-18), `SESSION_DECISIONS_20260817C.md` (D-19~D-31) |
+| diff 인지 실험 전체 (Phase 0~3) | `rebuild/out/DIFF_AWARE_RESULTS.md`, `out/dw_metrics.json`, `out/dw_cb_metrics.json`, `out/v5_metrics.json`, `out/v5c600_metrics.json` |
+| 사전등록 (측정/학습 전 커밋) | `rebuild/DIFF_AWARE_RUN_SPEC.md`, `rebuild/V5_TRAIN_RUN_SPEC.md` |
+| 사전등록 사양 (측정 전 커밋) | `rebuild/OPPOINT_RUN_SPEC.md` §8 (`b6ea0d1`) |
+
+---
+
+## §3-5 **패치 전후 과제** — 제품 PR 모드가 실제로 요구하는 능력 (2026-08-17 신설)
+
+> 근거: `rebuild/out/DIFF_AWARE_RESULTS.md`, `out/dw_metrics.json`, `out/dw_cb_metrics.json`.
+> 사전등록 `rebuild/DIFF_AWARE_RUN_SPEC.md`(§1~§9 `b992427` 측정 전 / §10 `042abc3` 결과 후 — 명시됨).
+
+§3-4 가 밝힌 대로 v1 은 **같은 함수의 두 판본(유사도 0.95+)** 에서 우연 아래다.
+**PR 자동 분석이 재는 것이 바로 이 능력**이므로, 상시 보고 항목으로 분리한다.
+
+### 상시 보고 표 — 유사도 0.95+ 쌍, **위치 상쇄** 기준
+
+측정 단위는 **쌍 내 순위 정확도**(취약본에 더 높은 점수를 주는가). **우연 = 0.50.**
+자명 기준선(길이만 쓰는 분류기)의 이 과제 AUC 는 0.50~0.51 이다.
+
+| 모델 · 입력 형식 | 순위 정확도 | 위치 편향(`pos_gap`) | 동점률 |
+|---|---|---|---|
+| **v1 · 현행 형식** (= 현 배포) | **0.4600** | — | **0.3300** |
+| v1 · `[DIFF]` 마커 | **0.6050** [0.545, 0.668] | 0.090 | 0.155 |
+| v1 · 차이 블록 | 0.5800 | **0.430** ✗ | 0.050 |
+| v1 · 두 판본 동시 제시 | 0.6350 | **0.580** ✗ | 0.060 |
+| v3s42@750 · 현행 형식 | 0.3400 | — | **0.5200** |
+| v3s42@750 · `[DIFF]` 마커 | 0.5800 | 0.150 | 0.260 |
+| v5(P2 형식 학습, step150) · `[DIFF]` | 0.5250 | **0.320** ✗ | 0.240 |
+| v5(step600, 참고) · `[DIFF]` | 0.6500 | 0.120 | 0.160 |
+
+> **v5 는 채택하지 않았다**(`NO-ADOPT`, `DIFF_AWARE_RESULTS.md` §6b). 쌍 판별은 올랐지만
+> **안전 판본 오탐률(FPR-safe)이 v1 의 6.5% → 43.5%(step600) / 86.5%(step150)** 로 뛴다.
+> 학습 쌍이 전부 (취약, 안전) 이라 **"차이가 있으면 하나는 취약"** 을 배운 것으로 보이며,
+> 이 위험은 `V5_TRAIN_RUN_SPEC.md` §4 에 **학습 전에** 적고 판정 조건에 넣어 뒀다.
+
+**표본 200쌍**(CleanVul 120 / PrimeVul 70 / 내부 test 10, seed 42), 쌍 부트스트랩 2,000회.
+
+### 이 표에서 반드시 함께 읽어야 하는 것
+
+1. **`pos_gap` 없이 순위 정확도만 인용하지 않는다.**
+   "두 판본 동시 제시"는 순위 0.6350 으로 가장 높아 보이지만,
+   **취약본을 A 에 놓으면 0.9250, B 에 놓으면 0.3450** 이다(PrimeVul 층은 0.9714 vs 0.2000).
+   **같은 코드를 어디에 놓느냐로 정확도가 세 배 갈리는 시스템**이다.
+2. **현 배포(v1 · 현행 형식)는 0.4600 이다.** 이 과제에서 **우연 아래**다.
+3. **`[DIFF]` 마커만으로 +0.1450 [+0.0650, +0.2225]** 오른다(v1 기준, 위치 상쇄 후, CI 하한 > 0).
+   **추론 형식만 바꾼 것이고 재학습이 아니다.**
+
+### 제품 경로 사실 (파일·라인)
+
+`api_rebuild.py:136` 이 `patch` 를 받고 `:277-282`·`:519` 가 **줄 번호 추출에만** 쓴다.
+`:501-520` 의 `analyze_pr` 은 `content` 만 프롬프트로 보낸다.
+백엔드(`GitHubAppWebhookController.java:160,190`)는 이미 patch 를 담아 보내고 있다.
+→ **재료는 파이프라인 안에 있고, 프롬프트에 넣는 코드만 없다.**
+
+---
+
+## §5-8 배포 반영 — **하지 않았다** (2026-08-17, 사유 기록)
+
+이번 세션의 배포 반영은 두 조건 중 하나가 성립할 때만 하기로 사전에 정해져 있었다.
+**둘 다 성립하지 않았다.**
+
+| 조건 | 판정 | 근거 |
+|---|---|---|
+| 운영점 후보(`OP-CANDIDATE`) | **`OP-INSUFFICIENT`** | `OPPOINT_RESULTS.md` §2-3. 게이트 통과 OP 없음 |
+| v4 어댑터 채택(`ADOPT`) | **`NO-ADOPT`** — 학습이 `MID-GATE-STOP` 으로 step 780/1,674 에서 중단됐다 | `TRAIN_V4_RESULTS.md` §0 |
+
+**따라서 바꾼 것이 없다:**
+
+- `SCANOPS_TAU` **미설정** → `_detect` 는 현행 greedy 그대로. 코드 경로 변경 없음.
+- 어댑터 교체 없음 → `models/adapter_v1_fix.gguf` 그대로.
+- 컨테이너 재기동·데모 재실행 없음 → §6 의 데모 응답 3건이 여전히 최신이다.
+
+**회귀 검사를 하지 않은 이유:** 변경이 없으므로 회귀할 대상이 없다.
+대신 **서빙 경로가 오프라인 분석과 같은 것을 재는지**를 실측으로 확인했다
+(`OPPOINT_RESULTS.md` §2-0b — 판정 일치율 0.95, 순위상관 0.9865, 토큰 ID 일치).
+
+> **τ 를 도입하기로 하는 날의 선결 조건:** 양자화 때문에 서빙 점수가 오프라인보다
+> 평균 +0.334(음수 구간 +0.685) 높다. **오프라인에서 고른 τ 를 그대로 넣으면 안 된다.**
+> 서빙 경로에서 다시 골라야 한다. (`rebuild/out/serving_score_check.json`)
+
+
+---
+
+## §3-6 **레포 단위 벤치** — 멀티파일 주장을 실제 레포에서 잰다 (2026-08-17 네 번째 세션 신설)
+
+> 사전등록: `rebuild/DUAL_ENGINE_RUN_SPEC.md` §6 (**스캔 전** 커밋 `72d18e0`).
+> 결정 로그: `rebuild/out/SESSION_DECISIONS_20260817D.md` D-32~D-41.
+> 산출: `rebuild/out/repo_bench_juice-shop_{metrics,graph,joern,failures}.json`,
+> 정답표 `rebuild/data/repo_bench/juice-shop_truth.jsonl`.
+
+### 왜 이 벤치가 필요했나
+
+§3-1~§3-4 는 전부 **함수·스니펫 단위** 벤치다. 사업계획서 3.3 의
+"**멀티파일 코드그래프 추적**" 주장은 그 벤치들로는 검정되지 않는다.
+그래서 **실제 레포 전체**를 세 arm 으로 돌렸다.
+
+### 재료
+
+| 항목 | 값 |
+|---|---|
+| 레포 | OWASP Juice Shop `juice-shop` @ `1618a611` (2026-08-10) |
+| 스캔 범위 | `routes/**` + `lib/**` + `models/**` + `server.ts` + `app.ts` + `frontend/src/app/**` (`*.spec.ts` 제외) |
+| 파일 | **257개** TypeScript (20,421줄 / 722,786자) |
+| 정답표 | **44건** — 소스 안의 `// vuln-code-snippet vuln-line <key>` 마커 (레포 자신이 코딩 챌린지 정답 판정에 쓰는 값, `lib/codingChallenges.ts:76`) → confidence **high** |
+| 채점 대상 | 범위 내 **33건** (cross-file 16 / single-file 17). 범위 밖 11건(.yml/.tf/.sol)은 **세 arm 모두 자동 미탐** |
+| 매칭 단위 | **파일** — LLM arm 두 개가 라인을 출력하지 않기 때문(사양 §11 S-1, 측정 전 기록) |
+
+### 결과 (사전등록 판정 포함)
+
+| arm | recall 전체 | 95% CI | **recall cross-file** | recall single-file | 경보율(파일) | 오탐 파일 |
+|---|---|---|---|---|---|---|
+| **S1** ScanOps-LLM | 1.0000 | [1.000, 1.000] | **1.0000** | 1.0000 | 0.4475 | 106 |
+| **S2** ScanOps-Full (LLM ∪ graph ∪ Joern) | 1.0000 | [1.000, 1.000] | **1.0000** | 1.0000 | 0.5525 | 133 |
+| **C1** Claude Opus 5 (PARITY, 파일 단위) | 1.0000 | [1.000, 1.000] | **1.0000** | 1.0000 | 0.6187 | 150 |
+| **C2** Claude Opus 5 (STRONG) | 미측정 | | | | | |
+
+### 판정 = **`GRAPH-TIE`** (구속력 **없음 — 표본 부족**)
+
+- S2 − C1 cross-file recall = **+0.0000** (WIN 기준선 +0.20)
+- **그래프 순기여 S2 − S1**: 전체 **+0.0000** / cross-file **+0.0000**
+- 사전 고정 발표 문구 → **"보조 탐지 + 근거 표시"** (결과를 보고 바꾸지 않았다)
+- **표본 부족**: 범위 내 정답 33건 < 사전등록 최소 40건 (cross-file 16 ≥ 12 은 통과)
+
+### 그래프 3성분이 각각 무엇을 냈나 — **가장 중요한 음성 결과**
+
+| 성분 | vuln 판정 파일 | 시간 |
+|---|---|---|
+| 자체 `code_graph` (**멀티파일** JS/TS) | **0** | 0.07s |
+| `multi_graph` (단일파일 다언어) | 15 | 0.21s |
+| **Joern v4 프로젝트 CPG** | 73 | 149.0s |
+
+**자체 멀티파일 코드그래프는 이 레포에서 `vuln` 을 한 건도 내지 않았다.**
+원인은 측정으로 특정된다 — `_extract_sinks` 의 sink 패턴이 **5개**뿐이다
+(React/DOM XSS 3: `img src=`·`dangerouslySetInnerHTML`·`innerHTML`, SSRF 2: `fetch`·`axios`).
+juice-shop 은 Express + sequelize + Angular 이라 이 패턴들이 발화하지 않는다.
+증거 자체는 3행 나왔고 **전부 `unknown`** 이었다("Could not prove whether … is user-controlled").
+
+**Joern 프로젝트 CPG 는 되는 것으로 확인됐다**: 257파일을
+149.0초에 CPG 1개로 올렸고(`-Xmx 4g`, 타임아웃 없음),
+`JavaScriptImportResolverPass` 가 11,130건을 커밋했다 = **파일 간 import 가 실제로 해결됐다.**
+다만 findings 3660건 중 2323건이
+sanitizer 로 제외됐고, 남은 것도 카테고리가 `ssrf` 에 크게 쏠려 있다.
+
+### 반드시 함께 읽을 것
+
+1. **precision 과 오탐 수를 절대값으로 읽지 않는다.** 정답표는 라인 마커가 있는 챌린지만 담는다(9개 파일).
+   juice-shop 은 의도적으로 취약한 앱이므로 **오탐 수는 상한, precision 은 하한**이다.
+   해석 가능한 것은 (a) 같은 정답표로 잰 recall, (b) arm 간 상대 경보율뿐이다.
+2. **매칭이 파일 단위라 recall 이 낙관적이다.** 세 arm 에 똑같이 적용했다.
+3. **누수 방향은 외부에 유리하다.** juice-shop 은 공개 취약 앱이다.
+4. **`temperature=0` 은 우리 쪽에만 적용된다** — Claude 5 계열은 sampling 파라미터를 받지 않는다(400).
+
+### 실패 분석 (B-5)
+
+| 원인 | 건수 |
+|---|---|
+
+
+S2 가 놓친 정답 **0건**(그중 cross-file 0건). 전체 목록은 `repo_bench_juice-shop_failures.json`.
+
+### 비용
+
+Anthropic **$1.51** / 상한 $15. **RunPod $0** —
+serverless 엔드포인트 가용 GPU 0(`throttled 2 / ready 0`)이라 **로컬 llama.cpp Metal** 로 대체했다(D-32).
+pod 생성 0.

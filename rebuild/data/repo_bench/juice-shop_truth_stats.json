@@ -1,0 +1,45 @@
+{
+  "repo": "juice-shop",
+  "commit": "1618a611b173b4bf114028e6e02549950606e29d",
+  "n": 44,
+  "n_code_file": 36,
+  "n_cross_file": 16,
+  "n_cross_file_candidate": 22,
+  "by_confidence": {
+    "high": 28,
+    "med": 16,
+    "low": 0
+  },
+  "by_category": {
+    "Sensitive Data Exposure": 6,
+    "Observability Failures": 3,
+    "Broken Anti Automation": 1,
+    "Broken Access Control": 5,
+    "Improper Input Validation": 2,
+    "Broken Authentication": 5,
+    "Unvalidated Redirects": 4,
+    "Vulnerable Components": 1,
+    "Injection": 10,
+    "Miscellaneous": 2,
+    "Security through Obscurity": 2,
+    "XSS": 3
+  },
+  "files": [
+    "data/static/securityQuestions.yml",
+    "data/static/web3-snippets/ETHWalletBank.sol",
+    "data/static/web3-snippets/HoneyPotNFT.sol",
+    "data/static/web3-snippets/JuiceShopSBT.sol",
+    "frontend/src/app/app.routing.ts",
+    "frontend/src/app/search-result/search-result.component.ts",
+    "infrastructure/docker-compose.yml",
+    "infrastructure/terraform/networking.tf",
+    "lib/insecurity.ts",
+    "models/user.ts",
+    "routes/chat.ts",
+    "routes/login.ts",
+    "routes/search.ts",
+    "routes/updateProductReviews.ts",
+    "server.ts",
+    "terraform/networking.tf"
+  ]
+}

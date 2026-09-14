@@ -1,0 +1,586 @@
+{
+  "_meta": {
+    "purpose": "Golden set for evaluating ScanOps graph-engine stage 2 (LLM rule generation: classify each API call as source/sink/sanitizer/none) - Java, v1, derived from securibench-micro.",
+    "language": "java",
+    "source_corpus": "https://github.com/too4words/securibench-micro (Apache-2.0), 123 test files / 12 categories, ground truth extracted in scanops-model/benchmarks/securibench-micro/ground_truth.json",
+    "schema_alignment": "role/cat/cwe/applies_to field names mirror the LLM output schema in scanops/core/graph_spec_prod.py's RULEGEN_SYSTEM prompt, and category slugs (sqli/cmdi/xss/pathtraver/ssrf/deser/codei/redirect/nosqli/logforge/sensitive/accesscontrol/weakcrypto/proto) match its CATS dict, so this file can be used directly to grade both the hand rules and the LLM fallback path.",
+    "known_gaps": [
+      "securibench-micro has NO examples for 9 of the 14 official categories: cmdi, ssrf, deser, nosqli, logforge, sensitive, accesscontrol, weakcrypto, proto - see SUMMARY.md.",
+      "Generic (non-corpus-specific) sanitizer API coverage is thin: only URLEncoder.encode (redirect) was found; every other 'sanitizer' test routes through a locally-defined clean() helper that is not a reusable API name.",
+      "9 of 123 source files have a declared_vuln_count vs /* BAD */-marker-count mismatch (see MISMATCHED_FILES); entries whose ONLY evidence is one of those files are marked confidence='needs-review'."
+    ],
+    "generated": "2026-09-02"
+  },
+  "entries": [
+    {
+      "api": "getParameter",
+      "full_signature": "javax.servlet.http.HttpServletRequest.getParameter(String)",
+      "role": "source",
+      "cwe": null,
+      "category": null,
+      "language": "java",
+      "evidence": [
+        "basic/Basic1.java#L38",
+        "basic/Basic19.java#L44",
+        "basic/Basic20.java#L46",
+        "sanitizers/Sanitizers1.java#L40",
+        "(and ~90 more of the 123 test files - dominant source in this corpus)"
+      ],
+      "confidence": "high",
+      "notes": "By far the most common taint origin in securibench-micro (declared source in ~90+ of 123 files, directly or via a local variable). Matches the team's existing hand rule HAND_SRC in graph_spec_prod.py."
+    },
+    {
+      "api": "getParameterValues",
+      "full_signature": "javax.servlet.http.HttpServletRequest.getParameterValues(String)",
+      "role": "source",
+      "cwe": null,
+      "category": null,
+      "language": "java",
+      "evidence": [
+        "basic/Basic25.java#L39"
+      ],
+      "confidence": "high",
+      "notes": "Array-returning variant of getParameter; same taint semantics, one element used downstream."
+    },
+    {
+      "api": "getParameterNames",
+      "full_signature": "javax.servlet.http.HttpServletRequest.getParameterNames()",
+      "role": "source",
+      "cwe": null,
+      "category": null,
+      "language": "java",
+      "evidence": [
+        "basic/Basic27.java#L39"
+      ],
+      "confidence": "high",
+      "notes": "Returns an Enumeration of param names; each name is then used as a key into getParameter(name) at line 44, which is the actual immediate source of the tainted value that reaches println. Weaker signal than getParameter itself."
+    },
+    {
+      "api": "getParameterMap",
+      "full_signature": "javax.servlet.http.HttpServletRequest.getParameterMap()",
+      "role": "source",
+      "cwe": null,
+      "category": null,
+      "language": "java",
+      "evidence": [
+        "basic/Basic26.java"
+      ],
+      "confidence": "needs-review",
+      "notes": "Test file is one of the 9 declared_vuln_count/marker mismatches (declared=1, bad_line_count=0 - no /* BAD */ comment exists in source even though the class doc declares a vulnerability; the actual vulnerable line is `writer.println(e.getValue())` per manual read, unmarked). Needs human confirmation before use as ground truth."
+    },
+    {
+      "api": "getHeader",
+      "full_signature": "javax.servlet.http.HttpServletRequest.getHeader(String)",
+      "role": "source",
+      "cwe": null,
+      "category": null,
+      "language": "java",
+      "evidence": [
+        "basic/Basic32.java#L36",
+        "basic/Basic34.java#L40"
+      ],
+      "confidence": "high",
+      "notes": ""
+    },
+    {
+      "api": "getHeaders",
+      "full_signature": "javax.servlet.http.HttpServletRequest.getHeaders(String)",
+      "role": "source",
+      "cwe": null,
+      "category": null,
+      "language": "java",
+      "evidence": [
+        "basic/Basic33.java#L37"
+      ],
+      "confidence": "high",
+      "notes": "Enumeration<String> variant of getHeader."
+    },
+    {
+      "api": "getHeaderNames",
+      "full_signature": "javax.servlet.http.HttpServletRequest.getHeaderNames()",
+      "role": "source",
+      "cwe": null,
+      "category": null,
+      "language": "java",
+      "evidence": [
+        "basic/Basic34.java#L37"
+      ],
+      "confidence": "high",
+      "notes": "Header names themselves are attacker-influenceable; used as keys into getHeader() immediately after (same file, line 40)."
+    },
+    {
+      "api": "getCookies",
+      "full_signature": "javax.servlet.http.HttpServletRequest.getCookies()",
+      "role": "source",
+      "cwe": null,
+      "category": null,
+      "language": "java",
+      "evidence": [
+        "basic/Basic31.java#L42"
+      ],
+      "confidence": "needs-review",
+      "notes": "Only evidence file (Basic31) is one of the 9 declared_vuln_count/marker mismatches (declared=2, bad_line_count=3). The role itself (Cookie[] is attacker-controlled) is not in doubt - HttpServletRequest.getCookies() returning attacker data is standard servlet security knowledge - but the specific line/count evidence needs manual check."
+    },
+    {
+      "api": "getQueryString",
+      "full_signature": "javax.servlet.http.HttpServletRequest.getQueryString()",
+      "role": "source",
+      "cwe": null,
+      "category": null,
+      "language": "java",
+      "evidence": [
+        "basic/Basic35.java#L45"
+      ],
+      "confidence": "high",
+      "notes": ""
+    },
+    {
+      "api": "getRequestURL",
+      "full_signature": "javax.servlet.http.HttpServletRequest.getRequestURL()",
+      "role": "source",
+      "cwe": null,
+      "category": null,
+      "language": "java",
+      "evidence": [
+        "basic/Basic35.java#L47"
+      ],
+      "confidence": "high",
+      "notes": ""
+    },
+    {
+      "api": "getRemoteUser",
+      "full_signature": "javax.servlet.http.HttpServletRequest.getRemoteUser()",
+      "role": "source",
+      "cwe": null,
+      "category": null,
+      "language": "java",
+      "evidence": [
+        "basic/Basic35.java#L46"
+      ],
+      "confidence": "high",
+      "notes": "Weaker source in real deployments (usually set by a container auth module, not raw attacker text) but securibench-micro treats it as tainted; kept as-is per corpus, flagged for team review if precision tuning is needed later."
+    },
+    {
+      "api": "getAuthType",
+      "full_signature": "javax.servlet.http.HttpServletRequest.getAuthType()",
+      "role": "source",
+      "cwe": null,
+      "category": null,
+      "language": "java",
+      "evidence": [
+        "basic/Basic35.java#L44"
+      ],
+      "confidence": "high",
+      "notes": "Same caveat as getRemoteUser - low real-world attacker control, corpus marks it tainted anyway."
+    },
+    {
+      "api": "getScheme",
+      "full_signature": "javax.servlet.http.HttpServletRequest.getScheme()",
+      "role": "source",
+      "cwe": null,
+      "category": null,
+      "language": "java",
+      "evidence": [
+        "basic/Basic35.java#L43"
+      ],
+      "confidence": "high",
+      "notes": "Same caveat as getRemoteUser/getAuthType - low real attacker control."
+    },
+    {
+      "api": "getProtocol",
+      "full_signature": "javax.servlet.http.HttpServletRequest.getProtocol()",
+      "role": "source",
+      "cwe": null,
+      "category": null,
+      "language": "java",
+      "evidence": [
+        "basic/Basic35.java#L42"
+      ],
+      "confidence": "high",
+      "notes": "Same caveat as getRemoteUser/getAuthType - low real attacker control."
+    },
+    {
+      "api": "getInputStream",
+      "full_signature": "javax.servlet.http.HttpServletRequest.getInputStream()",
+      "role": "source",
+      "cwe": null,
+      "category": null,
+      "language": "java",
+      "evidence": [
+        "basic/Basic36.java#L39"
+      ],
+      "confidence": "high",
+      "notes": "Raw request body stream, read via BufferedReader.readLine() before reaching sink."
+    },
+    {
+      "api": "getInitParameter",
+      "full_signature": "javax.servlet.ServletConfig.getInitParameter(String) / javax.servlet.ServletContext.getInitParameter(String)",
+      "role": "source",
+      "cwe": null,
+      "category": null,
+      "language": "java",
+      "evidence": [
+        "basic/Basic13.java#L36",
+        "basic/Basic41.java",
+        "basic/Basic42.java#L42"
+      ],
+      "confidence": "high",
+      "notes": "web.xml-configured init parameter, not a live per-request value - weaker/deployment-time source rather than a direct per-request attacker source. securibench-micro still labels it tainted (description: 'use getInitParameter instead'). Team should decide whether to keep this in the 'source' bucket or a lower-severity sub-bucket for the real rule table."
+    },
+    {
+      "api": "getInitParameterNames",
+      "full_signature": "javax.servlet.ServletContext.getInitParameterNames() / javax.servlet.ServletConfig.getInitParameterNames()",
+      "role": "source",
+      "cwe": null,
+      "category": null,
+      "language": "java",
+      "evidence": [
+        "basic/Basic14.java#L37",
+        "basic/Basic42.java#L39"
+      ],
+      "confidence": "high",
+      "notes": "Same config-source caveat as getInitParameter."
+    },
+    {
+      "api": "MultipartRequest.getParameter",
+      "full_signature": "com.oreilly.servlet.MultipartRequest.getParameter(String)",
+      "role": "source",
+      "cwe": null,
+      "category": null,
+      "language": "java",
+      "evidence": [
+        "basic/Basic40.java#L41"
+      ],
+      "confidence": "high",
+      "notes": "Third-party multipart/form-data parsing lib (cos.jar); same taint semantics as HttpServletRequest.getParameter. Not part of the JDK/servlet-spec API - a rule keyed on bare method name 'getParameter' already catches this without a library-specific rule."
+    },
+    {
+      "api": "println",
+      "full_signature": "java.io.PrintWriter.println(String) [and other println(...) overloads]",
+      "role": "sink",
+      "cwe": "CWE-79",
+      "category": "xss",
+      "language": "java",
+      "evidence": [
+        "basic/Basic1.java#L39",
+        "basic/Basic10.java#L47",
+        "aliasing/Aliasing1.java#L45",
+        "collections/Collections1.java#L45",
+        "inter/Inter1.java#L45",
+        "(dominant sink - used as the vulnerable statement in ~100 of the 123 test files, across every category except sanitizers'-own redirect tests)"
+      ],
+      "confidence": "high",
+      "notes": "The single overwhelmingly dominant sink pattern in this corpus. Writes attacker data straight into an HttpServletResponse writer with no HTML-encoding = reflected XSS. NOTE: writing to *any* PrintWriter is not inherently a sink (e.g. logging to a file); this corpus's pattern is specifically `resp.getWriter().println(...)` against the servlet response - a real rule should require the receiver be traced back to HttpServletResponse.getWriter(), not just match bare `println(`."
+    },
+    {
+      "api": "prepareStatement",
+      "full_signature": "java.sql.Connection.prepareStatement(String sql)",
+      "role": "sink",
+      "cwe": "CWE-89",
+      "category": "sqli",
+      "language": "java",
+      "evidence": [
+        "basic/Basic19.java#L45"
+      ],
+      "confidence": "high",
+      "notes": "IMPORTANT CONFLICT WITH EXISTING RULE TABLE: joern/sanitizers.json 'common.sqli' currently treats bare `prepareStatement(` / `PreparedStatement` as a SANITIZER signal for sqli (parameterized-query heuristic). Basic19 ('simple SQL injection with prepared statements') is a counter-example: `con.prepareStatement(\"select * from Users where name=\" + name)` - prepareStatement is called, but the SQL string itself is built via string concatenation with tainted input, so it is NOT parameterized and IS vulnerable. The 'is this call parameterized' signal must come from whether the SQL argument contains a literal string with '?' placeholders (and/or a later `.setString`/`.setInt` call), not from the mere presence of `prepareStatement(`. Flag this as a likely false-negative source in the current sanitizer rule table - recommend re-scoping that rule to require '?' in the SQL literal argument."
+    },
+    {
+      "api": "execute",
+      "full_signature": "java.sql.Statement.execute(String sql)",
+      "role": "sink",
+      "cwe": "CWE-89",
+      "category": "sqli",
+      "language": "java",
+      "evidence": [
+        "basic/Basic20.java#L47"
+      ],
+      "confidence": "high",
+      "notes": "Concatenated SQL string executed directly."
+    },
+    {
+      "api": "executeUpdate",
+      "full_signature": "java.sql.Statement.executeUpdate(String sql[, int])",
+      "role": "sink",
+      "cwe": "CWE-89",
+      "category": "sqli",
+      "language": "java",
+      "evidence": [
+        "basic/Basic21.java#L49",
+        "basic/Basic21.java#L50",
+        "basic/Basic21.java#L51"
+      ],
+      "confidence": "high",
+      "notes": ""
+    },
+    {
+      "api": "executeQuery",
+      "full_signature": "java.sql.Statement.executeQuery(String sql)",
+      "role": "sink",
+      "cwe": "CWE-89",
+      "category": "sqli",
+      "language": "java",
+      "evidence": [
+        "basic/Basic21.java#L53"
+      ],
+      "confidence": "high",
+      "notes": ""
+    },
+    {
+      "api": "createNewFile",
+      "full_signature": "java.io.File.createNewFile()",
+      "role": "sink",
+      "cwe": "CWE-22",
+      "category": "pathtraver",
+      "language": "java",
+      "evidence": [
+        "basic/Basic22.java#L47"
+      ],
+      "confidence": "high",
+      "notes": "File object constructed from tainted path earlier in the method; createNewFile() is the line marked BAD (creates/touches an attacker-chosen path)."
+    },
+    {
+      "api": "FileWriter",
+      "full_signature": "java.io.FileWriter(String name) [constructor]",
+      "role": "sink",
+      "cwe": "CWE-22",
+      "category": "pathtraver",
+      "language": "java",
+      "evidence": [
+        "basic/Basic23.java#L44",
+        "basic/Basic23.java#L45"
+      ],
+      "confidence": "high",
+      "notes": "Constructor-as-sink - the rule table's `match` field would need to support constructor calls (kind=new), not just bare API calls, to catch this."
+    },
+    {
+      "api": "FileInputStream",
+      "full_signature": "java.io.FileInputStream(String name) [constructor]",
+      "role": "sink",
+      "cwe": "CWE-22",
+      "category": "pathtraver",
+      "language": "java",
+      "evidence": [
+        "basic/Basic23.java#L46"
+      ],
+      "confidence": "high",
+      "notes": "Same constructor-as-sink caveat as FileWriter above."
+    },
+    {
+      "api": "sendRedirect",
+      "full_signature": "javax.servlet.http.HttpServletResponse.sendRedirect(String location)",
+      "role": "sink",
+      "cwe": "CWE-601",
+      "category": "redirect",
+      "language": "java",
+      "evidence": [
+        "basic/Basic24.java#L41",
+        "sanitizers/Sanitizers5.java#L46"
+      ],
+      "confidence": "high",
+      "notes": ""
+    },
+    {
+      "api": "URLEncoder.encode",
+      "full_signature": "java.net.URLEncoder.encode(String, String charset)",
+      "role": "sanitizer",
+      "cwe": "CWE-601",
+      "category": "redirect",
+      "language": "java",
+      "evidence": [
+        "sanitizers/Sanitizers3.java#L43",
+        "sanitizers/Sanitizers5.java#L47"
+      ],
+      "confidence": "high",
+      "notes": "Percent-encodes the tainted segment before it reaches sendRedirect(), so the attacker cannot inject a scheme/host/path-traversal sequence into the redirect target (Sanitizers3 = 'safe redirect', vuln_count=0, marked OK). GENUINE FINDING: this generic JDK API is NOT currently present in joern/sanitizers.json's JAVASRC or common sections for the redirect category - recommend adding it.",
+      "applies_to": [
+        "redirect"
+      ]
+    },
+    {
+      "api": "URLDecoder.decode",
+      "full_signature": "java.net.URLDecoder.decode(String, String charset)",
+      "role": "none",
+      "cwe": null,
+      "category": null,
+      "language": "java",
+      "evidence": [
+        "sanitizers/Sanitizers5.java#L46"
+      ],
+      "confidence": "high",
+      "notes": "ADVERSARIAL / TRAP CASE, not a sanitizer: Sanitizers5 ('encode and then decode') shows a naive analysis that sees 'this value went through URLEncoder.encode somewhere upstream' could be fooled if it doesn't notice a later URLDecoder.decode() un-does that encoding - `String dec = URLDecoder.decode(enc, \"UTF-8\")` then `resp.sendRedirect(dec)` is marked BAD, while `resp.sendRedirect(enc)` (no decode) is OK. A rule-generation LLM or hand rule that treats 'any URLEncoder.encode anywhere in the taint chain' as sufficient sanitization (rather than checking the value used at the sink specifically) will misclassify this file. Recommend the team keep this pair (encode=sanitizer, decode=re-taints) as an explicit test case when grading stage 2/3."
+    },
+    {
+      "api": "clean",
+      "full_signature": "<locally-defined helper method> clean(String) - NOT a real library API",
+      "role": "sanitizer",
+      "cwe": "CWE-79",
+      "category": "xss",
+      "language": "java",
+      "evidence": [
+        "sanitizers/Sanitizers1.java",
+        "sanitizers/Sanitizers2.java",
+        "sanitizers/Sanitizers4.java (BUGGY - see notes)",
+        "sanitizers/Sanitizers6.java"
+      ],
+      "confidence": "needs-review",
+      "notes": "KNOWN GAP (already flagged pre-session): every 'sanitizer' test in this corpus routes through a class-private `clean(String)` method marked with a javadoc '@sanitizer' tag, whose actual implementation is arbitrary per test file (and in Sanitizers4, deliberately buggy - the BAD lines there are `writer.println(\"<html>\" + clean + \"</html>\")`, i.e. even the sanitizer's OWN output is still marked vulnerable). This is NOT a reusable generic library API name - a rule keyed on the literal identifier 'clean' would false-positive on any other codebase's unrelated 'clean' method. securibench-micro is therefore USELESS as a source of generic Java sanitizer API names beyond URLEncoder.encode (see above) and the path-traversal getCanonicalPath/getCanonicalFile pair already in the team's rule table (no local test exercises those, so no evidence file here - listed for completeness only, not backed by this corpus).",
+      "applies_to": [
+        "xss"
+      ]
+    },
+    {
+      "api": "toString",
+      "full_signature": "java.lang.Object.toString()",
+      "role": "none",
+      "cwe": null,
+      "category": null,
+      "language": "java",
+      "evidence": [
+        "basic/Basic42.java#L44",
+        "aliasing/Aliasing5.java#L49",
+        "factories/Factories3.java#L55"
+      ],
+      "confidence": "high",
+      "notes": "Appears ON the same BAD line as the real sink (e.g. `writer.println(value.toString())`) but is not itself security-relevant - it only stringifies an already-tainted object. println is the sink, not toString. A frequency-only heuristic (counting API occurrences on BAD lines without reading the line) would wrongly flag toString as a sink candidate - this was exactly the naive starting-point list handed into this task, corrected here."
+    },
+    {
+      "api": "toLowerCase",
+      "full_signature": "java.lang.String.toLowerCase(Locale)",
+      "role": "none",
+      "cwe": null,
+      "category": null,
+      "language": "java",
+      "evidence": [
+        "basic/Basic11.java",
+        "factories/Factories1.java#L43",
+        "sanitizers/Sanitizers3.java#L40"
+      ],
+      "confidence": "high",
+      "notes": "Case-folding only; does not remove attacker control. Basic11's description is literally 'a simple false positive because of two calls to String.toLowerCase' - the corpus explicitly uses this as a trap for over-eager taint-clearing heuristics."
+    },
+    {
+      "api": "nextToken",
+      "full_signature": "java.util.StringTokenizer.nextToken()",
+      "role": "none",
+      "cwe": null,
+      "category": null,
+      "language": "java",
+      "evidence": [
+        "basic/Basic37.java#L43",
+        "basic/Basic38.java#L45"
+      ],
+      "confidence": "high",
+      "notes": "Taint-propagation plumbing (splits a tainted string), not a sink or source itself."
+    },
+    {
+      "api": "nextElement",
+      "full_signature": "java.util.Enumeration.nextElement()",
+      "role": "none",
+      "cwe": null,
+      "category": null,
+      "language": "java",
+      "evidence": [
+        "basic/Basic39.java#L43"
+      ],
+      "confidence": "high",
+      "notes": "Same as nextToken - propagation only."
+    },
+    {
+      "api": "get",
+      "full_signature": "java.util.List.get(int) / java.util.Map.get(Object)",
+      "role": "none",
+      "cwe": null,
+      "category": null,
+      "language": "java",
+      "evidence": [
+        "collections/Collections13.java#L52"
+      ],
+      "confidence": "high",
+      "notes": "Generic collection accessor; propagation only."
+    },
+    {
+      "api": "getLast",
+      "full_signature": "java.util.LinkedList.getLast()",
+      "role": "none",
+      "cwe": null,
+      "category": null,
+      "language": "java",
+      "evidence": [
+        "collections/Collections14.java#L50"
+      ],
+      "confidence": "high",
+      "notes": "Generic collection accessor; propagation only."
+    },
+    {
+      "api": "getValue",
+      "full_signature": "java.util.Map.Entry.getValue() [collections context]",
+      "role": "none",
+      "cwe": null,
+      "category": null,
+      "language": "java",
+      "evidence": [
+        "collections/Collections7.java#L50"
+      ],
+      "confidence": "high",
+      "notes": "NOTE: in a DIFFERENT context (javax.servlet.http.Cookie.getValue()) this same bare name would matter more, since it extracts the tainted cookie value - see the getCookies source entry above (Basic31 uses `cookies[i].getValue()`). Bare-name-only rules cannot distinguish Map.Entry.getValue() (irrelevant) from Cookie.getValue() (source-adjacent); a real rule needs the qualified/receiver-typed `full` signature, matching the team's own RULEGEN_SYSTEM guidance in graph_spec_prod.py to prefer `full` over `name` when the receiver/library matters."
+    },
+    {
+      "api": "getContents",
+      "full_signature": "<locally-defined wrapper class>.getContents() - NOT a real library API",
+      "role": "none",
+      "cwe": null,
+      "category": null,
+      "language": "java",
+      "evidence": [
+        "basic/Basic16.java#L55",
+        "basic/Basic17.java#L58"
+      ],
+      "confidence": "high",
+      "notes": "Custom test-harness getter on a synthetic Wrapper class; not a real API. Included in the original naive frequency list handed into this task - corrected to 'none' here since it has no generalizable meaning outside this test file."
+    },
+    {
+      "api": "getData",
+      "full_signature": "<locally-defined DataNode>.getData() - NOT a real library API",
+      "role": "none",
+      "cwe": null,
+      "category": null,
+      "language": "java",
+      "evidence": [
+        "datastructures/Datastructures6.java#L62"
+      ],
+      "confidence": "high",
+      "notes": "Same as getContents - synthetic test class."
+    },
+    {
+      "api": "setAttribute / getAttribute",
+      "full_signature": "javax.servlet.http.HttpSession.setAttribute(String,Object) / .getAttribute(String)",
+      "role": "none",
+      "cwe": null,
+      "category": null,
+      "language": "java",
+      "evidence": [
+        "session/Session1.java#L42-43",
+        "session/Session2.java#L42-43",
+        "session/Session3.java#L43,47"
+      ],
+      "confidence": "high",
+      "notes": "Tests whether taint survives a round-trip through HttpSession storage - the ORIGINAL taint source is still req.getParameter() earlier in the same method; setAttribute/getAttribute are propagation edges, not sources or sinks themselves. HOWEVER: scanops/core/java_graph.py already independently treats `.setAttribute(` / `.putValue(` as its own 'trustbound' category (CWE-501 Trust Boundary Violation is the closest CWE), which is NOT one of the team's official 14 categories in graph_spec_prod.py's CATS dict. Recommend the team decide whether trustbound/CWE-501 should be added as a 15th category or folded into an existing one - flagged here as an open question, not decided."
+    },
+    {
+      "api": "invoke / forName / getMethods / getField / newInstance",
+      "full_signature": "java.lang.reflect.Method.invoke / java.lang.Class.forName / .getMethods / .getField / .newInstance",
+      "role": "none",
+      "cwe": null,
+      "category": null,
+      "language": "java",
+      "evidence": [
+        "reflection/Refl1.java#L46-56",
+        "reflection/Refl2.java#L53",
+        "reflection/Refl3.java#L49-51"
+      ],
+      "confidence": "high",
+      "notes": "securibench-micro's 'reflection' category tests whether a taint analyzer can follow data flow THROUGH reflective calls (e.g. Method.invoke returning a tainted value) - it is NOT testing unsafe/attacker-controlled reflection (CWE-470, e.g. Class.forName(userInput)) as a vulnerability class. None of these calls are themselves source/sink/sanitizer in the 14-category sense; CWE-470 unsafe reflection is also not one of the 14 categories. Flagged as an open question, not decided, same as trustbound above."
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{"case_id": "owaspd_0", "label": "safe", "cat": "cmdi", "joern_verdict": "vuln", "categories": ["cmdi", "xss"], "sanitized_categories": ["xss"], "defenses": ["output_encoder"]}
+{"case_id": "owaspd_1", "label": "vuln", "cat": "cmdi", "joern_verdict": "vuln", "categories": ["cmdi"], "sanitized_categories": ["xss"], "defenses": ["output_encoder"]}
+{"case_id": "owaspd_2", "label": "safe", "cat": "cmdi", "joern_verdict": "vuln", "categories": ["cmdi"], "sanitized_categories": ["xss"], "defenses": ["output_encoder"]}
+{"case_id": "owaspd_5", "label": "safe", "cat": "cmdi", "joern_verdict": "vuln", "categories": ["cmdi"], "sanitized_categories": ["xss"], "defenses": ["output_encoder", "allowlist_check"]}
+{"case_id": "owaspd_7", "label": "vuln", "cat": "cmdi", "joern_verdict": "vuln", "categories": ["cmdi"], "sanitized_categories": [], "defenses": []}
+{"case_id": "owaspd_8", "label": "vuln", "cat": "cmdi", "joern_verdict": "vuln", "categories": ["cmdi", "xss"], "sanitized_categories": ["xss"], "defenses": ["output_encoder", "allowlist_check"]}
+{"case_id": "owaspd_16", "label": "vuln", "cat": "crypto", "joern_verdict": "vuln", "categories": ["crypto", "xss"], "sanitized_categories": ["xss"], "defenses": ["output_encoder"]}
+{"case_id": "owaspd_17", "label": "safe", "cat": "crypto", "joern_verdict": "vuln", "categories": ["crypto", "xss"], "sanitized_categories": ["xss"], "defenses": ["output_encoder"]}
+{"case_id": "owaspd_18", "label": "safe", "cat": "crypto", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "defenses": ["output_encoder"]}
+{"case_id": "owaspd_19", "label": "safe", "cat": "crypto", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "defenses": ["output_encoder"]}
+{"case_id": "owaspd_20", "label": "vuln", "cat": "hash", "joern_verdict": "vuln", "categories": ["hash", "xss"], "sanitized_categories": ["xss"], "defenses": ["output_encoder"]}
+{"case_id": "owaspd_22", "label": "vuln", "cat": "hash", "joern_verdict": "vuln", "categories": ["hash", "xss"], "sanitized_categories": ["xss"], "defenses": ["output_encoder", "allowlist_check"]}
+{"case_id": "owaspd_24", "label": "safe", "cat": "hash", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "defenses": ["output_encoder"]}
+{"case_id": "owaspd_30", "label": "safe", "cat": "ldapi", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"], "defenses": ["output_encoder", "allowlist_check"]}
+{"case_id": "owaspd_32", "label": "safe", "cat": "ldapi", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"], "defenses": ["output_encoder"]}
+{"case_id": "owaspd_33", "label": "vuln", "cat": "ldapi", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"], "defenses": ["output_encoder"]}
+{"case_id": "owaspd_38", "label": "vuln", "cat": "ldapi", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"], "defenses": ["output_encoder", "allowlist_check"]}
+{"case_id": "owaspd_39", "label": "safe", "cat": "ldapi", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "defenses": ["output_encoder"]}
+{"case_id": "owaspd_40", "label": "vuln", "cat": "pathtraver", "joern_verdict": "vuln", "categories": ["pathtraver"], "sanitized_categories": ["xss"], "defenses": ["output_encoder", "allowlist_check"]}
+{"case_id": "owaspd_42", "label": "vuln", "cat": "pathtraver", "joern_verdict": "vuln", "categories": ["pathtraver", "xss"], "sanitized_categories": ["xss"], "defenses": ["output_encoder"]}
+{"case_id": "owaspd_43", "label": "vuln", "cat": "pathtraver", "joern_verdict": "vuln", "categories": ["pathtraver", "xss"], "sanitized_categories": ["xss"], "defenses": ["output_encoder"]}
+{"case_id": "owaspd_44", "label": "vuln", "cat": "pathtraver", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"], "defenses": ["output_encoder", "allowlist_check"]}
+{"case_id": "owaspd_49", "label": "vuln", "cat": "pathtraver", "joern_verdict": "vuln", "categories": ["pathtraver"], "sanitized_categories": ["xss"], "defenses": ["output_encoder", "allowlist_check"]}
+{"case_id": "owaspd_51", "label": "safe", "cat": "securecookie", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "defenses": ["output_encoder", "allowlist_check"]}
+{"case_id": "owaspd_53", "label": "safe", "cat": "securecookie", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "defenses": ["output_encoder", "allowlist_check"]}
+{"case_id": "owaspd_55", "label": "safe", "cat": "securecookie", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "defenses": ["output_encoder"]}
+{"case_id": "owaspd_56", "label": "safe", "cat": "securecookie", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "defenses": ["output_encoder"]}
+{"case_id": "owaspd_58", "label": "vuln", "cat": "securecookie", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "defenses": ["output_encoder"]}
+{"case_id": "owaspd_59", "label": "vuln", "cat": "securecookie", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "defenses": ["output_encoder"]}
+{"case_id": "owaspd_60", "label": "vuln", "cat": "sqli", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "defenses": ["output_encoder"]}
+{"case_id": "owaspd_62", "label": "safe", "cat": "sqli", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": [], "defenses": []}
+{"case_id": "owaspd_64", "label": "safe", "cat": "sqli", "joern_verdict": "vuln", "categories": ["sqli", "xss"], "sanitized_categories": [], "defenses": []}
+{"case_id": "owaspd_65", "label": "safe", "cat": "sqli", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": [], "defenses": ["allowlist_check"]}
+{"case_id": "owaspd_66", "label": "vuln", "cat": "sqli", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "defenses": ["output_encoder", "allowlist_check"]}
+{"case_id": "owaspd_68", "label": "safe", "cat": "sqli", "joern_verdict": "vuln", "categories": ["sqli", "xss"], "sanitized_categories": [], "defenses": []}
+{"case_id": "owaspd_70", "label": "vuln", "cat": "trustbound", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"], "defenses": ["output_encoder", "allowlist_check"]}
+{"case_id": "owaspd_72", "label": "safe", "cat": "trustbound", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"], "defenses": ["output_encoder", "allowlist_check"]}
+{"case_id": "owaspd_76", "label": "vuln", "cat": "trustbound", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"], "defenses": ["output_encoder"]}
+{"case_id": "owaspd_81", "label": "safe", "cat": "weakrand", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": [], "defenses": []}
+{"case_id": "owaspd_84", "label": "vuln", "cat": "weakrand", "joern_verdict": "vuln", "categories": ["weakrand", "xss"], "sanitized_categories": [], "defenses": []}
+{"case_id": "owaspd_85", "label": "vuln", "cat": "weakrand", "joern_verdict": "vuln", "categories": ["weakrand", "xss"], "sanitized_categories": [], "defenses": ["output_encoder", "allowlist_check"]}
+{"case_id": "owaspd_86", "label": "safe", "cat": "weakrand", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": [], "defenses": []}
+{"case_id": "owaspd_88", "label": "vuln", "cat": "weakrand", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": [], "defenses": ["output_encoder"]}
+{"case_id": "owaspd_91", "label": "safe", "cat": "xpathi", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "defenses": ["output_encoder", "allowlist_check"]}
+{"case_id": "owaspd_92", "label": "safe", "cat": "xpathi", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "defenses": ["output_encoder"]}
+{"case_id": "owaspd_94", "label": "vuln", "cat": "xpathi", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "defenses": ["output_encoder"]}
+{"case_id": "owaspd_97", "label": "safe", "cat": "xpathi", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "defenses": ["output_encoder", "allowlist_check"]}
+{"case_id": "owaspd_98", "label": "vuln", "cat": "xpathi", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "defenses": ["output_encoder"]}
+{"case_id": "owaspd_99", "label": "safe", "cat": "xpathi", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "defenses": ["output_encoder", "allowlist_check"]}
+{"case_id": "owaspd_101", "label": "vuln", "cat": "xss", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": [], "defenses": []}
+{"case_id": "owaspd_105", "label": "safe", "cat": "xss", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "defenses": ["output_encoder"]}
+{"case_id": "owaspd_106", "label": "vuln", "cat": "xss", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": [], "defenses": []}
+{"case_id": "owaspd_107", "label": "vuln", "cat": "xss", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": [], "defenses": ["allowlist_check"]}
+{"case_id": "owaspd_109", "label": "safe", "cat": "xss", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": [], "defenses": []}

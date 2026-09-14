@@ -1,0 +1,198 @@
+{
+  "n_requested": 20,
+  "n_scored": 20,
+  "n_none": 0,
+  "token_id_check": {
+    "ok": true,
+    "cwe_id": 49149,
+    "none_id": 41451,
+    "note": "rebuild 기준값과 일치"
+  },
+  "serving": "llama-server + Qwen3.5-9B-Q4_K_M.gguf + adapter_v1_fix.gguf (배포 산출물)",
+  "offline": "rebuild/score_logprob.py (unsloth 4bit) — out/v1_logprob_test.jsonl",
+  "pred_agreement": 0.95,
+  "spearman_score": 0.9865,
+  "note": "두 경로는 양자화가 달라 점수가 정확히 같을 수 없다. 부호(판정) 일치율과 순위 상관으로 '같은 것을 재는가'를 본다.",
+  "rows": [
+    {
+      "i": 0,
+      "gold": "vuln",
+      "offline_score": 0.625,
+      "serving_score": 0.7888,
+      "offline_pred": "vuln",
+      "serving_pred": "vuln",
+      "n_probs_returned": 40
+    },
+    {
+      "i": 1,
+      "gold": "safe",
+      "offline_score": 0.375,
+      "serving_score": 0.5329,
+      "offline_pred": "vuln",
+      "serving_pred": "vuln",
+      "n_probs_returned": 40
+    },
+    {
+      "i": 2,
+      "gold": "vuln",
+      "offline_score": 1.875,
+      "serving_score": 1.7867,
+      "offline_pred": "vuln",
+      "serving_pred": "vuln",
+      "n_probs_returned": 40
+    },
+    {
+      "i": 3,
+      "gold": "safe",
+      "offline_score": -1.125,
+      "serving_score": -0.1955,
+      "offline_pred": "safe",
+      "serving_pred": "safe",
+      "n_probs_returned": 40
+    },
+    {
+      "i": 4,
+      "gold": "vuln",
+      "offline_score": 2.375,
+      "serving_score": 2.7518,
+      "offline_pred": "vuln",
+      "serving_pred": "vuln",
+      "n_probs_returned": 40
+    },
+    {
+      "i": 5,
+      "gold": "safe",
+      "offline_score": -3.125,
+      "serving_score": -2.2142,
+      "offline_pred": "safe",
+      "serving_pred": "safe",
+      "n_probs_returned": 40
+    },
+    {
+      "i": 6,
+      "gold": "vuln",
+      "offline_score": 1.75,
+      "serving_score": 1.508,
+      "offline_pred": "vuln",
+      "serving_pred": "vuln",
+      "n_probs_returned": 40
+    },
+    {
+      "i": 7,
+      "gold": "safe",
+      "offline_score": -3.75,
+      "serving_score": -2.4537,
+      "offline_pred": "safe",
+      "serving_pred": "safe",
+      "n_probs_returned": 40
+    },
+    {
+      "i": 8,
+      "gold": "vuln",
+      "offline_score": 3.5,
+      "serving_score": 3.1246,
+      "offline_pred": "vuln",
+      "serving_pred": "vuln",
+      "n_probs_returned": 40
+    },
+    {
+      "i": 9,
+      "gold": "safe",
+      "offline_score": -4.125,
+      "serving_score": -4.0438,
+      "offline_pred": "safe",
+      "serving_pred": "safe",
+      "n_probs_returned": 40
+    },
+    {
+      "i": 10,
+      "gold": "vuln",
+      "offline_score": -2.875,
+      "serving_score": -2.2796,
+      "offline_pred": "safe",
+      "serving_pred": "safe",
+      "n_probs_returned": 40
+    },
+    {
+      "i": 11,
+      "gold": "safe",
+      "offline_score": -1.875,
+      "serving_score": -0.4385,
+      "offline_pred": "safe",
+      "serving_pred": "safe",
+      "n_probs_returned": 40
+    },
+    {
+      "i": 12,
+      "gold": "vuln",
+      "offline_score": 0.875,
+      "serving_score": 1.1042,
+      "offline_pred": "vuln",
+      "serving_pred": "vuln",
+      "n_probs_returned": 40
+    },
+    {
+      "i": 13,
+      "gold": "safe",
+      "offline_score": -1.125,
+      "serving_score": -0.4695,
+      "offline_pred": "safe",
+      "serving_pred": "safe",
+      "n_probs_returned": 40
+    },
+    {
+      "i": 14,
+      "gold": "vuln",
+      "offline_score": 0.25,
+      "serving_score": -0.0256,
+      "offline_pred": "vuln",
+      "serving_pred": "safe",
+      "n_probs_returned": 40
+    },
+    {
+      "i": 15,
+      "gold": "safe",
+      "offline_score": -0.25,
+      "serving_score": -0.2122,
+      "offline_pred": "safe",
+      "serving_pred": "safe",
+      "n_probs_returned": 40
+    },
+    {
+      "i": 16,
+      "gold": "vuln",
+      "offline_score": 0.625,
+      "serving_score": 0.7324,
+      "offline_pred": "vuln",
+      "serving_pred": "vuln",
+      "n_probs_returned": 40
+    },
+    {
+      "i": 17,
+      "gold": "safe",
+      "offline_score": -1.25,
+      "serving_score": -1.0285,
+      "offline_pred": "safe",
+      "serving_pred": "safe",
+      "n_probs_returned": 40
+    },
+    {
+      "i": 18,
+      "gold": "vuln",
+      "offline_score": 0.625,
+      "serving_score": 0.9021,
+      "offline_pred": "vuln",
+      "serving_pred": "vuln",
+      "n_probs_returned": 40
+    },
+    {
+      "i": 19,
+      "gold": "safe",
+      "offline_score": 0.5,
+      "serving_score": 0.685,
+      "offline_pred": "vuln",
+      "serving_pred": "vuln",
+      "n_probs_returned": 40
+    }
+  ]
+}

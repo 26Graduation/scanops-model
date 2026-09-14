@@ -1,0 +1,37 @@
+{
+  "n_diag": 54,
+  "verdict_dist": {
+    "vuln": 46,
+    "safe_sanitized": 8
+  },
+  "false_positives": 24,
+  "true_positives": 22,
+  "fp_defense_types": {
+    "output_encoder": 17,
+    "allowlist_check": 7,
+    "(감지된 방어 없음)": 6
+  },
+  "fp_by_category": {
+    "cmdi": 3,
+    "crypto": 3,
+    "hash": 1,
+    "ldapi": 1,
+    "securecookie": 4,
+    "sqli": 4,
+    "weakrand": 2,
+    "xpathi": 4,
+    "xss": 2
+  },
+  "tp_by_category": {
+    "cmdi": 3,
+    "crypto": 1,
+    "hash": 2,
+    "pathtraver": 4,
+    "securecookie": 2,
+    "sqli": 2,
+    "weakrand": 3,
+    "xpathi": 2,
+    "xss": 3
+  },
+  "fp_no_defense": 6
+}

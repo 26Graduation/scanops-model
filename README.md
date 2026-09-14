@@ -1,201 +1,62 @@
-# ScanOps Model — 보안 특화 LLM + RAG 취약점 분석 도구
+# ScanOps — CPG + LLM 보안 분석 엔진
 
-소스코드/코드 스니펫을 입력받아 CVE·CWE 기반 취약점 탐지, CVSS 점수, 수정 가이드를 제공하는 "보안 특화 Cursor".
+**현재 Java 분석 엔진과 기존 파인튜닝 모델을 함께 보존한 저장소입니다.**
+교수님과 프로젝트 검토자는 아래 두 경로에서 코드·실행 방법·모델 파일을 확인할 수 있습니다.
 
----
+| 구분 | 현재 Java CPG + LLM | 기존 파인튜닝 모델 |
+|---|---|---|
+| 구성 | Joern CPG + Qwen3.8-Max 의미 분석 | Qwen3.5-9B + QLoRA (v1) |
+| 역할 | Java 저장소·PR의 취약점 분석 | 기존 비Java 분석 경로 및 파인튜닝 연구 |
+| 시작하기 | [현재 엔진 안내](docs/CPG_LLM.md) | [모델 카드·가중치·실행](docs/FINETUNED_MODEL.md) |
+| 핵심 코드 | [CPG](scanops/core/graph_spec_prod.py), [LLM](scanops/core/java_semantic.py), [API](scripts/api_rebuild.py) | [학습](rebuild/train_qlora.py), [데이터 구성](rebuild/build_dataset.py), [서빙](runpod/handler_rebuild.py) |
+| 모델 파일 | DashScope의 Qwen API 사용 | [실제 학습 어댑터 다운로드](https://github.com/26Graduation/scanops-model/releases/tag/finetuned-v1-20260914) |
 
-## 아키텍처
+## 전체 서비스 구조
 
-```
-입력 (코드 or 텍스트)
-  ↓
-임베딩 (BAAI/bge-small-en-v1.5)
-  ↓
-Qdrant 유사도 검색 (top-k CVE/CWE 컨텍스트)
-  ↓
-프롬프트 조립 (retrieved context + 입력 + 페르소나)
-  ↓
-파인튜닝 모델 (Ollama 서빙)
-  ↓
-출력: 취약점 목록 + CVE/CWE + CVSS + 수정 코드 스니펫
-```
-
----
-
-## 빠른 시작
-
-### 1. 의존성 설치
-
-```bash
-pip install -e .
-# 파인튜닝도 할 경우:
-pip install -e ".[train]"
+```mermaid
+flowchart LR
+    UI[React 대시보드] --> API[Spring Boot 백엔드]
+    API -->|Java| J[Java 분석 API]
+    J --> C[Joern CPG · 고정 taint 규칙]
+    J --> Q[Qwen 의미 분석]
+    C --> U[취약점 병합 · 원본 라인 · 근거]
+    Q --> U
+    API -->|비Java · 기존 경로| F[Qwen3.5-9B QLoRA]
+    API -->|웹 URL| Z[OWASP ZAP]
 ```
 
-### 2. Qdrant 실행
+Java 배포 선택은 `cpg-qwen38-ensemble`, 동적 규칙 모드는 `shadow`입니다.
+고정 CPG 탐지와 LLM의 high-confidence 의미 분석 결과를 병합합니다.
+현재 Java 경로는 기존 QLoRA 모델을 호출하지 않습니다.
 
-```bash
-docker-compose up -d
-```
+## 먼저 확인할 자료
 
-### 3. CVE 데이터 적재
+1. [현재 엔진과 실행 설정](docs/CPG_LLM.md)
+2. [기존 파인튜닝 모델 카드 및 다운로드](docs/FINETUNED_MODEL.md)
+3. [검증 범위와 재현 방법](docs/VERIFICATION.md)
+4. [인프라 실행 안내](https://github.com/26Graduation/scanops-infra#readme)
 
-```bash
-# 기본 792개 (feat/sehan 전처리 데이터)
-scanops db-prepare data/nvdcve-2.0-preprocessed.json
+2026-09-08 배포 기록에는 Java 2파일 사이트 연동 성공이 남아 있습니다.
+이는 소규모 기능 검증이며, 전체 저장소 정확도나 앙상블의 성능 우위를 입증한 결과는 아닙니다.
+현재 서버 상태를 실시간으로 보증하는 문서는 아닙니다.
 
-# 더 큰 데이터셋 (원본 NVD 피드 전처리 포함)
-scanops db-prepare data/nvdcve-2.0-recent.json --raw --recreate
-```
+## 디렉터리
 
-### 4. Ollama 모델 pull
+| 경로 | 내용 |
+|---|---|
+| `scanops/core/`, `joern/`, `scripts/api_rebuild.py` | 현재 분석 엔진 및 API |
+| `tests/` | Java 라우팅·의미 분석·오류 처리 등 회귀 테스트 |
+| `rebuild/` | 9B QLoRA 데이터 구성·학습·평가와 후속 연구 |
+| `runpod/` | 기존 GPU 모델 서빙 코드 |
+| `models/` | 모델 파일 설명 및 체크섬; 실제 가중치는 Releases에서 제공 |
+| `ml/` | 초기 학습 파이프라인 보존 |
+| `benchmarks/`, `presentation/`, `rebuild/out/` | 연구 및 평가 자료; 조건별 결과를 구분해 해석 |
+| `docs/history/` | 변경 전 안내 보존; 현재 실행은 위 안내를 우선 |
 
-```bash
-brew services start ollama
-ollama pull qwen2.5-coder:1.5b   # Railway 배포 권장 (≈1GB)
-ollama pull gemma2:2b             # 로컬 고성능용
-```
+루트의 과거 계획서·실험 사양은 연구 이력입니다. 현재 배포 설명은 `docs/CPG_LLM.md`를 기준으로 읽어 주세요.
 
-### 5. 환경변수 설정
+## 관련 저장소
 
-```bash
-cp .env.example .env
-# .env 편집 후 필요시 QDRANT_URL, OLLAMA_MODEL 등 수정
-```
-
----
-
-## 사용법
-
-### 파일 스캔
-
-```bash
-scanops scan ./src/login.py
-scanops scan ./src/              # 디렉터리 재귀 스캔
-```
-
-### 코드 스니펫 직접 입력
-
-```bash
-scanops scan --code 'cursor.execute("SELECT * FROM users WHERE id=" + user_id)' --lang Python
-```
-
-### 대화형 CVE 검색
-
-```bash
-scanops chat
-```
-
-### 모델 벤치마크
-
-```bash
-scanops benchmark
-scanops benchmark --base gemma2:2b --qwen qwen2.5-coder:1.5b
-```
-
-### JSON 결과 저장
-
-```bash
-scanops scan ./src/ --output ./reports/
-```
-
----
-
-## 파인튜닝
-
-```bash
-# Qwen2.5-Coder-1.5B QLoRA (기본값, Railway 배포용)
-python -m scanops.models.train_qlora
-
-# Gemma-2 2B LoRA (로컬 고성능)
-python -m scanops.models.train_qlora --model gemma
-
-# 학습 후 벤치마크 비교
-scanops benchmark
-```
-
-학습 데이터: `data/lora_train_v2.jsonl` (203개, 19가지 CWE 커버)
-
----
-
-## 데이터 선택 근거
-
-| 항목 | feat/sehan | feat/hyeeun | 채택 |
-|------|-----------|------------|------|
-| 파인튜닝 데이터 | 203개, 19 CWE | 없음 | **sehan** |
-| 벡터 DB 크기 | 792개 (ChromaDB) | 12,251개 (Qdrant) | **hyeeun 규모 목표** |
-| 벡터 DB 엔진 | ChromaDB | Qdrant | **Qdrant** (검색 품질, 운영 편의) |
-| RAG 아키텍처 | 2-stage | 1-stage | **1-stage** (안정적, 파인튜닝 모델과 결합) |
-
-> 기본 제공 792개 데이터로 즉시 사용 가능. 더 큰 커버리지가 필요하면 NVD 공식 피드(`nvdcve-2.0-recent.json`)를 `--raw` 옵션으로 처리.
-
----
-
-## 모델 선정 근거
-
-| 모델 | Q4 메모리 | Railway | 탐지 품질 | 채택 |
-|------|----------|---------|---------|------|
-| Qwen2.5-Coder-1.5B | ~1GB | ✓ | 우수 (코드 특화) | **배포 기본값** |
-| Gemma-2 2B | ~1.5GB | 한계 | 우수 | 로컬 비교용 |
-
-> `OLLAMA_MODEL=qwen2.5-coder:1.5b` 환경변수로 변경 가능.
-
----
-
-## 프로젝트 구조
-
-```
-scanops-model/
-├── scanops/
-│   ├── core/
-│   │   ├── scanner.py      # 핵심 스캔 로직 (웹 백엔드 연동 가능)
-│   │   ├── rag.py          # RAG 파이프라인 (Qdrant + Ollama)
-│   │   └── embedder.py     # 임베딩 모듈 (BGE 싱글톤)
-│   ├── models/
-│   │   ├── train_qlora.py  # QLoRA 파인튜닝 (Qwen / Gemma-2)
-│   │   └── benchmark.py    # 모델 벤치마크 비교
-│   ├── data/
-│   │   └── prepare.py      # NVD 전처리 + Qdrant 적재
-│   └── cli.py              # CLI 진입점
-├── data/
-│   ├── nvdcve-2.0-preprocessed.json  # 792개 전처리 데이터 (기본)
-│   └── lora_train_v2.jsonl           # 203개 파인튜닝 데이터
-├── models/
-│   └── gemma2-security-lora/         # 기존 Gemma-2 LoRA 어댑터
-├── pyproject.toml
-├── requirements.txt
-├── docker-compose.yml
-└── .env.example
-```
-
----
-
-## Railway 배포
-
-```bash
-# Qdrant: Railway 서비스로 분리 배포 후 환경변수 지정
-QDRANT_URL=https://your-qdrant.railway.app
-OLLAMA_URL=https://your-ollama.railway.app/api/generate
-OLLAMA_MODEL=qwen2.5-coder:1.5b
-```
-
-Railway는 GPU 미지원이므로 Ollama CPU 추론 기준. Qwen2.5-Coder-1.5B Q4가 1GB RAM 내에서 동작.
-
----
-
-## 백엔드 연동 (Spring Boot AiRouter)
-
-`scanops.core.scanner`의 `scan_code()`, `scan_file()`은 CLI와 독립된 순수 함수.
-FastAPI 엔드포인트 예시:
-
-```python
-from fastapi import FastAPI
-from scanops.core.scanner import scan_code
-
-app = FastAPI()
-
-@app.post("/analyze")
-def analyze(code: str, language: str = "Unknown"):
-    result = scan_code(code, language=language)
-    return result.to_dict()
-```
+- [백엔드](https://github.com/26Graduation/scanops-backend): 인증, Java/비Java 라우팅, 결과 저장
+- [프론트엔드](https://github.com/26Graduation/scanops-frontend): 스캔 요청과 리포트
+- [인프라](https://github.com/26Graduation/scanops-infra): Docker Compose, Java 분석 호스트 구성

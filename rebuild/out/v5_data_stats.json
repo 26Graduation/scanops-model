@@ -1,0 +1,22 @@
+{
+  "train_v5": {
+    "paired": 11108,
+    "no_pair": 2298,
+    "n": 13406,
+    "chars_median_before": 874,
+    "chars_median_after": 1087,
+    "chars_p95_before": 6607,
+    "chars_p95_after": 7451
+  },
+  "val_v5": {
+    "paired": 1110,
+    "no_pair": 379,
+    "n": 1489,
+    "chars_median_before": 874,
+    "chars_median_after": 1083,
+    "chars_p95_before": 6510,
+    "chars_p95_after": 7815
+  },
+  "format": "P2",
+  "note": "내용·라벨·시드·데이터 구성은 train_v3/val_v3 와 동일하다. 바뀐 것은 프롬프트 형식 하나뿐이다."
+}
