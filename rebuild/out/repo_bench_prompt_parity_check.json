@@ -1,0 +1,6 @@
+{
+  "units": 263,
+  "identical_user_content": 263,
+  "prompt_tmpl_sha256_16": "d91fa59450be5f4f",
+  "note": "S1(로컬 ChatML 래핑)과 C1(Anthropic messages)이 보내는 **사용자 본문**이 유닛마다 바이트 동일함을 확인. 래핑(ChatML)만 다르다."
+}

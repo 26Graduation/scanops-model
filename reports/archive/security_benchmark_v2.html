@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Security Benchmark V1 vs V2 — ScanOps</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f4f8;color:#1e293b;padding:24px}
+  h1{font-size:1.55rem;font-weight:800;margin-bottom:4px}
+  .sub{color:#64748b;font-size:.85rem;margin-bottom:24px}
+  code{font-family:'JetBrains Mono','Fira Code',monospace;font-size:.82em;
+        background:#f1f5f9;padding:1px 5px;border-radius:4px}
+
+  /* Hero summary */
+  .heroes{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+  .hero{border-radius:12px;padding:18px 24px;flex:1;min-width:140px;color:#fff}
+  .hero-lbl{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;opacity:.75}
+  .hero-val{font-size:2rem;font-weight:800;margin-top:2px}
+  .hero-sub{font-size:.72rem;opacity:.65;margin-top:2px}
+
+  /* Lang table */
+  .section-title{font-size:.9rem;font-weight:700;color:#475569;
+                  text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
+  .lang-table-wrap{background:#fff;border-radius:12px;overflow:hidden;
+                    box-shadow:0 1px 4px rgba(0,0,0,.08);margin-bottom:24px}
+  table{width:100%;border-collapse:collapse;font-size:.88rem}
+  th{background:#f8fafc;padding:10px 16px;text-align:left;font-size:.72rem;
+      font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#64748b;
+      border-bottom:1px solid #e2e8f0}
+  td{padding:11px 16px;border-bottom:1px solid #f1f5f9}
+  tr:last-child td{border-bottom:none}
+  .center{text-align:center}
+  .lang-dot{display:inline-block;width:8px;height:8px;border-radius:50%;
+             margin-right:8px;vertical-align:middle}
+
+  /* Charts */
+  .charts{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:24px}
+  .chart-box{background:#fff;border-radius:12px;padding:20px;flex:1;min-width:260px;
+              box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  .chart-box h2{font-size:.88rem;font-weight:600;color:#334155;margin-bottom:12px}
+  canvas{max-height:210px}
+
+  /* Case cards */
+  .card{background:#fff;border-radius:12px;margin-bottom:16px;overflow:hidden;
+         box-shadow:0 1px 4px rgba(0,0,0,.07)}
+  .card-header{display:flex;align-items:center;gap:10px;padding:10px 16px;
+                background:#f8fafc;border-bottom:1px solid #e2e8f0;flex-wrap:wrap}
+  .case-num{font-weight:800;font-size:.8rem;color:#64748b}
+  .lang-tag{font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:999px}
+  .expected{font-size:.8rem;color:#475569;flex:1}
+
+  .code-block{background:#0f172a;padding:11px 16px;overflow-x:auto}
+  .code-block pre{color:#e2e8f0;font-family:'JetBrains Mono','Fira Code',monospace;
+                   font-size:.78rem;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+
+  .versus{display:flex;align-items:stretch;border-bottom:1px solid #f1f5f9}
+  .ver{flex:1;padding:14px 16px}
+  .v1{background:#fffbeb;border-right:1px solid #fde68a}
+  .v2{background:#f0fdf4}
+  .ver-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;
+              color:#94a3b8;margin-bottom:8px}
+  .ver-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:.83rem;flex-wrap:wrap}
+  .field-lbl{font-size:.67rem;font-weight:700;color:#94a3b8;width:36px;flex-shrink:0}
+  .sev-badge{color:#fff;font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:999px}
+  .elapsed{font-size:.72rem;color:#94a3b8;margin-left:auto}
+  .ver-foot{margin-top:8px}
+  .divider{display:flex;align-items:center;justify-content:center;
+            padding:0 10px;font-size:.8rem;font-weight:700;color:#94a3b8;
+            background:#f8fafc;border-left:1px solid #e2e8f0;border-right:1px solid #e2e8f0}
+  .tick{font-size:.78rem;font-weight:700;padding:2px 8px;border-radius:999px}
+  .tick.ok{background:#dcfce7;color:#166534}
+  .tick.miss{background:#fee2e2;color:#991b1b}
+
+  .fix-section{padding:10px 16px 14px;background:#f8fafc}
+  .fix-label{font-size:.67rem;font-weight:700;text-transform:uppercase;
+              letter-spacing:.06em;color:#94a3b8;margin-bottom:4px}
+  .fix-block{font-family:'JetBrains Mono','Fira Code',monospace;font-size:.78rem;
+              color:#1e293b;background:#fff;border:1px solid #e2e8f0;padding:8px 10px;
+              border-radius:6px;white-space:pre-wrap;word-break:break-word;line-height:1.6}
+
+  @media(max-width:640px){
+    .heroes,.charts{flex-direction:column}
+    .versus{flex-direction:column}
+    .divider{padding:6px;border:none;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0}
+    .v1{border-right:none;border-bottom:1px solid #fde68a}
+  }
+</style>
+</head>
+<body>
+<h1>Security Benchmark — V1 vs V2</h1>
+<p class="sub">ScanOps · 2026-05-06 15:28 · model: <code>gemma:2b</code> · 20 test cases</p>
+
+<div class="heroes">
+  <div class="hero" style="background:#dc2626;">
+    <div class="hero-lbl">V1 Detection Rate</div>
+    <div class="hero-val">35.0%</div>
+    <div class="hero-sub">Basic prompt · 7/20</div>
+  </div>
+  <div class="hero" style="background:#ef4444;">
+    <div class="hero-lbl">V2 Detection Rate</div>
+    <div class="hero-val">10.0%</div>
+    <div class="hero-sub">OWASP/CWE prompt · 2/20</div>
+  </div>
+  <div class="hero" style="background:#ef4444;">
+    <div class="hero-lbl">Detection Improvement</div>
+    <div class="hero-val">-25.0%p</div>
+    <div class="hero-sub">percentage points</div>
+  </div>
+  <div class="hero" style="background:#334155;">
+    <div class="hero-lbl">Avg Response Time</div>
+    <div class="hero-val">2.38s</div>
+    <div class="hero-sub" style="color:#22c55e;">V1: 4.27s → -1.89s</div>
+  </div>
+</div>
+
+<p class="section-title">Detection by Language</p>
+<div class="lang-table-wrap">
+  <table>
+    <thead><tr><th>Language</th><th class="center">V1</th><th class="center">V2</th><th class="center">Change</th></tr></thead>
+    <tbody>
+        <tr>
+          <td><span class="lang-dot" style="background:#06b6d4;"></span>React / Next.js</td>
+          <td class="center">2/4</td>
+          <td class="center">0/4</td>
+          <td class="center" style="color:#ef4444;font-weight:700;">↓ -2</td>
+        </tr>
+        <tr>
+          <td><span class="lang-dot" style="background:#22c55e;"></span>Node.js / Express</td>
+          <td class="center">2/4</td>
+          <td class="center">1/4</td>
+          <td class="center" style="color:#ef4444;font-weight:700;">↓ -1</td>
+        </tr>
+        <tr>
+          <td><span class="lang-dot" style="background:#f97316;"></span>Java Spring Boot</td>
+          <td class="center">1/4</td>
+          <td class="center">1/4</td>
+          <td class="center" style="color:#94a3b8;font-weight:700;">= +0</td>
+        </tr>
+        <tr>
+          <td><span class="lang-dot" style="background:#a855f7;"></span>Python</td>
+          <td class="center">2/4</td>
+          <td class="center">0/4</td>
+          <td class="center" style="color:#ef4444;font-weight:700;">↓ -2</td>
+        </tr>
+        <tr>
+          <td><span class="lang-dot" style="background:#64748b;"></span>C</td>
+          <td class="center">0/2</td>
+          <td class="center">0/2</td>
+          <td class="center" style="color:#94a3b8;font-weight:700;">= +0</td>
+        </tr>
+        <tr>
+          <td><span class="lang-dot" style="background:#ec4899;"></span>GitHub Actions YAML</td>
+          <td class="center">0/2</td>
+          <td class="center">0/2</td>
+          <td class="center" style="color:#94a3b8;font-weight:700;">= +0</td>
+        </tr></tbody>
+  </table>
+</div>
+
+<div class="charts">
+  <div class="chart-box">
+    <h2>Detections per Language — V1 vs V2</h2>
+    <canvas id="chartDet"></canvas>
+  </div>
+  <div class="chart-box">
+    <h2>Avg Response Time per Language (s) — V2</h2>
+    <canvas id="chartTime"></canvas>
+  </div>
+</div>
+
+<p class="section-title">Case-by-Case Comparison</p>
+
+        <div class="card">
+          <div class="card-header" style="border-left:4px solid #06b6d4;">
+            <span class="case-num">#1</span>
+            <span class="lang-tag" style="background:#06b6d420;color:#06b6d4;">React / Next.js</span>
+            <span class="expected">Expected: <strong>XSS</strong></span>
+          </div>
+          <div class="code-block"><pre>return &lt;div dangerouslySetInnerHTML={{__html: userInput}} /&gt;;</pre></div>
+          <div class="versus">
+            <div class="ver v1">
+              <div class="ver-label">V1 — Basic Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>Cross-Site Scripting (XSS)</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                <span class="elapsed">1.96s</span></div>
+              <div class="ver-foot"><span class="tick ok">✓ Detected</span></div>
+            </div>
+            <div class="divider">vs</div>
+            <div class="ver v2">
+              <div class="ver-label">V2 — OWASP/CWE Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>CWE-89</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                <span class="elapsed">15.48s</span></div>
+              <div class="ver-foot"><span class="tick miss">✗ Missed</span></div>
+            </div>
+          </div>
+          <div class="fix-section">
+            <div class="fix-label">V2 FIX</div>
+            <pre class="fix-block">** Use parameterized queries with properly sanitized user input to prevent SQL injection attacks.
+
+**VULN_TYPE:** CWE-79
+**SEVERITY:** HIGH
+**ATTACK:** An attacker could inject malicious JavaScript code into the `userInput` variable, which would be executed on the client-side.
+**FIX:** Use a library like `react-helmet` to ensure the content is properly sanitized and escaped before being rendered.
+
+**VULN_TYPE:** CWE-78
+**SEVERITY:** MEDIUM
+**ATTACK:** An attacker could use OS command injection by abusing the `userInput` variable to execute arbitrary system commands.
+**FIX:** Use prepared statements or DOMPurify to escape user input before rendering it to prevent this attack.
+
+**VULN_TYPE:** CWE-134
+**SEVERITY:** MEDIUM
+**ATTACK:** An attacker could use format string attacks to inject arbitrary HTML or JavaScript into the rendered output.
+**FIX:** Use string interpolation with proper parameterization to prevent this attack.
+
+**VULN_TYPE:** CWE-502
+**SEVERITY:** LOW
+**ATTACK:** An attacker could potentially exploit an insecure deserialization mechanism by passing a malicious JSON payload through the `userInput`.
+**FIX:** Use a robust JSON validation library to ensure the integrity of the data received.
+
+**VULN_TYPE:** CWE-798
+**SEVERITY:** LOW
+**ATTACK:** An attacker could use hardcoded credentials in the code, which could be leaked or obtained through other means.
+**FIX:** Use environment variables or config files for sensitive information and avoid hardcoding them in the code.
+
+**VULN_TYPE:** CWE-352
+**SEVERITY:** LOW
+**ATTACK:** An attacker could potentially use CSRF tokens stored in cookies or local storage to gain access to sensitive resources.
+**FIX:** Implement proper secure session management and avoid storing sensitive information in client-side storage.
+
+**VULN_TYPE:** CWE-120
+**SEVERITY:** HIGH
+**ATTACK:** An attacker could use improper encoding in the `userInput` variable, allowing an attacker to control the response encoding.
+**FIX:** Use a library or function to properly encode sensitive data before displaying it.
+
+**VULN_TYPE:** CWE-601
+**SEVERITY:** LOW
+**ATTACK:** An attacker could potentially use open redirect attacks to bypass authentication and authorization mechanisms.
+**FIX:** Implement proper redirect handling and use secure authentication mechanisms like cookies or JWTs.</pre>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header" style="border-left:4px solid #06b6d4;">
+            <span class="case-num">#2</span>
+            <span class="lang-tag" style="background:#06b6d420;color:#06b6d4;">React / Next.js</span>
+            <span class="expected">Expected: <strong>XSS</strong></span>
+          </div>
+          <div class="code-block"><pre>return &lt;a href={`javascript:${userAction}`}&gt;Click&lt;/a&gt;;</pre></div>
+          <div class="versus">
+            <div class="ver v1">
+              <div class="ver-label">V1 — Basic Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>Cross-Site Scripting (XSS)</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                <span class="elapsed">2.22s</span></div>
+              <div class="ver-foot"><span class="tick ok">✓ Detected</span></div>
+            </div>
+            <div class="divider">vs</div>
+            <div class="ver v2">
+              <div class="ver-label">V2 — OWASP/CWE Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>CWE-89</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                <span class="elapsed">1.38s</span></div>
+              <div class="ver-foot"><span class="tick miss">✗ Missed</span></div>
+            </div>
+          </div>
+          <div class="fix-section">
+            <div class="fix-label">V2 FIX</div>
+            <pre class="fix-block">The `userAction` variable should be sanitized to prevent SQL injection.</pre>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header" style="border-left:4px solid #06b6d4;">
+            <span class="case-num">#3</span>
+            <span class="lang-tag" style="background:#06b6d420;color:#06b6d4;">React / Next.js</span>
+            <span class="expected">Expected: <strong>Code Injection via eval</strong></span>
+          </div>
+          <div class="code-block"><pre>eval(searchParams.get('callback'));</pre></div>
+          <div class="versus">
+            <div class="ver v1">
+              <div class="ver-label">V1 — Basic Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>Cross-Site Scripting (XSS)</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                <span class="elapsed">5.21s</span></div>
+              <div class="ver-foot"><span class="tick miss">✗ Missed</span></div>
+            </div>
+            <div class="divider">vs</div>
+            <div class="ver v2">
+              <div class="ver-label">V2 — OWASP/CWE Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>CWE-89</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                <span class="elapsed">1.66s</span></div>
+              <div class="ver-foot"><span class="tick miss">✗ Missed</span></div>
+            </div>
+          </div>
+          <div class="fix-section">
+            <div class="fix-label">V2 FIX</div>
+            <pre class="fix-block">const callback = searchParams.get('callback');
+  callback = decodeURIComponent(callback);
+  // Use the decoded callback in the vulnerable function</pre>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header" style="border-left:4px solid #06b6d4;">
+            <span class="case-num">#4</span>
+            <span class="lang-tag" style="background:#06b6d420;color:#06b6d4;">React / Next.js</span>
+            <span class="expected">Expected: <strong>XSS via event handler</strong></span>
+          </div>
+          <div class="code-block"><pre>&lt;img src={user.avatar} onError={user.fallback} /&gt;</pre></div>
+          <div class="versus">
+            <div class="ver v1">
+              <div class="ver-label">V1 — Basic Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>Cross-Origin Request Forgery (CSRF)</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                <span class="elapsed">2.02s</span></div>
+              <div class="ver-foot"><span class="tick miss">✗ Missed</span></div>
+            </div>
+            <div class="divider">vs</div>
+            <div class="ver v2">
+              <div class="ver-label">V2 — OWASP/CWE Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>CWE-89</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                <span class="elapsed">1.9s</span></div>
+              <div class="ver-foot"><span class="tick miss">✗ Missed</span></div>
+            </div>
+          </div>
+          <div class="fix-section">
+            <div class="fix-label">V2 FIX</div>
+            <pre class="fix-block">Use a prepared statement or bind the image source to a variable before it is used in the `src` attribute.</pre>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header" style="border-left:4px solid #22c55e;">
+            <span class="case-num">#5</span>
+            <span class="lang-tag" style="background:#22c55e20;color:#22c55e;">Node.js / Express</span>
+            <span class="expected">Expected: <strong>SQL Injection</strong></span>
+          </div>
+          <div class="code-block"><pre>db.query("SELECT * FROM users WHERE id=" + req.params.id);</pre></div>
+          <div class="versus">
+            <div class="ver v1">
+              <div class="ver-label">V1 — Basic Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>SQL Injection</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                <span class="elapsed">2.7s</span></div>
+              <div class="ver-foot"><span class="tick ok">✓ Detected</span></div>
+            </div>
+            <div class="divider">vs</div>
+            <div class="ver v2">
+              <div class="ver-label">V2 — OWASP/CWE Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>CWE-89</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                <span class="elapsed">1.68s</span></div>
+              <div class="ver-foot"><span class="tick ok">✓ Detected</span></div>
+            </div>
+          </div>
+          <div class="fix-section">
+            <div class="fix-label">V2 FIX</div>
+            <pre class="fix-block">Use parameterized queries and properly escape user-supplied input.</pre>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header" style="border-left:4px solid #22c55e;">
+            <span class="case-num">#6</span>
+            <span class="lang-tag" style="background:#22c55e20;color:#22c55e;">Node.js / Express</span>
+            <span class="expected">Expected: <strong>Command Injection</strong></span>
+          </div>
+          <div class="code-block"><pre>exec(req.body.command);</pre></div>
+          <div class="versus">
+            <div class="ver v1">
+              <div class="ver-label">V1 — Basic Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>Exec vulnerability</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                <span class="elapsed">6.05s</span></div>
+              <div class="ver-foot"><span class="tick miss">✗ Missed</span></div>
+            </div>
+            <div class="divider">vs</div>
+            <div class="ver v2">
+              <div class="ver-label">V2 — OWASP/CWE Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>CWE-89</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                <span class="elapsed">2.0s</span></div>
+              <div class="ver-foot"><span class="tick miss">✗ Missed</span></div>
+            </div>
+          </div>
+          <div class="fix-section">
+            <div class="fix-label">V2 FIX</div>
+            <pre class="fix-block">Use parameterized queries or properly escape user-supplied input to prevent SQL injection attacks.</pre>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header" style="border-left:4px solid #22c55e;">
+            <span class="case-num">#7</span>
+            <span class="lang-tag" style="background:#22c55e20;color:#22c55e;">Node.js / Express</span>
+            <span class="expected">Expected: <strong>Insecure CORS</strong></span>
+          </div>
+          <div class="code-block"><pre>res.setHeader('Access-Control-Allow-Origin', '*');</pre></div>
+          <div class="versus">
+            <div class="ver v1">
+              <div class="ver-label">V1 — Basic Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>Cross-Origin Resource Sharing (CORS)</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                <span class="elapsed">2.44s</span></div>
+              <div class="ver-foot"><span class="tick ok">✓ Detected</span></div>
+            </div>
+            <div class="divider">vs</div>
+            <div class="ver v2">
+              <div class="ver-label">V2 — OWASP/CWE Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>CWE-89</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                <span class="elapsed">1.54s</span></div>
+              <div class="ver-foot"><span class="tick miss">✗ Missed</span></div>
+            </div>
+          </div>
+          <div class="fix-section">
+            <div class="fix-label">V2 FIX</div>
+            <pre class="fix-block">Sanitize all user inputs and use prepared statements to prevent SQL injection attacks.</pre>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header" style="border-left:4px solid #22c55e;">
+            <span class="case-num">#8</span>
+            <span class="lang-tag" style="background:#22c55e20;color:#22c55e;">Node.js / Express</span>
+            <span class="expected">Expected: <strong>Hardcoded Secret</strong></span>
+          </div>
+          <div class="code-block"><pre>jwt.verify(token, 'hardcoded_secret_key');</pre></div>
+          <div class="versus">
+            <div class="ver v1">
+              <div class="ver-label">V1 — Basic Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>JWT Parsing Error</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                <span class="elapsed">3.71s</span></div>
+              <div class="ver-foot"><span class="tick miss">✗ Missed</span></div>
+            </div>
+            <div class="divider">vs</div>
+            <div class="ver v2">
+              <div class="ver-label">V2 — OWASP/CWE Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>CWE-89</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                <span class="elapsed">1.61s</span></div>
+              <div class="ver-foot"><span class="tick miss">✗ Missed</span></div>
+            </div>
+          </div>
+          <div class="fix-section">
+            <div class="fix-label">V2 FIX</div>
+            <pre class="fix-block">jwt.verify(token, process.env.JWT_SECRET);</pre>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header" style="border-left:4px solid #f97316;">
+            <span class="case-num">#9</span>
+            <span class="lang-tag" style="background:#f9731620;color:#f97316;">Java Spring Boot</span>
+            <span class="expected">Expected: <strong>SQL Injection</strong></span>
+          </div>
+          <div class="code-block"><pre>String query = "SELECT * FROM " + tableName;
+stmt.execute(query);</pre></div>
+          <div class="versus">
+            <div class="ver v1">
+              <div class="ver-label">V1 — Basic Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>SQL Injection</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                <span class="elapsed">6.26s</span></div>
+              <div class="ver-foot"><span class="tick ok">✓ Detected</span></div>
+            </div>
+            <div class="divider">vs</div>
+            <div class="ver v2">
+              <div class="ver-label">V2 — OWASP/CWE Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>CWE-89</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                <span class="elapsed">1.33s</span></div>
+              <div class="ver-foot"><span class="tick ok">✓ Detected</span></div>
+            </div>
+          </div>
+          <div class="fix-section">
+            <div class="fix-label">V2 FIX</div>
+            <pre class="fix-block">`String query = "SELECT * FROM " + tableName + ";";</pre>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header" style="border-left:4px solid #f97316;">
+            <span class="case-num">#10</span>
+            <span class="lang-tag" style="background:#f9731620;color:#f97316;">Java Spring Boot</span>
+            <span class="expected">Expected: <strong>Command Injection</strong></span>
+          </div>
+          <div class="code-block"><pre>Runtime.getRuntime().exec(userInput);</pre></div>
+          <div class="versus">
+            <div class="ver v1">
+              <div class="ver-label">V1 — Basic Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>Cross-site Request Forgery (CSRF)</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                <span class="elapsed">7.77s</span></div>
+              <div class="ver-foot"><span class="tick miss">✗ Missed</span></div>
+            </div>
+            <div class="divider">vs</div>
+            <div class="ver v2">
+              <div class="ver-label">V2 — OWASP/CWE Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>CWE-89</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                <span class="elapsed">1.53s</span></div>
+              <div class="ver-foot"><span class="tick miss">✗ Missed</span></div>
+            </div>
+          </div>
+          <div class="fix-section">
+            <div class="fix-label">V2 FIX</div>
+            <pre class="fix-block">Use parameterized queries or prepared statements to prevent SQL injection.</pre>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header" style="border-left:4px solid #f97316;">
+            <span class="case-num">#11</span>
+            <span class="lang-tag" style="background:#f9731620;color:#f97316;">Java Spring Boot</span>
+            <span class="expected">Expected: <strong>Overly Permissive Endpoint</strong></span>
+          </div>
+          <div class="code-block"><pre>@RequestMapping(value="/**")
+public ResponseEntity&lt;?&gt; handle(HttpServletRequest req) { ... }</pre></div>
+          <div class="versus">
+            <div class="ver v1">
+              <div class="ver-label">V1 — Basic Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>Cross-site scripting (XSS)</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                <span class="elapsed">6.8s</span></div>
+              <div class="ver-foot"><span class="tick miss">✗ Missed</span></div>
+            </div>
+            <div class="divider">vs</div>
+            <div class="ver v2">
+              <div class="ver-label">V2 — OWASP/CWE Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>CWE-89</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                <span class="elapsed">1.33s</span></div>
+              <div class="ver-foot"><span class="tick miss">✗ Missed</span></div>
+            </div>
+          </div>
+          <div class="fix-section">
+            <div class="fix-label">V2 FIX</div>
+            <pre class="fix-block">`req.getParameter("name")` should be sanitized before using in SQL query.</pre>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header" style="border-left:4px solid #f97316;">
+            <span class="case-num">#12</span>
+            <span class="lang-tag" style="background:#f9731620;color:#f97316;">Java Spring Boot</span>
+            <span class="expected">Expected: <strong>Timing Attack</strong></span>
+          </div>
+          <div class="code-block"><pre>if (password.equals(inputPassword)) { grantAccess(); }</pre></div>
+          <div class="versus">
+            <div class="ver v1">
+              <div class="ver-label">V1 — Basic Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>SQL Injection</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                <span class="elapsed">2.76s</span></div>
+              <div class="ver-foot"><span class="tick miss">✗ Missed</span></div>
+            </div>
+            <div class="divider">vs</div>
+            <div class="ver v2">
+              <div class="ver-label">V2 — OWASP/CWE Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>CWE-89</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                <span class="elapsed">1.58s</span></div>
+              <div class="ver-foot"><span class="tick miss">✗ Missed</span></div>
+            </div>
+          </div>
+          <div class="fix-section">
+            <div class="fix-label">V2 FIX</div>
+            <pre class="fix-block">Sanitize the inputPassword variable before it is used in the grantAccess method.</pre>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header" style="border-left:4px solid #a855f7;">
+            <span class="case-num">#13</span>
+            <span class="lang-tag" style="background:#a855f720;color:#a855f7;">Python</span>
+            <span class="expected">Expected: <strong>Insecure Deserialization</strong></span>
+          </div>
+          <div class="code-block"><pre>import pickle
+obj = pickle.loads(user_data)</pre></div>
+          <div class="versus">
+            <div class="ver v1">
+              <div class="ver-label">V1 — Basic Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>Memory leak</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                <span class="elapsed">1.49s</span></div>
+              <div class="ver-foot"><span class="tick miss">✗ Missed</span></div>
+            </div>
+            <div class="divider">vs</div>
+            <div class="ver v2">
+              <div class="ver-label">V2 — OWASP/CWE Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>CWE-89</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                <span class="elapsed">1.6s</span></div>
+              <div class="ver-foot"><span class="tick miss">✗ Missed</span></div>
+            </div>
+          </div>
+          <div class="fix-section">
+            <div class="fix-label">V2 FIX</div>
+            <pre class="fix-block">Use parameterized queries to prevent SQL injection.</pre>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header" style="border-left:4px solid #a855f7;">
+            <span class="case-num">#14</span>
+            <span class="lang-tag" style="background:#a855f720;color:#a855f7;">Python</span>
+            <span class="expected">Expected: <strong>Command Injection</strong></span>
+          </div>
+          <div class="code-block"><pre>import subprocess
+subprocess.call(user_input, shell=True)</pre></div>
+          <div class="versus">
+            <div class="ver v1">
+              <div class="ver-label">V1 — Basic Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>Shell Injection</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                <span class="elapsed">1.63s</span></div>
+              <div class="ver-foot"><span class="tick ok">✓ Detected</span></div>
+            </div>
+            <div class="divider">vs</div>
+            <div class="ver v2">
+              <div class="ver-label">V2 — OWASP/CWE Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>CWE-502: Insecure Deserialization</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                <span class="elapsed">2.04s</span></div>
+              <div class="ver-foot"><span class="tick miss">✗ Missed</span></div>
+            </div>
+          </div>
+          <div class="fix-section">
+            <div class="fix-label">V2 FIX</div>
+            <pre class="fix-block">Use the `subprocess.quote()` function to properly escape user input before passing it to the `subprocess.call()` method.</pre>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header" style="border-left:4px solid #a855f7;">
+            <span class="case-num">#15</span>
+            <span class="lang-tag" style="background:#a855f720;color:#a855f7;">Python</span>
+            <span class="expected">Expected: <strong>Arbitrary Code Execution via YAML</strong></span>
+          </div>
+          <div class="code-block"><pre>import yaml
+data = yaml.load(user_input)  # not safe_load</pre></div>
+          <div class="versus">
+            <div class="ver v1">
+              <div class="ver-label">V1 — Basic Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>yaml.load</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                <span class="elapsed">6.49s</span></div>
+              <div class="ver-foot"><span class="tick ok">✓ Detected</span></div>
+            </div>
+            <div class="divider">vs</div>
+            <div class="ver v2">
+              <div class="ver-label">V2 — OWASP/CWE Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>CWE-89</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                <span class="elapsed">1.51s</span></div>
+              <div class="ver-foot"><span class="tick miss">✗ Missed</span></div>
+            </div>
+          </div>
+          <div class="fix-section">
+            <div class="fix-label">V2 FIX</div>
+            <pre class="fix-block">Use a parameterized query with properly sanitized user input.</pre>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header" style="border-left:4px solid #a855f7;">
+            <span class="case-num">#16</span>
+            <span class="lang-tag" style="background:#a855f720;color:#a855f7;">Python</span>
+            <span class="expected">Expected: <strong>Command Injection</strong></span>
+          </div>
+          <div class="code-block"><pre>import os
+os.system(f"ping {host}")</pre></div>
+          <div class="versus">
+            <div class="ver v1">
+              <div class="ver-label">V1 — Basic Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>Ping vulnerability</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                <span class="elapsed">2.01s</span></div>
+              <div class="ver-foot"><span class="tick miss">✗ Missed</span></div>
+            </div>
+            <div class="divider">vs</div>
+            <div class="ver v2">
+              <div class="ver-label">V2 — OWASP/CWE Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>CWE-89</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                <span class="elapsed">1.66s</span></div>
+              <div class="ver-foot"><span class="tick miss">✗ Missed</span></div>
+            </div>
+          </div>
+          <div class="fix-section">
+            <div class="fix-label">V2 FIX</div>
+            <pre class="fix-block">Use parameterized queries with placeholders for user-supplied inputs to prevent SQL injection.</pre>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header" style="border-left:4px solid #64748b;">
+            <span class="case-num">#17</span>
+            <span class="lang-tag" style="background:#64748b20;color:#64748b;">C</span>
+            <span class="expected">Expected: <strong>Format String Attack</strong></span>
+          </div>
+          <div class="code-block"><pre>printf(user_input);  // user-controlled format string</pre></div>
+          <div class="versus">
+            <div class="ver v1">
+              <div class="ver-label">V1 — Basic Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>Buffer overflow</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                <span class="elapsed">4.7s</span></div>
+              <div class="ver-foot"><span class="tick miss">✗ Missed</span></div>
+            </div>
+            <div class="divider">vs</div>
+            <div class="ver v2">
+              <div class="ver-label">V2 — OWASP/CWE Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>CWE-79</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                <span class="elapsed">2.17s</span></div>
+              <div class="ver-foot"><span class="tick miss">✗ Missed</span></div>
+            </div>
+          </div>
+          <div class="fix-section">
+            <div class="fix-label">V2 FIX</div>
+            <pre class="fix-block">Use the `sprintf` function instead of `printf` to ensure proper formatting and prevent SQL injection.</pre>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header" style="border-left:4px solid #64748b;">
+            <span class="case-num">#18</span>
+            <span class="lang-tag" style="background:#64748b20;color:#64748b;">C</span>
+            <span class="expected">Expected: <strong>Buffer Overflow</strong></span>
+          </div>
+          <div class="code-block"><pre>char buf[64];
+strcpy(buf, argv[1]);  // no bounds check</pre></div>
+          <div class="versus">
+            <div class="ver v1">
+              <div class="ver-label">V1 — Basic Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>Strcpy without size check</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                <span class="elapsed">4.78s</span></div>
+              <div class="ver-foot"><span class="tick miss">✗ Missed</span></div>
+            </div>
+            <div class="divider">vs</div>
+            <div class="ver v2">
+              <div class="ver-label">V2 — OWASP/CWE Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>CWE-79</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                <span class="elapsed">1.69s</span></div>
+              <div class="ver-foot"><span class="tick miss">✗ Missed</span></div>
+            </div>
+          </div>
+          <div class="fix-section">
+            <div class="fix-label">V2 FIX</div>
+            <pre class="fix-block">Use a bounded string length when reading user-supplied data to prevent this vulnerability.</pre>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header" style="border-left:4px solid #ec4899;">
+            <span class="case-num">#19</span>
+            <span class="lang-tag" style="background:#ec489920;color:#ec4899;">GitHub Actions YAML</span>
+            <span class="expected">Expected: <strong>Script Injection via untrusted input</strong></span>
+          </div>
+          <div class="code-block"><pre>- run: echo ${{ github.event.issue.title }}</pre></div>
+          <div class="versus">
+            <div class="ver v1">
+              <div class="ver-label">V1 — Basic Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>Missing credential management</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                <span class="elapsed">5.19s</span></div>
+              <div class="ver-foot"><span class="tick miss">✗ Missed</span></div>
+            </div>
+            <div class="divider">vs</div>
+            <div class="ver v2">
+              <div class="ver-label">V2 — OWASP/CWE Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>CWE-502: Insecure Deserialization</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                <span class="elapsed">2.26s</span></div>
+              <div class="ver-foot"><span class="tick miss">✗ Missed</span></div>
+            </div>
+          </div>
+          <div class="fix-section">
+            <div class="fix-label">V2 FIX</div>
+            <pre class="fix-block">The code should use a secure deserialization mechanism, such as using a library or manually verifying the integrity of the data.</pre>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header" style="border-left:4px solid #ec4899;">
+            <span class="case-num">#20</span>
+            <span class="lang-tag" style="background:#ec489920;color:#ec4899;">GitHub Actions YAML</span>
+            <span class="expected">Expected: <strong>Supply Chain Attack (unpinned action)</strong></span>
+          </div>
+          <div class="code-block"><pre>- uses: actions/checkout@main  # unpinned version</pre></div>
+          <div class="versus">
+            <div class="ver v1">
+              <div class="ver-label">V1 — Basic Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>Unauthorized access to GitHub repository</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#dc2626;">CRITICAL</span>
+                <span class="elapsed">9.2s</span></div>
+              <div class="ver-foot"><span class="tick miss">✗ Missed</span></div>
+            </div>
+            <div class="divider">vs</div>
+            <div class="ver v2">
+              <div class="ver-label">V2 — OWASP/CWE Prompt</div>
+              <div class="ver-row"><span class="field-lbl">VULN</span><span>CWE-79</span></div>
+              <div class="ver-row"><span class="field-lbl">SEV</span>
+                <span class="sev-badge" style="background:#ea580c;">HIGH</span>
+                <span class="elapsed">1.68s</span></div>
+              <div class="ver-foot"><span class="tick miss">✗ Missed</span></div>
+            </div>
+          </div>
+          <div class="fix-section">
+            <div class="fix-label">V2 FIX</div>
+            <pre class="fix-block">Use parameterized queries or consider using a library that prevents SQL injection attacks, such as SQLAlchemy.</pre>
+          </div>
+        </div>
+
+<script>
+const labels = ["React / Next.js", "Node.js / Express", "Java Spring Boot", "Python", "C", "GitHub Actions YAML"];
+const v1data  = [2, 2, 1, 2, 0, 0];
+const v2data  = [0, 1, 1, 0, 0, 0];
+const maxData = [4, 4, 4, 4, 2, 2];
+
+const langColors = ["#06b6d4", "#22c55e", "#f97316", "#a855f7", "#64748b", "#ec4899"];
+
+new Chart(document.getElementById('chartDet'), {
+  type: 'bar',
+  data: {
+    labels,
+    datasets: [
+      { label: 'V1', data: v1data, backgroundColor: 'rgba(220,38,38,.65)',
+         borderRadius: 4, borderSkipped: false },
+      { label: 'V2', data: v2data, backgroundColor: 'rgba(34,197,94,.75)',
+         borderRadius: 4, borderSkipped: false },
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { position: 'top' } },
+    scales: {
+      y: { beginAtZero: true, max: Math.max(...maxData),
+            title: { display: true, text: 'detected' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+new Chart(document.getElementById('chartTime'), {
+  type: 'bar',
+  data: {
+    labels,
+    datasets: [{
+      label: 'Avg Time (s)',
+      data: [5.11, 1.71, 1.44, 1.7, 1.93, 1.97],
+      backgroundColor: langColors,
+      borderRadius: 4, borderSkipped: false,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: true, title: { display: true, text: 'seconds' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+</script>
+</body>
+</html>

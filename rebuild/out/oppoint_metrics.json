@@ -1,0 +1,145 @@
+{
+  "spec": "rebuild/OPPOINT_RUN_SPEC.md",
+  "model": "v1 (배포 어댑터)",
+  "seed": 42,
+  "n_boot": 2000,
+  "precision_target": 0.7,
+  "recall_floor": 0.1,
+  "results": {
+    "cleanvul_v2": {
+      "base": "cleanvul_v2",
+      "n_tune": 676,
+      "n_report": 2706,
+      "auc_tune": 0.623,
+      "auc_report": 0.6165,
+      "trivial_all_vuln_report": {
+        "n": 2706,
+        "n_vuln": 1353,
+        "n_safe": 1353,
+        "recall": 1.0,
+        "fpr": 1.0,
+        "precision": 0.5,
+        "f1": 0.6667,
+        "parse_fail": 0
+      },
+      "n_tune_taus_meeting_target": 16,
+      "chosen_tau": 1.375,
+      "tune_at_chosen": {
+        "n": 676,
+        "n_vuln": 338,
+        "n_safe": 338,
+        "recall": 0.1627,
+        "fpr": 0.0621,
+        "precision": 0.7237,
+        "f1": 0.2657,
+        "parse_fail": 0,
+        "tau": 1.375
+      },
+      "report_at_chosen": {
+        "n": 2706,
+        "n_vuln": 1353,
+        "n_safe": 1353,
+        "recall": 0.1419,
+        "fpr": 0.0776,
+        "precision": 0.6465,
+        "f1": 0.2327,
+        "parse_fail": 0
+      },
+      "n_boot_used": 2000,
+      "precision_ci": [
+        0.6084,
+        0.6877
+      ],
+      "recall_ci": [
+        0.1234,
+        0.1611
+      ],
+      "verdict": "PRECISION-UNREACHABLE",
+      "reference_only_report_curve": {
+        "max_precision_point": {
+          "n": 2706,
+          "n_vuln": 1353,
+          "n_safe": 1353,
+          "recall": 0.0044,
+          "fpr": 0.0,
+          "precision": 1.0,
+          "f1": 0.0088,
+          "parse_fail": 0,
+          "tau": 3.25
+        },
+        "n_report_taus_meeting_both": 0,
+        "best_recall_among_them": null,
+        "WARNING": "이 블록은 사후 정보다. 판정 근거로 쓰지 않는다(사양서 §4-4)."
+      },
+      "is_primary": true
+    },
+    "primevul": {
+      "base": "primevul",
+      "n_tune": 72,
+      "n_report": 288,
+      "auc_tune": 0.5806,
+      "auc_report": 0.5618,
+      "trivial_all_vuln_report": {
+        "n": 288,
+        "n_vuln": 144,
+        "n_safe": 144,
+        "recall": 1.0,
+        "fpr": 1.0,
+        "precision": 0.5,
+        "f1": 0.6667,
+        "parse_fail": 0
+      },
+      "n_tune_taus_meeting_target": 3,
+      "chosen_tau": 0.0,
+      "tune_at_chosen": {
+        "n": 72,
+        "n_vuln": 36,
+        "n_safe": 36,
+        "recall": 0.1944,
+        "fpr": 0.0556,
+        "precision": 0.7778,
+        "f1": 0.3111,
+        "parse_fail": 0,
+        "tau": 0.0
+      },
+      "report_at_chosen": {
+        "n": 288,
+        "n_vuln": 144,
+        "n_safe": 144,
+        "recall": 0.2083,
+        "fpr": 0.1667,
+        "precision": 0.5556,
+        "f1": 0.303,
+        "parse_fail": 0
+      },
+      "n_boot_used": 2000,
+      "precision_ci": [
+        0.5088,
+        0.6154
+      ],
+      "recall_ci": [
+        0.1458,
+        0.2778
+      ],
+      "verdict": "PRECISION-UNREACHABLE",
+      "reference_only_report_curve": {
+        "max_precision_point": {
+          "n": 288,
+          "n_vuln": 144,
+          "n_safe": 144,
+          "recall": 0.0139,
+          "fpr": 0.0,
+          "precision": 1.0,
+          "f1": 0.0274,
+          "parse_fail": 0,
+          "tau": 0.875
+        },
+        "n_report_taus_meeting_both": 0,
+        "best_recall_among_them": null,
+        "WARNING": "이 블록은 사후 정보다. 판정 근거로 쓰지 않는다(사양서 §4-4)."
+      },
+      "is_primary": false
+    }
+  },
+  "FINAL_VERDICT": "PRECISION-UNREACHABLE"
+}

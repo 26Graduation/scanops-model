@@ -1,26 +1,34 @@
-# ── 1. Build stage ─────────────────────────────────────────────────────────
-# alpine 태그는 **amd64 전용**이다(2026-08-17 docker manifest inspect 확인:
-# 17-jdk-alpine/17-jre-alpine → amd64 only, 17-jdk/17-jre/-jammy → amd64,arm,arm64,…).
-# Apple Silicon 등 arm64 호스트에서 빌드가 "no match for platform in manifest" 로 실패한다.
-# 멀티아치를 지원하는 jammy 태그를 쓴다.
-FROM eclipse-temurin:17-jdk-jammy AS build
+FROM python:3.11-slim
+
 WORKDIR /app
 
-# Gradle wrapper & dependency cache layer
-COPY gradlew settings.gradle build.gradle ./
-COPY gradle ./gradle
-RUN chmod +x gradlew && ./gradlew dependencies --no-daemon -q 2>/dev/null || true
+# 시스템 의존성
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
-# Source copy & build (tests skipped for faster CI)
-COPY src ./src
-RUN ./gradlew bootJar -x test --no-daemon
+# Python 의존성 설치 (캐시 레이어)
+COPY requirements.txt .
+RUN pip install --no-cache-dir \
+    fastapi>=0.100 \
+    uvicorn[standard]>=0.23 \
+    pydantic>=2.0 \
+    requests>=2.31 \
+    httpx>=0.27 \
+    python-dotenv>=1.0 \
+    qdrant-client>=1.9 \
+    neo4j>=5.20 \
+    sentence-transformers>=2.7 \
+    rich>=13
 
-# ── 2. Runtime stage ────────────────────────────────────────────────────────
-FROM eclipse-temurin:17-jre-jammy
-WORKDIR /app
+# 소스 복사
+COPY scripts/ ./scripts/
+COPY src/ ./src/
+COPY scanops/ ./scanops/
 
-COPY --from=build /app/build/libs/*.jar app.jar
+ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
 
-EXPOSE 8080
+EXPOSE 8100
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+CMD ["sh", "-c", "uvicorn scripts.api_server:app --host 0.0.0.0 --port ${PORT:-8100}"]

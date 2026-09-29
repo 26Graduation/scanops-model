@@ -1,0 +1,538 @@
+{
+  "pass": true,
+  "checks": {
+    "candidate_frontend_java": true,
+    "candidate_getParameter": true,
+    "candidate_println": true,
+    "vulnerable_sink_line": true,
+    "cross_file_path": true,
+    "public_data_boundary": true,
+    "java_state_boundary": true,
+    "response_context_not_source": true,
+    "sanitizer_hit": true,
+    "no_rule_errors": true
+  },
+  "candidates": {
+    "mode": "candidates",
+    "n_files": 5,
+    "data": {
+      "lang": "JAVASRC",
+      "n_calls_total": 12,
+      "n_call_candidates": 7,
+      "n_param_candidates": 19,
+      "n_assign_candidates": 1,
+      "calls": [
+        {
+          "name": "getParameter",
+          "n": 2,
+          "fulls": [
+            {
+              "full": "javax.servlet.http.HttpServletRequest.getParameter:<unresolvedSignature>(1)",
+              "n": 2
+            }
+          ],
+          "codes": [
+            "getParameter(\"q\")"
+          ],
+          "locs": [
+            "demo/Input.java:3",
+            "demo/Safe.java:7"
+          ]
+        },
+        {
+          "name": "println",
+          "n": 2,
+          "fulls": [
+            {
+              "full": "<unresolvedNamespace>.println:<unresolvedSignature>(1)",
+              "n": 2
+            }
+          ],
+          "codes": [
+            "getWriter().println(value)",
+            "getWriter().println(escaped)"
+          ],
+          "locs": [
+            "demo/App.java:7",
+            "demo/Safe.java:9"
+          ]
+        },
+        {
+          "name": "getRuntime",
+          "n": 2,
+          "fulls": [
+            {
+              "full": "java.lang.Runtime.getRuntime:java.lang.Runtime()",
+              "n": 2
+            }
+          ],
+          "codes": [
+            "Runtime.getRuntime()"
+          ],
+          "locs": [
+            "demo/Library.java:4",
+            "demo/Stateful.java:6"
+          ]
+        },
+        {
+          "name": "getWriter",
+          "n": 2,
+          "fulls": [
+            {
+              "full": "javax.servlet.http.HttpServletResponse.getWriter:<unresolvedSignature>(0)",
+              "n": 2
+            }
+          ],
+          "codes": [
+            "getWriter()"
+          ],
+          "locs": [
+            "demo/App.java:7",
+            "demo/Safe.java:9"
+          ]
+        },
+        {
+          "name": "exec",
+          "n": 2,
+          "fulls": [
+            {
+              "full": "java.lang.Runtime.exec:java.lang.Process(java.lang.String)",
+              "n": 2
+            }
+          ],
+          "codes": [
+            "Runtime.getRuntime().exec(command)",
+            "Runtime.getRuntime().exec(this.command)"
+          ],
+          "locs": [
+            "demo/Library.java:4",
+            "demo/Stateful.java:6"
+          ]
+        },
+        {
+          "name": "read",
+          "n": 1,
+          "fulls": [
+            {
+              "full": "demo.Input.read:java.lang.String(javax.servlet.http.HttpServletRequest)",
+              "n": 1
+            }
+          ],
+          "codes": [
+            "read(req)"
+          ],
+          "locs": [
+            "demo/App.java:6"
+          ]
+        },
+        {
+          "name": "htmlEscape",
+          "n": 1,
+          "fulls": [
+            {
+              "full": "org.springframework.web.util.HtmlUtils.htmlEscape:<unresolvedSignature>(1)",
+              "n": 1
+            }
+          ],
+          "codes": [
+            "htmlEscape(value)"
+          ],
+          "locs": [
+            "demo/Safe.java:8"
+          ]
+        }
+      ],
+      "params": [
+        {
+          "method": "doGet",
+          "param": "resp",
+          "n": 2,
+          "locs": [
+            "demo/App.java:5",
+            "demo/Safe.java:6"
+          ]
+        },
+        {
+          "method": "doGet",
+          "param": "req",
+          "n": 2,
+          "locs": [
+            "demo/App.java:5",
+            "demo/Safe.java:6"
+          ]
+        },
+        {
+          "method": "htmlEscape",
+          "param": "p0",
+          "n": 1,
+          "locs": [
+            "<empty>:-1"
+          ]
+        },
+        {
+          "method": "<operator>.fieldAccess",
+          "param": "p2",
+          "n": 1,
+          "locs": [
+            "<empty>:-1"
+          ]
+        },
+        {
+          "method": "getRuntime",
+          "param": "p0",
+          "n": 1,
+          "locs": [
+            "<empty>:-1"
+          ]
+        },
+        {
+          "method": "htmlEscape",
+          "param": "p1",
+          "n": 1,
+          "locs": [
+            "<empty>:-1"
+          ]
+        },
+        {
+          "method": "exec",
+          "param": "p0",
+          "n": 1,
+          "locs": [
+            "<empty>:-1"
+          ]
+        },
+        {
+          "method": "run",
+          "param": "command",
+          "n": 1,
+          "locs": [
+            "demo/Library.java:4"
+          ]
+        },
+        {
+          "method": "<operator>.fieldAccess",
+          "param": "p1",
+          "n": 1,
+          "locs": [
+            "<empty>:-1"
+          ]
+        },
+        {
+          "method": "<init>",
+          "param": "command",
+          "n": 1,
+          "locs": [
+            "demo/Stateful.java:5"
+          ]
+        },
+        {
+          "method": "getParameter",
+          "param": "p1",
+          "n": 1,
+          "locs": [
+            "<empty>:-1"
+          ]
+        },
+        {
+          "method": "getWriter",
+          "param": "p0",
+          "n": 1,
+          "locs": [
+            "<empty>:-1"
+          ]
+        },
+        {
+          "method": "read",
+          "param": "req",
+          "n": 1,
+          "locs": [
+            "demo/Input.java:3"
+          ]
+        },
+        {
+          "method": "<operator>.assignment",
+          "param": "p1",
+          "n": 1,
+          "locs": [
+            "<empty>:-1"
+          ]
+        },
+        {
+          "method": "exec",
+          "param": "p1",
+          "n": 1,
+          "locs": [
+            "<empty>:-1"
+          ]
+        },
+        {
+          "method": "println",
+          "param": "p0",
+          "n": 1,
+          "locs": [
+            "<empty>:-1"
+          ]
+        },
+        {
+          "method": "<operator>.assignment",
+          "param": "p2",
+          "n": 1,
+          "locs": [
+            "<empty>:-1"
+          ]
+        },
+        {
+          "method": "getParameter",
+          "param": "p0",
+          "n": 1,
+          "locs": [
+            "<empty>:-1"
+          ]
+        },
+        {
+          "method": "println",
+          "param": "p1",
+          "n": 1,
+          "locs": [
+            "<empty>:-1"
+          ]
+        }
+      ],
+      "assigns": [
+        {
+          "field": "command",
+          "n": 1,
+          "codes": [
+            "this.command = command"
+          ],
+          "locs": [
+            "demo/Stateful.java:5"
+          ]
+        }
+      ]
+    },
+    "elapsed": 20.75,
+    "timed_out": false,
+    "rc": 0,
+    "peak_rss_mb": 26,
+    "stdout_tail": " 6\n[INFO ] Calculating reaching definitions for: javax.servlet.http.HttpServletRequest.getParameter:<unresolvedSignature>(1) in <empty>\n[INFO ] Calculating reaching definitions for: org.springframework.web.util.HtmlUtils.htmlEscape:<unresolvedSignature>(1) in <empty>\n[INFO ] Number of definitions for demo.App.<init>:void(): 1\n[INFO ] Number of definitions for javax.servlet.http.HttpServletRequest.getParameter:<unresolvedSignature>(1): 2\n[INFO ] Number of definitions for org.springframework.web.util.HtmlUtils.htmlEscape:<unresolvedSignature>(1): 2\n[INFO ] Calculating reaching definitions for: demo.Input.<init>:void() in demo/Input.java\n[INFO ] Number of definitions for demo.Safe.doGet:void(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse): 18\n[INFO ] Number of definitions for demo.Input.<init>:void(): 1\n[INFO ] Calculating reaching definitions for: demo.App.doGet:void(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse) in demo/App.java\n[INFO ] Number of definitions for demo.Stateful.<init>:void(java.lang.String): 5\n[INFO ] Number of definitions for demo.App.doGet:void(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse): 13\n[INFO ] Pass io.joern.dataflowengineoss.passes.reachingdef.ReachingDefPass completed in 99 ms (2% on mutations). 205 + 0 changes committed from 18 parts.\nThe graph has been modified. You may want to use the `save` command to persist changes to disk.  All changes will also be saved collectively on exit\n[INFO ] Start of pass: io.shiftleft.semanticcpg.Overlays$$anon$1\n[INFO ] Pass io.shiftleft.semanticcpg.Overlays$$anon$1 completed in 1 ms (76% on mutations). 1 + 0 changes committed from 1 parts.\n[dump_candidates] calls=12 call_cands=7 param_cands=19 assign_cands=1 -> /tmp/scanops_repo_java-smoke-candidates/out.json\n[INFO ] writing to storage at `/tmp/workspace/candgen/cpg.bin.tmp`\n[INFO ] closed graph at /tmp/workspace/candgen/cpg.bin.tmp\nclosing/saving project `candgen`\n"
+  },
+  "taint": {
+    "mode": "taint",
+    "n_files": 5,
+    "data": {
+      "arm": "S2C",
+      "n_rules": 2,
+      "n_source_rules": 1,
+      "n_prop_rules": 0,
+      "n_sanitizer_patterns": 1,
+      "n_call_sources": 2,
+      "n_param_sources": 2,
+      "n_java_state_sources": 2,
+      "src_mode": "java",
+      "n_fieldaccess_sources": 0,
+      "parsed": [
+        "<empty>",
+        "demo/App.java",
+        "demo/Input.java",
+        "demo/Library.java",
+        "demo/Safe.java",
+        "demo/Stateful.java"
+      ],
+      "seen": [
+        "<empty>",
+        "<unknown>",
+        "demo/App.java",
+        "demo/Input.java",
+        "demo/Library.java",
+        "demo/Safe.java",
+        "demo/Stateful.java"
+      ],
+      "rule_errors": [],
+      "findings": [
+        {
+          "file": "demo/Library.java",
+          "category": "cmdi",
+          "cwe": "CWE-78",
+          "source": "String command",
+          "sink": "Runtime.getRuntime().exec(command)",
+          "line": 4,
+          "source_file": "demo/Library.java",
+          "source_line": 4,
+          "source_kind": "public_parameter",
+          "rule_pattern": "^exec$",
+          "rule_field": "name",
+          "sanitized": false,
+          "sanitizer_hits": [],
+          "path": [
+            {
+              "file": "demo/Library.java",
+              "line": 4,
+              "code": "String command",
+              "role": "source"
+            },
+            {
+              "file": "demo/Library.java",
+              "line": 4,
+              "code": "command",
+              "role": "sink"
+            }
+          ]
+        },
+        {
+          "file": "demo/Safe.java",
+          "category": "xss",
+          "cwe": "CWE-79",
+          "source": "getParameter(\"q\")",
+          "sink": "getWriter().println(escaped)",
+          "line": 9,
+          "source_file": "demo/Safe.java",
+          "source_line": 7,
+          "source_kind": "explicit_source_api",
+          "rule_pattern": "^println$",
+          "rule_field": "name",
+          "sanitized": true,
+          "sanitizer_hits": [
+            {
+              "line": 8,
+              "code": "String escaped = HtmlUtils.htmlEscape(value)",
+              "role": "intermediate",
+              "pattern": "HtmlUtils\\.htmlEscape\\s*\\("
+            },
+            {
+              "line": 8,
+              "code": "String escaped = HtmlUtils.htmlEscape(value)",
+              "role": "intermediate",
+              "pattern": "HtmlUtils\\.htmlEscape\\s*\\("
+            },
+            {
+              "line": 8,
+              "code": "String escaped = HtmlUtils.htmlEscape(value)",
+              "role": "intermediate",
+              "pattern": "HtmlUtils\\.htmlEscape\\s*\\("
+            }
+          ],
+          "path": [
+            {
+              "file": "demo/Safe.java",
+              "line": 7,
+              "code": "getParameter(\"q\")",
+              "role": "source"
+            },
+            {
+              "file": "demo/Safe.java",
+              "line": 7,
+              "code": "value",
+              "role": "intermediate"
+            },
+            {
+              "file": "demo/Safe.java",
+              "line": 8,
+              "code": "value",
+              "role": "intermediate"
+            },
+            {
+              "file": "demo/Safe.java",
+              "line": 8,
+              "code": "htmlEscape(value)",
+              "role": "intermediate"
+            },
+            {
+              "file": "demo/Safe.java",
+              "line": 8,
+              "code": "escaped",
+              "role": "intermediate"
+            },
+            {
+              "file": "demo/Safe.java",
+              "line": 9,
+              "code": "escaped",
+              "role": "sink"
+            }
+          ]
+        },
+        {
+          "file": "demo/Stateful.java",
+          "category": "cmdi",
+          "cwe": "CWE-78",
+          "source": "this.command",
+          "sink": "Runtime.getRuntime().exec(this.command)",
+          "line": 6,
+          "source_file": "demo/Stateful.java",
+          "source_line": 6,
+          "source_kind": "instance_state",
+          "rule_pattern": "^exec$",
+          "rule_field": "name",
+          "sanitized": false,
+          "sanitizer_hits": [],
+          "path": [
+            {
+              "file": "demo/Stateful.java",
+              "line": 6,
+              "code": "this.command",
+              "role": "source"
+            }
+          ]
+        },
+        {
+          "file": "demo/App.java",
+          "category": "xss",
+          "cwe": "CWE-79",
+          "source": "getParameter(\"q\")",
+          "sink": "getWriter().println(value)",
+          "line": 7,
+          "source_file": "demo/Input.java",
+          "source_line": 3,
+          "source_kind": "explicit_source_api",
+          "rule_pattern": "^println$",
+          "rule_field": "name",
+          "sanitized": false,
+          "sanitizer_hits": [],
+          "path": [
+            {
+              "file": "demo/Input.java",
+              "line": 3,
+              "code": "getParameter(\"q\")",
+              "role": "source"
+            },
+            {
+              "file": "demo/Input.java",
+              "line": 3,
+              "code": "return req.getParameter(\"q\");",
+              "role": "intermediate"
+            },
+            {
+              "file": "demo/Input.java",
+              "line": 3,
+              "code": "RET",
+              "role": "intermediate"
+            },
+            {
+              "file": "demo/App.java",
+              "line": 6,
+              "code": "read(req)",
+              "role": "intermediate"
+            },
+            {
+              "file": "demo/App.java",
+              "line": 6,
+              "code": "value",
+              "role": "intermediate"
+            },
+            {
+              "file": "demo/App.java",
+              "line": 7,
+              "code": "value",
+              "role": "sink"
+            }
+          ]
+        }
+      ]
+    },
+    "elapsed": 20.49,
+    "timed_out": false,
+    "rc": 0,
+    "peak_rss_mb": 27,
+    "stdout_tail": "tmlEscape:<unresolvedSignature>(1): 2\n[INFO ] Calculating reaching definitions for: demo.Stateful.<init>:void(java.lang.String) in demo/Stateful.java\n[INFO ] Calculating reaching definitions for: demo.Safe.doGet:void(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse) in demo/Safe.java\n[INFO ] Calculating reaching definitions for: demo.App.<init>:void() in demo/App.java\n[INFO ] Number of definitions for demo.Stateful.<init>:void(java.lang.String): 5\n[INFO ] Number of definitions for <operator>.fieldAccess: 2\n[INFO ] Number of definitions for demo.Safe.doGet:void(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse): 18\n[INFO ] Number of definitions for demo.App.<init>:void(): 1\n[INFO ] Calculating reaching definitions for: demo.App.doGet:void(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse) in demo/App.java\n[INFO ] Number of definitions for javax.servlet.http.HttpServletResponse.getWriter:<unresolvedSignature>(0): 1\n[INFO ] Calculating reaching definitions for: demo.Input.<init>:void() in demo/Input.java\n[INFO ] Number of definitions for demo.App.doGet:void(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse): 13\n[INFO ] Number of definitions for demo.Input.<init>:void(): 1\n[INFO ] Pass io.joern.dataflowengineoss.passes.reachingdef.ReachingDefPass completed in 136 ms (2% on mutations). 205 + 0 changes committed from 18 parts.\n[INFO ] Start of pass: io.shiftleft.semanticcpg.Overlays$$anon$1\n[INFO ] Pass io.shiftleft.semanticcpg.Overlays$$anon$1 completed in 2 ms (67% on mutations). 1 + 0 changes committed from 1 parts.\nThe graph has been modified. You may want to use the `save` command to persist changes to disk.  All changes will also be saved collectively on exit\n[taint_spec arm=S2C] rules=2 src=1 prop=0 findings=4\n[INFO ] writing to storage at `/tmp/workspace/spec/cpg.bin.tmp`\n[INFO ] closed graph at /tmp/workspace/spec/cpg.bin.tmp\nclosing/saving project `spec`\n"
+  }
+}

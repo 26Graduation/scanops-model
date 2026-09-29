@@ -1,0 +1,147 @@
+{
+  "tag": "v1",
+  "WARNING": "예측 대조일 뿐 인과가 아니다. H1·H2 는 배타적이지 않다.",
+  "splits": {
+    "test": {
+      "label": "내부 test (CVEfixes 홀드아웃)",
+      "n_pairs": 472,
+      "rank_acc": 0.9068,
+      "tie_rate": 0.0275,
+      "diff_lines_all": {
+        "n": 472,
+        "mean": 51.0,
+        "median": 26.0
+      },
+      "diff_lines_correct": {
+        "n": 428,
+        "mean": 52.24,
+        "median": 30.0
+      },
+      "diff_lines_wrong": {
+        "n": 44,
+        "mean": 38.89,
+        "median": 9.0
+      },
+      "char_delta_all": {
+        "n": 472,
+        "mean": 1008.89,
+        "median": 404.5
+      },
+      "guard_added_ratio": 0.4767,
+      "rank_acc_when_guard_added": 0.9689,
+      "rank_acc_when_no_guard": 0.8502,
+      "rank_acc_by_diff_bin": {
+        "0-5": {
+          "n": 61,
+          "rank_acc": 0.7869
+        },
+        "6-20": {
+          "n": 134,
+          "rank_acc": 0.8806
+        },
+        "21-60": {
+          "n": 152,
+          "rank_acc": 0.9474
+        },
+        "61-∞": {
+          "n": 125,
+          "rank_acc": 0.944
+        }
+      }
+    },
+    "cleanvul_v2_report": {
+      "label": "CleanVul_v2 report",
+      "n_pairs": 1353,
+      "rank_acc": 0.5558,
+      "tie_rate": 0.1774,
+      "diff_lines_all": {
+        "n": 1353,
+        "mean": 9.09,
+        "median": 4
+      },
+      "diff_lines_correct": {
+        "n": 752,
+        "mean": 10.17,
+        "median": 5.0
+      },
+      "diff_lines_wrong": {
+        "n": 601,
+        "mean": 7.73,
+        "median": 4
+      },
+      "char_delta_all": {
+        "n": 1353,
+        "mean": 192.59,
+        "median": 76
+      },
+      "guard_added_ratio": 0.1441,
+      "rank_acc_when_guard_added": 0.7128,
+      "rank_acc_when_no_guard": 0.5294,
+      "rank_acc_by_diff_bin": {
+        "0-5": {
+          "n": 798,
+          "rank_acc": 0.5138
+        },
+        "6-20": {
+          "n": 432,
+          "rank_acc": 0.6088
+        },
+        "21-60": {
+          "n": 106,
+          "rank_acc": 0.6226
+        },
+        "61-∞": {
+          "n": 17,
+          "rank_acc": 0.7647
+        }
+      }
+    },
+    "primevul_report": {
+      "label": "PrimeVul report",
+      "n_pairs": 144,
+      "rank_acc": 0.4931,
+      "tie_rate": 0.3056,
+      "diff_lines_all": {
+        "n": 144,
+        "mean": 9.06,
+        "median": 4.0
+      },
+      "diff_lines_correct": {
+        "n": 71,
+        "mean": 10.97,
+        "median": 6
+      },
+      "diff_lines_wrong": {
+        "n": 73,
+        "mean": 7.19,
+        "median": 3
+      },
+      "char_delta_all": {
+        "n": 144,
+        "mean": 106.92,
+        "median": 36.5
+      },
+      "guard_added_ratio": 0.0833,
+      "rank_acc_when_guard_added": 0.4167,
+      "rank_acc_when_no_guard": 0.5,
+      "rank_acc_by_diff_bin": {
+        "0-5": {
+          "n": 86,
+          "rank_acc": 0.3953
+        },
+        "6-20": {
+          "n": 43,
+          "rank_acc": 0.6744
+        },
+        "21-60": {
+          "n": 14,
+          "rank_acc": 0.5
+        },
+        "61-∞": {
+          "n": 1,
+          "rank_acc": 1.0
+        }
+      }
+    }
+  }
+}

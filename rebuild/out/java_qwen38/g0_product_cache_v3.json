@@ -1,0 +1,31 @@
+{
+  "JAVASRC:call:getParameter": {
+    "_first_seen_repo": "g0-product-smoke",
+    "_reviewed_by_human": false,
+    "applies_to": [],
+    "confidence": "high",
+    "match": "full",
+    "pattern": "^javax\\.servlet\\.http\\.HttpServletRequest\\.getParameter.*",
+    "propagation": [],
+    "role": "source",
+    "why": "HTTP request parameter is attacker-controlled input."
+  },
+  "JAVASRC:call:htmlEscape": {
+    "_first_seen_repo": "g0-product-smoke",
+    "_reviewed_by_human": false,
+    "applies_to": [
+      "xss"
+    ],
+    "confidence": "high",
+    "match": "full",
+    "pattern": "^org\\.springframework\\.web\\.util\\.HtmlUtils\\.htmlEscape.*",
+    "propagation": [
+      {
+        "from": 1,
+        "to": "return"
+      }
+    ],
+    "role": "sanitizer",
+    "why": "HTML escapes string, neutralising XSS."
+  }
+}

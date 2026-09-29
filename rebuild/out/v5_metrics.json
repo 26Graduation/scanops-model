@@ -1,0 +1,114 @@
+{
+  "spec": "rebuild/V5_TRAIN_RUN_SPEC.md §5·§10, D-28",
+  "tag": "v5",
+  "pair_cb": {
+    "v5|P2": {
+      "acc_cb": 0.525,
+      "acc_X": 0.365,
+      "acc_Y": 0.685,
+      "pos_gap": 0.32,
+      "tie": 0.24,
+      "n": 200
+    },
+    "v5|P0": {
+      "acc_cb": 0.355,
+      "pos_gap": null,
+      "tie": 0.435,
+      "n": 200
+    },
+    "v3s42@750|P2": {
+      "acc_cb": 0.58,
+      "acc_X": 0.655,
+      "acc_Y": 0.505,
+      "pos_gap": 0.15,
+      "tie": 0.26,
+      "n": 200
+    },
+    "v3s42@750|P0": {
+      "acc_cb": 0.34,
+      "pos_gap": null,
+      "tie": 0.52,
+      "n": 200
+    },
+    "v1|P2": {
+      "acc_cb": 0.605,
+      "acc_X": 0.56,
+      "acc_Y": 0.65,
+      "pos_gap": 0.09,
+      "tie": 0.155,
+      "n": 200
+    },
+    "v1|P0": {
+      "acc_cb": 0.46,
+      "pos_gap": null,
+      "tie": 0.33,
+      "n": 200
+    }
+  },
+  "contrasts": {
+    "형식 학습 기여": {
+      "a": "v5+P2",
+      "b": "v3s42@750+P2",
+      "n": 200,
+      "delta": -0.055,
+      "ci95": [
+        -0.115,
+        0.005
+      ],
+      "ci_lower_gt_0": false
+    },
+    "형식 전체 효과": {
+      "a": "v5+P2",
+      "b": "v3s42@750+P0",
+      "n": 200,
+      "delta": 0.185,
+      "ci95": [
+        0.1125,
+        0.26
+      ],
+      "ci_lower_gt_0": true
+    },
+    "형식 전이": {
+      "a": "v5+P0",
+      "b": "v3s42@750+P0",
+      "n": 200,
+      "delta": 0.015,
+      "ci95": [
+        -0.065,
+        0.095
+      ],
+      "ci_lower_gt_0": false
+    },
+    "제품 관점(v1 대비)": {
+      "a": "v5+P2",
+      "b": "v1+P2",
+      "n": 200,
+      "delta": -0.08,
+      "ci95": [
+        -0.145,
+        -0.015
+      ],
+      "ci_lower_gt_0": false
+    }
+  },
+  "bench_auc": {
+    "test": 0.8134,
+    "cleanvul_v2_report": 0.6011,
+    "cleanvul_v2_tune": 0.6063,
+    "primevul_report": 0.5543,
+    "cvefixes157": 0.7649,
+    "cybernative154": 0.8633
+  },
+  "fpr_safe": {
+    "v5": 0.865,
+    "v1": 0.065,
+    "v3s42@750": 0.5675
+  },
+  "adopt_conditions": {
+    "rank_cb>=0.60": false,
+    "pos_gap<=0.20": false,
+    "학습기여 CI하한>0": false,
+    "FPR-safe<=v1+0.05": false
+  },
+  "verdict": "NO-ADOPT"
+}

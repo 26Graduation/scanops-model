@@ -1,0 +1,102 @@
+{
+  "sim_threshold": 0.95,
+  "benches": {
+    "내부test": {
+      "split": "test",
+      "n_pairs_total": 472,
+      "n_pairs_sim95": 11,
+      "rank_acc": 0.8182,
+      "tie_rate": 0.0909,
+      "by_lang": {
+        "PHP": 4,
+        "JS/TS": 2,
+        "C/C++": 5
+      },
+      "changed_lines_median": 2,
+      "n_changed_lines_zero": 0,
+      "zero_change_case_ids": [],
+      "n_tie": 1
+    },
+    "CleanVul": {
+      "split": "cleanvul_v2_report",
+      "n_pairs_total": 1353,
+      "n_pairs_sim95": 564,
+      "rank_acc": 0.4823,
+      "tie_rate": 0.2837,
+      "by_lang": {
+        "C/C++": 202,
+        "Java": 180,
+        "JS/TS": 52,
+        "Python": 130
+      },
+      "changed_lines_median": 3,
+      "n_changed_lines_zero": 0,
+      "zero_change_case_ids": [],
+      "n_tie": 160
+    },
+    "PrimeVul": {
+      "split": "primevul_report",
+      "n_pairs_total": 144,
+      "n_pairs_sim95": 98,
+      "rank_acc": 0.4082,
+      "tie_rate": 0.3878,
+      "by_lang": {
+        "C/C++": 98
+      },
+      "changed_lines_median": 3,
+      "n_changed_lines_zero": 0,
+      "zero_change_case_ids": [],
+      "n_tie": 38
+    }
+  },
+  "train": {
+    "n_items": 13406,
+    "n_1to1_pairs": 5533,
+    "sim_median": 0.7125,
+    "dist": {
+      "0.00-0.30": 1230,
+      "0.30-0.60": 1115,
+      "0.60-0.85": 1060,
+      "0.85-0.95": 778,
+      "0.95-1.01": 1350
+    }
+  },
+  "leakage": {
+    "내부test": {
+      "n_eval": 1197,
+      "n_near_dup_ge_0.95": 0,
+      "ratio": 0.0,
+      "difflib_calls": 1208,
+      "examples": []
+    },
+    "CleanVul": {
+      "n_eval": 2706,
+      "n_near_dup_ge_0.95": 0,
+      "ratio": 0.0,
+      "difflib_calls": 11589,
+      "examples": []
+    },
+    "PrimeVul": {
+      "n_eval": 288,
+      "n_near_dup_ge_0.95": 3,
+      "ratio": 0.0104,
+      "difflib_calls": 2607,
+      "examples": [
+        {
+          "eval_meta": "pv_9302e863aa8b_202677",
+          "sim": 0.9586
+        },
+        {
+          "eval_meta": "pv_c111ed9b0355_206815",
+          "sim": 0.9592
+        },
+        {
+          "eval_meta": "pv_c111ed9b0355_206815",
+          "sim": 0.9555
+        }
+      ]
+    }
+  },
+  "total_sim95_pairs": 673,
+  "leakage_method_limits": "줄 3-shingle 역색인으로 후보를 좁힌 뒤 상위 20개만 difflib 로 확인했다. shingle 을 하나도 공유하지 않는 근사 중복과, 후보 21위 이하의 중복은 놓친다. 따라서 이 수치는 **하한**이다."
+}

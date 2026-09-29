@@ -1,0 +1,33 @@
+{
+  "repo": "juice-shop",
+  "n_files": 257,
+  "total_chars": 722786,
+  "total_lines": 20421,
+  "files_over_12000c": 4,
+  "total_chunks": 263,
+  "truth_total": 44,
+  "truth_in_scope": 33,
+  "truth_out_of_scope": 11,
+  "truth_out_of_scope_files": [
+    "data/static/securityQuestions.yml",
+    "data/static/web3-snippets/ETHWalletBank.sol",
+    "data/static/web3-snippets/HoneyPotNFT.sol",
+    "data/static/web3-snippets/JuiceShopSBT.sol",
+    "infrastructure/docker-compose.yml",
+    "infrastructure/terraform/networking.tf",
+    "terraform/networking.tf"
+  ],
+  "truth_in_scope_cross_file": 16,
+  "truth_files_in_scope": [
+    "frontend/src/app/app.routing.ts",
+    "frontend/src/app/search-result/search-result.component.ts",
+    "lib/insecurity.ts",
+    "models/user.ts",
+    "routes/chat.ts",
+    "routes/login.ts",
+    "routes/search.ts",
+    "routes/updateProductReviews.ts",
+    "server.ts"
+  ],
+  "prompt_sha256_16": "d91fa59450be5f4f"
+}

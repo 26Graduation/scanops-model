@@ -1,0 +1,254 @@
+{
+  "tag": "v1",
+  "train_lang_share": {
+    "C/C++": 0.6715,
+    "Python": 0.0509,
+    "JS/TS": 0.0691,
+    "PHP": 0.1736,
+    "Java": 0.0349
+  },
+  "train_n": 13406,
+  "splits": {
+    "test": {
+      "overall_auc": 0.9052,
+      "by_lang": [
+        {
+          "lang": "PHP",
+          "n": 391,
+          "n_vuln": 178,
+          "auc": 0.9219,
+          "train_share": 0.1736,
+          "small_sample": false
+        },
+        {
+          "lang": "C/C++",
+          "n": 297,
+          "n_vuln": 124,
+          "auc": 0.8474,
+          "train_share": 0.6715,
+          "small_sample": false
+        },
+        {
+          "lang": "Python",
+          "n": 221,
+          "n_vuln": 106,
+          "auc": 0.9322,
+          "train_share": 0.0509,
+          "small_sample": false
+        },
+        {
+          "lang": "JS/TS",
+          "n": 219,
+          "n_vuln": 106,
+          "auc": 0.8852,
+          "train_share": 0.0691,
+          "small_sample": false
+        },
+        {
+          "lang": "Java",
+          "n": 69,
+          "n_vuln": 38,
+          "auc": 0.9686,
+          "train_share": 0.0349,
+          "small_sample": false
+        }
+      ]
+    },
+    "cleanvul_v2_report": {
+      "overall_auc": 0.6165,
+      "by_lang": [
+        {
+          "lang": "Java",
+          "n": 890,
+          "n_vuln": 445,
+          "auc": 0.6859,
+          "train_share": 0.0349,
+          "small_sample": false
+        },
+        {
+          "lang": "C/C++",
+          "n": 828,
+          "n_vuln": 414,
+          "auc": 0.5874,
+          "train_share": 0.6715,
+          "small_sample": false
+        },
+        {
+          "lang": "Python",
+          "n": 576,
+          "n_vuln": 288,
+          "auc": 0.6171,
+          "train_share": 0.0509,
+          "small_sample": false
+        },
+        {
+          "lang": "JS/TS",
+          "n": 412,
+          "n_vuln": 206,
+          "auc": 0.5363,
+          "train_share": 0.0691,
+          "small_sample": false
+        }
+      ]
+    },
+    "primevul_report": {
+      "overall_auc": 0.5618,
+      "by_lang": [
+        {
+          "lang": "C/C++",
+          "n": 288,
+          "n_vuln": 144,
+          "auc": 0.5618,
+          "train_share": 0.6715,
+          "small_sample": false
+        }
+      ]
+    },
+    "cvefixes157": {
+      "overall_auc": 0.8732,
+      "by_lang": [
+        {
+          "lang": "Node.js / Express",
+          "n": 16,
+          "n_vuln": 8,
+          "auc": 0.7656,
+          "train_share": null,
+          "small_sample": true
+        },
+        {
+          "lang": "Go",
+          "n": 16,
+          "n_vuln": 8,
+          "auc": 0.8359,
+          "train_share": null,
+          "small_sample": true
+        },
+        {
+          "lang": "Java",
+          "n": 16,
+          "n_vuln": 8,
+          "auc": 0.9688,
+          "train_share": 0.0349,
+          "small_sample": true
+        },
+        {
+          "lang": "C++",
+          "n": 16,
+          "n_vuln": 8,
+          "auc": 0.9219,
+          "train_share": null,
+          "small_sample": true
+        },
+        {
+          "lang": "Python",
+          "n": 16,
+          "n_vuln": 8,
+          "auc": 1.0,
+          "train_share": 0.0509,
+          "small_sample": true
+        },
+        {
+          "lang": "PHP",
+          "n": 16,
+          "n_vuln": 8,
+          "auc": 0.8516,
+          "train_share": 0.1736,
+          "small_sample": true
+        },
+        {
+          "lang": "Ruby",
+          "n": 16,
+          "n_vuln": 8,
+          "auc": 0.8906,
+          "train_share": null,
+          "small_sample": true
+        },
+        {
+          "lang": "C",
+          "n": 16,
+          "n_vuln": 8,
+          "auc": 0.6406,
+          "train_share": null,
+          "small_sample": true
+        },
+        {
+          "lang": "TypeScript",
+          "n": 16,
+          "n_vuln": 8,
+          "auc": 0.7656,
+          "train_share": null,
+          "small_sample": true
+        },
+        {
+          "lang": "C#",
+          "n": 13,
+          "n_vuln": 8,
+          "auc": 0.975,
+          "train_share": null,
+          "small_sample": true
+        }
+      ]
+    },
+    "cybernative154": {
+      "overall_auc": 0.9126,
+      "by_lang": [
+        {
+          "lang": "Ruby",
+          "n": 22,
+          "n_vuln": 11,
+          "auc": 0.9752,
+          "train_share": null,
+          "small_sample": true
+        },
+        {
+          "lang": "PHP",
+          "n": 22,
+          "n_vuln": 11,
+          "auc": 0.9669,
+          "train_share": 0.1736,
+          "small_sample": true
+        },
+        {
+          "lang": "C#",
+          "n": 22,
+          "n_vuln": 11,
+          "auc": 0.8347,
+          "train_share": null,
+          "small_sample": true
+        },
+        {
+          "lang": "Node.js / Express",
+          "n": 22,
+          "n_vuln": 11,
+          "auc": 0.9669,
+          "train_share": null,
+          "small_sample": true
+        },
+        {
+          "lang": "Java",
+          "n": 22,
+          "n_vuln": 11,
+          "auc": 0.9752,
+          "train_share": 0.0349,
+          "small_sample": true
+        },
+        {
+          "lang": "Go",
+          "n": 22,
+          "n_vuln": 11,
+          "auc": 0.6901,
+          "train_share": null,
+          "small_sample": true
+        },
+        {
+          "lang": "Python",
+          "n": 22,
+          "n_vuln": 11,
+          "auc": 0.9545,
+          "train_share": 0.0509,
+          "small_sample": true
+        }
+      ]
+    }
+  }
+}

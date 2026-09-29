@@ -1,0 +1,169 @@
+{
+  "seed": 42,
+  "loader_stats": {
+    "pv_keep_pairs": 2159,
+    "pv_drop_length": 369,
+    "pv_drop_leak": 1243,
+    "pv_drop_structure": 17,
+    "pv_drop_dup": 1,
+    "cv_drop_dup_or_leak": 127,
+    "cv_drop_length": 65,
+    "cv_drop_language": 50,
+    "cv_capped_out": 4023
+  },
+  "splits": {
+    "train_v3": {
+      "n": 13406,
+      "label": {
+        "vuln": 6075,
+        "safe": 7331,
+        "vuln_frac": 0.4532,
+        "safe_frac": 0.5468
+      },
+      "language": {
+        "C/C++": 9002,
+        "Python": 682,
+        "JS/TS": 927,
+        "PHP": 2327,
+        "Java": 468
+      },
+      "source": {
+        "cvefixes": 9191,
+        "primevul": 4162,
+        "cleanvul": 53
+      },
+      "source_x_label_x_language": {
+        "cvefixes": {
+          "vuln": {
+            "C/C++": 1990,
+            "Python": 299,
+            "JS/TS": 424,
+            "PHP": 1058,
+            "Java": 223
+          },
+          "safe": {
+            "C/C++": 2821,
+            "Python": 372,
+            "PHP": 1269,
+            "JS/TS": 495,
+            "Java": 240
+          }
+        },
+        "primevul": {
+          "vuln": {
+            "C/C++": 2081
+          },
+          "safe": {
+            "C/C++": 2081
+          }
+        },
+        "cleanvul": {
+          "safe": {
+            "C/C++": 29,
+            "JS/TS": 8,
+            "Python": 11,
+            "Java": 5
+          }
+        }
+      }
+    },
+    "val_v3": {
+      "n": 1489,
+      "label": {
+        "vuln": 628,
+        "safe": 861,
+        "vuln_frac": 0.4218,
+        "safe_frac": 0.5782
+      },
+      "language": {
+        "PHP": 450,
+        "C/C++": 412,
+        "Python": 267,
+        "JS/TS": 268,
+        "Java": 92
+      },
+      "source": {
+        "cvefixes": 1213,
+        "cleanvul": 120,
+        "primevul": 156
+      },
+      "source_x_label_x_language": {
+        "cvefixes": {
+          "vuln": {
+            "PHP": 206,
+            "JS/TS": 114,
+            "Python": 113,
+            "Java": 41,
+            "C/C++": 76
+          },
+          "safe": {
+            "PHP": 244,
+            "C/C++": 108,
+            "JS/TS": 134,
+            "Java": 38,
+            "Python": 139
+          }
+        },
+        "cleanvul": {
+          "safe": {
+            "Python": 15,
+            "C/C++": 72,
+            "Java": 13,
+            "JS/TS": 20
+          }
+        },
+        "primevul": {
+          "safe": {
+            "C/C++": 78
+          },
+          "vuln": {
+            "C/C++": 78
+          }
+        }
+      }
+    }
+  },
+  "reference_internal_test": {
+    "n": 1197,
+    "label": {
+      "vuln": 552,
+      "safe": 645,
+      "vuln_frac": 0.4612,
+      "safe_frac": 0.5388
+    },
+    "language": {
+      "C/C++": 297,
+      "JS/TS": 219,
+      "Java": 69,
+      "PHP": 391,
+      "Python": 221
+    },
+    "source": {
+      "cvefixes": 1197
+    },
+    "source_x_label_x_language": {
+      "cvefixes": {
+        "vuln": {
+          "C/C++": 124,
+          "JS/TS": 106,
+          "Java": 38,
+          "PHP": 178,
+          "Python": 106
+        },
+        "safe": {
+          "C/C++": 173,
+          "JS/TS": 113,
+          "Java": 31,
+          "PHP": 213,
+          "Python": 115
+        }
+      }
+    }
+  },
+  "gate": {
+    "val_safe_frac": 0.5782,
+    "val_vuln_frac": 0.4218,
+    "passed": true,
+    "rule": "val safe<=0.60 and vuln>=0.35"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "spent_usd": 1.507,
+  "items": [
+    {
+      "label": "pilot_20case_sync",
+      "usd": 0.2362,
+      "at": "2026-08-17 20:43:59 KST",
+      "note": "Phase B 케이스당 비용 추산(비배치, 정가)",
+      "n": 20
+    },
+    {
+      "label": "repo_bench_juice-shop_c1_parity",
+      "usd": 1.2708,
+      "at": "2026-08-17 20:43:59 KST",
+      "batch_id": "msgbatch_01WjbdPqESekiiUgveBHMqct",
+      "n": 263
+    }
+  ]
+}

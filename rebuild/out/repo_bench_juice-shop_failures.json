@@ -1,0 +1,107 @@
+{
+  "repo": "juice-shop",
+  "n_scored": 33,
+  "n_missed_total": 0,
+  "n_missed_cross_file": 0,
+  "cause_counts": {},
+  "cause_counts_cross_file": {},
+  "missed": [],
+  "n_s2_fp_files": 133,
+  "s2_fp_top10": [
+    {
+      "file": "frontend/src/app/chatbot/chat-welcome-screen/chat-welcome-screen.component.ts",
+      "sources": [
+        "LLM:CWE-79",
+        "multi_graph:CWE-330 Insecure Randomness",
+        "joern:ssrf"
+      ],
+      "n_sources": 3,
+      "llm_raw": "<think>\n\n</think>\n\nVULNERABILITY: CWE-79 (Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting'))\nSEVERITY: MEDIUM\nCVSS: 6.1\nREASON: The product does not neutralize or incorrectly neutralizes user-controllable input before it is placed in output that is used as a web pa"
+    },
+    {
+      "file": "lib/utils.ts",
+      "sources": [
+        "LLM:CWE-918",
+        "multi_graph:CWE-328 Weak Hash",
+        "joern:hash,pathtraver,ssrf"
+      ],
+      "n_sources": 3,
+      "llm_raw": "<think>\n\n</think>\n\nVULNERABILITY: CWE-918 (Server-Side Request Forgery (SSRF))\nSEVERITY: MEDIUM\nCVSS: 5.3\nREASON: The web server receives a URL or similar request from an upstream component and retrieves the contents of this URL, but it does not sufficiently ensure that the request is being sent to "
+    },
+    {
+      "file": "routes/userProfile.ts",
+      "sources": [
+        "LLM:CWE-79",
+        "multi_graph:CWE-94 Code Injection",
+        "joern:xss"
+      ],
+      "n_sources": 3,
+      "llm_raw": "<think>\n\n</think>\n\nVULNERABILITY: CWE-79 (Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting'))\nSEVERITY: MEDIUM\nCVSS: 6.1\nREASON: The product does not neutralize or incorrectly neutralizes user-controllable input before it is placed in output that is used as a web pa"
+    },
+    {
+      "file": "routes/verify.ts",
+      "sources": [
+        "LLM:CWE-79",
+        "multi_graph:CWE-328 Weak Hash",
+        "joern:ssrf,xss"
+      ],
+      "n_sources": 3,
+      "llm_raw": "<think>\n\n</think>\n\nVULNERABILITY: CWE-79 (Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting'))\nSEVERITY: MEDIUM\nCVSS: 6.1\nREASON: The product does not neutralize or incorrectly neutralizes user-controllable input before it is placed in output that is used as a web pa"
+    },
+    {
+      "file": "frontend/src/app/Services/address.service.ts",
+      "sources": [
+        "LLM:CWE-79",
+        "joern:ssrf"
+      ],
+      "n_sources": 2,
+      "llm_raw": "<think>\n\n</think>\n\nVULNERABILITY: CWE-79 (Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting'))\nSEVERITY: MEDIUM\nCVSS: 6.1\nREASON: The manipulation leads to cross site scripting."
+    },
+    {
+      "file": "frontend/src/app/Services/challenge.service.ts",
+      "sources": [
+        "LLM:CWE-79",
+        "joern:ssrf"
+      ],
+      "n_sources": 2,
+      "llm_raw": "<think>\n\n</think>\n\nVULNERABILITY: CWE-79 (Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting'))\nSEVERITY: MEDIUM\nCVSS: 6.1\nREASON: The product does not neutralize or incorrectly neutralizes user-controllable input before it is placed in output that is used as a web pa"
+    },
+    {
+      "file": "frontend/src/app/Services/code-fixes.service.ts",
+      "sources": [
+        "LLM:CWE-79",
+        "joern:ssrf"
+      ],
+      "n_sources": 2,
+      "llm_raw": "<think>\n\n</think>\n\nVULNERABILITY: CWE-79 (Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting'))\nSEVERITY: MEDIUM\nCVSS: 6.1\nREASON: The manipulation leads to cross site scripting."
+    },
+    {
+      "file": "frontend/src/app/Services/code-snippet.service.ts",
+      "sources": [
+        "LLM:CWE-79",
+        "joern:ssrf"
+      ],
+      "n_sources": 2,
+      "llm_raw": "<think>\n\n</think>\n\nVULNERABILITY: CWE-79 (Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting'))\nSEVERITY: MEDIUM\nCVSS: 6.1\nREASON: The product does not neutralize or incorrectly neutralizes user-controllable input before it is placed in output that is used as a web pa"
+    },
+    {
+      "file": "frontend/src/app/Services/complaint.service.ts",
+      "sources": [
+        "LLM:CWE-79",
+        "joern:ssrf"
+      ],
+      "n_sources": 2,
+      "llm_raw": "<think>\n\n</think>\n\nVULNERABILITY: CWE-79 (Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting'))\nSEVERITY: MEDIUM\nCVSS: 6.1\nREASON: The product does not neutralize or incorrectly neutralizes user-controllable input before it is placed in output that is used as a web pa"
+    },
+    {
+      "file": "frontend/src/app/Services/conversation-storage.service.ts",
+      "sources": [
+        "LLM:CWE-79",
+        "multi_graph:CWE-330 Insecure Randomness"
+      ],
+      "n_sources": 2,
+      "llm_raw": "<think>\n\n</think>\n\nVULNERABILITY: CWE-79 (Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting'))\nSEVERITY: MEDIUM\nCVSS: 6.1\nREASON: The manipulation leads to cross site scripting."
+    }
+  ],
+  "note": "원인은 **자동 판별 가능한 것만** 라벨을 붙였다. '미분류'는 추측으로 채우지 않은 것이다. 오탐 상위 10건은 정답표 밖 파일이지만, 정답표가 라인 마커 있는 챌린지만 담으므로 **실제 취약점일 수 있다**(§PRECISION_CAVEAT)."
+}

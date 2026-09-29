@@ -1,0 +1,35 @@
+source	-	-	full	.*javax\.servlet\.http\.HttpServletRequest\.getParameter.*
+source	-	-	full	.*javax\.servlet\.http\.HttpServletRequest\.getParameterValues.*
+source	-	-	full	.*javax\.servlet\.http\.HttpServletRequest\.getParameterMap.*
+source	-	-	full	.*javax\.servlet\.http\.HttpServletRequest\.getHeader.*
+source	-	-	full	.*javax\.servlet\.http\.HttpServletRequest\.getHeaders.*
+source	-	-	full	.*javax\.servlet\.http\.HttpServletRequest\.getCookies.*
+source	-	-	full	.*javax\.servlet\.http\.HttpServletRequest\.getQueryString.*
+source	-	-	full	.*javax\.servlet\.http\.HttpServletRequest\.getInputStream.*
+source	-	-	full	.*com\.oreilly\.servlet\.MultipartRequest\.getParameter.*
+source	-	-	full	.*(Exception|Throwable)\.getMessage.*
+sink	xss	CWE-79	code	(?s).*getWriter\(\)\.print(ln)?\(.*
+sink	pathtraver	CWE-22	full	.*\bjava\.io\.File\.<init>.*
+sink	pathtraver	CWE-22	full	.*\bFile(InputStream|Reader|Writer)\.<init>.*
+sink	pathtraver	CWE-22	full	.*\b(java\.lang\.)?(ClassLoader|Class)\.getResource(AsStream)?.*
+sink	cmdi	CWE-78	full	.*\bProcessBuilder\.<init>.*
+sink	cmdi	CWE-78	full	.*\bRuntime\.exec.*
+sink	codei	CWE-94	full	.*\bConstraintValidatorContext\.buildConstraintViolationWithTemplate.*
+sink	sqli	CWE-89	name	^(execute|executeQuery|executeUpdate|executeBatch|prepareStatement)$
+sink	ldapi	CWE-90	full	.*\b(DirContext|InitialDirContext)\.search.*
+sink	httprs	CWE-113	full	.*HttpServletResponse\.(setHeader|addHeader|addCookie).*
+sink	reflection	CWE-470	full	.*\bClass\.forName.*
+sink	redirect	CWE-601	full	.*HttpServletResponse\.sendRedirect.*
+sink	xpathi	CWE-643	full	.*\bXPath\.evaluate.*
+sink	configinj	CWE-15	name	^setCatalog$
+sink	proccontrol	CWE-114	exists	^loadLibrary$
+sink	infoexpose	CWE-209	exists	^printStackTrace$
+sink	weakcrypto	CWE-327	arg_literal	^getInstance$	(?i)DES|DESede
+sink	weakcrypto	CWE-328	arg_literal	^getInstance$	(?i)MD5|SHA-?1|MD2
+sink	weakcrypto	CWE-338	exists_full	.*\bjava\.util\.Random\.<init>.*
+sink	weakcrypto	CWE-338	exists	^random$
+sink	proccontrol	CWE-382	exists	^exit$
+sink	obsolete	CWE-477	exists_full	.*\bDataInputStream\.readLine.*
+sink	obsolete	CWE-477	exists_full	.*\bjava\.util\.Date\.parse.*
+sink	obsolete	CWE-477	arg_count	^getBytes$	4
+sink	obsolete	CWE-477	arg_count	^encode$	1

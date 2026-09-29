@@ -1,0 +1,4327 @@
+{
+  "unit": "repository/file/enclosing_method/CWE",
+  "exclude_sanitized": true,
+  "totals": {
+    "cwes": 38,
+    "gt_instances": 10164,
+    "raw_findings": 15780,
+    "finding_instances": 14566,
+    "duplicates_collapsed": 1214,
+    "unmapped_findings": 0,
+    "tp": 9115,
+    "fp": 5451,
+    "fn": 1049,
+    "precision": 0.6257723465604833,
+    "recall": 0.8967926013380558,
+    "f1": 0.737161342498989
+  },
+  "per_cwe": [
+    {
+      "cwe": "CWE-23",
+      "gt_instances": 482,
+      "raw_findings": 1093,
+      "finding_instances": 549,
+      "duplicates_collapsed": 544,
+      "unmapped_findings": 0,
+      "tp": 406,
+      "fp": 143,
+      "fn": 76,
+      "precision": 0.7395264116575592,
+      "recall": 0.8423236514522822,
+      "f1": 0.7875848690591658,
+      "fp_examples": [
+        [
+          "CWE23_Relative_Path_Traversal__Environment_45.java",
+          "goodG2BSink",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__Environment_51b.java",
+          "goodG2BSink",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__Environment_52c.java",
+          "goodG2BSink",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__Environment_53d.java",
+          "goodG2BSink",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__Environment_54e.java",
+          "goodG2BSink",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__Environment_66b.java",
+          "goodG2BSink",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__Environment_67b.java",
+          "goodG2BSink",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__Environment_71b.java",
+          "goodG2BSink",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__Environment_73b.java",
+          "goodG2BSink",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__Environment_74b.java",
+          "goodG2BSink",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__Environment_75b.java",
+          "goodG2BSink",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__Environment_81_goodG2B.java",
+          "action",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__File_45.java",
+          "goodG2BSink",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__File_51b.java",
+          "goodG2BSink",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__File_52c.java",
+          "goodG2BSink",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__File_53d.java",
+          "goodG2BSink",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__File_54e.java",
+          "goodG2BSink",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__File_66b.java",
+          "goodG2BSink",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__File_67b.java",
+          "goodG2BSink",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__File_71b.java",
+          "goodG2BSink",
+          "CWE-23"
+        ]
+      ],
+      "fn_examples": [
+        [
+          "CWE23_Relative_Path_Traversal__Environment_68b.java",
+          "badSink",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__File_21.java",
+          "bad_source",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__File_22b.java",
+          "badSource",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__File_41.java",
+          "bad",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__File_42.java",
+          "badSource",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__File_45.java",
+          "bad",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__File_51a.java",
+          "bad",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__File_52a.java",
+          "bad",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__File_53a.java",
+          "bad",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__File_54a.java",
+          "bad",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__File_61b.java",
+          "badSource",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__File_66a.java",
+          "bad",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__File_67a.java",
+          "bad",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__File_68a.java",
+          "bad",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__File_68b.java",
+          "badSink",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__File_71a.java",
+          "bad",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__File_72a.java",
+          "bad",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__File_73a.java",
+          "bad",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__File_74a.java",
+          "bad",
+          "CWE-23"
+        ],
+        [
+          "CWE23_Relative_Path_Traversal__File_75a.java",
+          "bad",
+          "CWE-23"
+        ]
+      ],
+      "parse_warning_count": 202
+    },
+    {
+      "cwe": "CWE-36",
+      "gt_instances": 482,
+      "raw_findings": 1095,
+      "finding_instances": 551,
+      "duplicates_collapsed": 544,
+      "unmapped_findings": 0,
+      "tp": 408,
+      "fp": 143,
+      "fn": 74,
+      "precision": 0.7404718693284936,
+      "recall": 0.8464730290456431,
+      "f1": 0.7899322362052275,
+      "fp_examples": [
+        [
+          "CWE36_Absolute_Path_Traversal__Environment_45.java",
+          "goodG2BSink",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__Environment_51b.java",
+          "goodG2BSink",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__Environment_52c.java",
+          "goodG2BSink",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__Environment_53d.java",
+          "goodG2BSink",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__Environment_54e.java",
+          "goodG2BSink",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__Environment_66b.java",
+          "goodG2BSink",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__Environment_67b.java",
+          "goodG2BSink",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__Environment_71b.java",
+          "goodG2BSink",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__Environment_73b.java",
+          "goodG2BSink",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__Environment_74b.java",
+          "goodG2BSink",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__Environment_75b.java",
+          "goodG2BSink",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__Environment_81_goodG2B.java",
+          "action",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__File_45.java",
+          "goodG2BSink",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__File_51b.java",
+          "goodG2BSink",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__File_52c.java",
+          "goodG2BSink",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__File_53d.java",
+          "goodG2BSink",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__File_54e.java",
+          "goodG2BSink",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__File_66b.java",
+          "goodG2BSink",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__File_67b.java",
+          "goodG2BSink",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__File_71b.java",
+          "goodG2BSink",
+          "CWE-36"
+        ]
+      ],
+      "fn_examples": [
+        [
+          "CWE36_Absolute_Path_Traversal__Environment_68b.java",
+          "badSink",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__File_21.java",
+          "bad_source",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__File_22b.java",
+          "badSource",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__File_41.java",
+          "bad",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__File_42.java",
+          "badSource",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__File_45.java",
+          "bad",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__File_51a.java",
+          "bad",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__File_52a.java",
+          "bad",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__File_53a.java",
+          "bad",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__File_54a.java",
+          "bad",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__File_61b.java",
+          "badSource",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__File_66a.java",
+          "bad",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__File_67a.java",
+          "bad",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__File_68a.java",
+          "bad",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__File_68b.java",
+          "badSink",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__File_71a.java",
+          "bad",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__File_72a.java",
+          "bad",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__File_73a.java",
+          "bad",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__File_74a.java",
+          "bad",
+          "CWE-36"
+        ],
+        [
+          "CWE36_Absolute_Path_Traversal__File_75a.java",
+          "bad",
+          "CWE-36"
+        ]
+      ],
+      "parse_warning_count": 202
+    },
+    {
+      "cwe": "CWE-78",
+      "gt_instances": 444,
+      "raw_findings": 569,
+      "finding_instances": 569,
+      "duplicates_collapsed": 0,
+      "unmapped_findings": 0,
+      "tp": 432,
+      "fp": 137,
+      "fn": 12,
+      "precision": 0.7592267135325131,
+      "recall": 0.972972972972973,
+      "f1": 0.8529121421520236,
+      "fp_examples": [
+        [
+          "CWE78_OS_Command_Injection__Environment_45.java",
+          "goodG2BSink",
+          "CWE-78"
+        ],
+        [
+          "CWE78_OS_Command_Injection__Environment_51b.java",
+          "goodG2BSink",
+          "CWE-78"
+        ],
+        [
+          "CWE78_OS_Command_Injection__Environment_52c.java",
+          "goodG2BSink",
+          "CWE-78"
+        ],
+        [
+          "CWE78_OS_Command_Injection__Environment_53d.java",
+          "goodG2BSink",
+          "CWE-78"
+        ],
+        [
+          "CWE78_OS_Command_Injection__Environment_54e.java",
+          "goodG2BSink",
+          "CWE-78"
+        ],
+        [
+          "CWE78_OS_Command_Injection__Environment_66b.java",
+          "goodG2BSink",
+          "CWE-78"
+        ],
+        [
+          "CWE78_OS_Command_Injection__Environment_71b.java",
+          "goodG2BSink",
+          "CWE-78"
+        ],
+        [
+          "CWE78_OS_Command_Injection__Environment_73b.java",
+          "goodG2BSink",
+          "CWE-78"
+        ],
+        [
+          "CWE78_OS_Command_Injection__Environment_74b.java",
+          "goodG2BSink",
+          "CWE-78"
+        ],
+        [
+          "CWE78_OS_Command_Injection__Environment_75b.java",
+          "goodG2BSink",
+          "CWE-78"
+        ],
+        [
+          "CWE78_OS_Command_Injection__Environment_81_goodG2B.java",
+          "action",
+          "CWE-78"
+        ],
+        [
+          "CWE78_OS_Command_Injection__File_45.java",
+          "goodG2BSink",
+          "CWE-78"
+        ],
+        [
+          "CWE78_OS_Command_Injection__File_51b.java",
+          "goodG2BSink",
+          "CWE-78"
+        ],
+        [
+          "CWE78_OS_Command_Injection__File_52c.java",
+          "goodG2BSink",
+          "CWE-78"
+        ],
+        [
+          "CWE78_OS_Command_Injection__File_53d.java",
+          "goodG2BSink",
+          "CWE-78"
+        ],
+        [
+          "CWE78_OS_Command_Injection__File_54e.java",
+          "goodG2BSink",
+          "CWE-78"
+        ],
+        [
+          "CWE78_OS_Command_Injection__File_66b.java",
+          "goodG2BSink",
+          "CWE-78"
+        ],
+        [
+          "CWE78_OS_Command_Injection__File_67b.java",
+          "goodG2BSink",
+          "CWE-78"
+        ],
+        [
+          "CWE78_OS_Command_Injection__File_71b.java",
+          "goodG2BSink",
+          "CWE-78"
+        ],
+        [
+          "CWE78_OS_Command_Injection__File_73b.java",
+          "goodG2BSink",
+          "CWE-78"
+        ]
+      ],
+      "fn_examples": [
+        [
+          "CWE78_OS_Command_Injection__Environment_68b.java",
+          "badSink",
+          "CWE-78"
+        ],
+        [
+          "CWE78_OS_Command_Injection__File_68b.java",
+          "badSink",
+          "CWE-78"
+        ],
+        [
+          "CWE78_OS_Command_Injection__PropertiesFile_68b.java",
+          "badSink",
+          "CWE-78"
+        ],
+        [
+          "CWE78_OS_Command_Injection__Property_68b.java",
+          "badSink",
+          "CWE-78"
+        ],
+        [
+          "CWE78_OS_Command_Injection__URLConnection_68b.java",
+          "badSink",
+          "CWE-78"
+        ],
+        [
+          "CWE78_OS_Command_Injection__connect_tcp_68b.java",
+          "badSink",
+          "CWE-78"
+        ],
+        [
+          "CWE78_OS_Command_Injection__console_readLine_68b.java",
+          "badSink",
+          "CWE-78"
+        ],
+        [
+          "CWE78_OS_Command_Injection__database_68b.java",
+          "badSink",
+          "CWE-78"
+        ],
+        [
+          "CWE78_OS_Command_Injection__getCookies_Servlet_68b.java",
+          "badSink",
+          "CWE-78"
+        ],
+        [
+          "CWE78_OS_Command_Injection__getParameter_Servlet_68b.java",
+          "badSink",
+          "CWE-78"
+        ],
+        [
+          "CWE78_OS_Command_Injection__getQueryString_Servlet_68b.java",
+          "badSink",
+          "CWE-78"
+        ],
+        [
+          "CWE78_OS_Command_Injection__listen_tcp_68b.java",
+          "badSink",
+          "CWE-78"
+        ]
+      ],
+      "parse_warning_count": 240
+    },
+    {
+      "cwe": "CWE-80",
+      "gt_instances": 666,
+      "raw_findings": 856,
+      "finding_instances": 856,
+      "duplicates_collapsed": 0,
+      "unmapped_findings": 0,
+      "tp": 648,
+      "fp": 208,
+      "fn": 18,
+      "precision": 0.7570093457943925,
+      "recall": 0.972972972972973,
+      "f1": 0.8515111695137977,
+      "fp_examples": [
+        [
+          "s01/CWE80_XSS__CWE182_Servlet_File_45.java",
+          "goodG2BSink",
+          "CWE-80"
+        ],
+        [
+          "s01/CWE80_XSS__CWE182_Servlet_File_51b.java",
+          "goodG2BSink",
+          "CWE-80"
+        ],
+        [
+          "s01/CWE80_XSS__CWE182_Servlet_File_52c.java",
+          "goodG2BSink",
+          "CWE-80"
+        ],
+        [
+          "s01/CWE80_XSS__CWE182_Servlet_File_53d.java",
+          "goodG2BSink",
+          "CWE-80"
+        ],
+        [
+          "s01/CWE80_XSS__CWE182_Servlet_File_54e.java",
+          "goodG2BSink",
+          "CWE-80"
+        ],
+        [
+          "s01/CWE80_XSS__CWE182_Servlet_File_66b.java",
+          "goodG2BSink",
+          "CWE-80"
+        ],
+        [
+          "s01/CWE80_XSS__CWE182_Servlet_File_67b.java",
+          "goodG2BSink",
+          "CWE-80"
+        ],
+        [
+          "s01/CWE80_XSS__CWE182_Servlet_File_71b.java",
+          "goodG2BSink",
+          "CWE-80"
+        ],
+        [
+          "s01/CWE80_XSS__CWE182_Servlet_File_73b.java",
+          "goodG2BSink",
+          "CWE-80"
+        ],
+        [
+          "s01/CWE80_XSS__CWE182_Servlet_File_74b.java",
+          "goodG2BSink",
+          "CWE-80"
+        ],
+        [
+          "s01/CWE80_XSS__CWE182_Servlet_File_75b.java",
+          "goodG2BSink",
+          "CWE-80"
+        ],
+        [
+          "s01/CWE80_XSS__CWE182_Servlet_File_81_goodG2B.java",
+          "action",
+          "CWE-80"
+        ],
+        [
+          "s01/CWE80_XSS__CWE182_Servlet_PropertiesFile_45.java",
+          "goodG2BSink",
+          "CWE-80"
+        ],
+        [
+          "s01/CWE80_XSS__CWE182_Servlet_PropertiesFile_51b.java",
+          "goodG2BSink",
+          "CWE-80"
+        ],
+        [
+          "s01/CWE80_XSS__CWE182_Servlet_PropertiesFile_52c.java",
+          "goodG2BSink",
+          "CWE-80"
+        ],
+        [
+          "s01/CWE80_XSS__CWE182_Servlet_PropertiesFile_53d.java",
+          "goodG2BSink",
+          "CWE-80"
+        ],
+        [
+          "s01/CWE80_XSS__CWE182_Servlet_PropertiesFile_54e.java",
+          "goodG2BSink",
+          "CWE-80"
+        ],
+        [
+          "s01/CWE80_XSS__CWE182_Servlet_PropertiesFile_66b.java",
+          "goodG2BSink",
+          "CWE-80"
+        ],
+        [
+          "s01/CWE80_XSS__CWE182_Servlet_PropertiesFile_67b.java",
+          "goodG2BSink",
+          "CWE-80"
+        ],
+        [
+          "s01/CWE80_XSS__CWE182_Servlet_PropertiesFile_71b.java",
+          "goodG2BSink",
+          "CWE-80"
+        ]
+      ],
+      "fn_examples": [
+        [
+          "s01/CWE80_XSS__CWE182_Servlet_File_68b.java",
+          "badSink",
+          "CWE-80"
+        ],
+        [
+          "s01/CWE80_XSS__CWE182_Servlet_PropertiesFile_68b.java",
+          "badSink",
+          "CWE-80"
+        ],
+        [
+          "s01/CWE80_XSS__CWE182_Servlet_URLConnection_68b.java",
+          "badSink",
+          "CWE-80"
+        ],
+        [
+          "s01/CWE80_XSS__CWE182_Servlet_connect_tcp_68b.java",
+          "badSink",
+          "CWE-80"
+        ],
+        [
+          "s01/CWE80_XSS__CWE182_Servlet_database_68b.java",
+          "badSink",
+          "CWE-80"
+        ],
+        [
+          "s01/CWE80_XSS__CWE182_Servlet_getCookies_Servlet_68b.java",
+          "badSink",
+          "CWE-80"
+        ],
+        [
+          "s01/CWE80_XSS__CWE182_Servlet_getParameter_Servlet_68b.java",
+          "badSink",
+          "CWE-80"
+        ],
+        [
+          "s01/CWE80_XSS__CWE182_Servlet_getQueryString_Servlet_68b.java",
+          "badSink",
+          "CWE-80"
+        ],
+        [
+          "s01/CWE80_XSS__CWE182_Servlet_listen_tcp_68b.java",
+          "badSink",
+          "CWE-80"
+        ],
+        [
+          "s01/CWE80_XSS__Servlet_File_68b.java",
+          "badSink",
+          "CWE-80"
+        ],
+        [
+          "s01/CWE80_XSS__Servlet_connect_tcp_68b.java",
+          "badSink",
+          "CWE-80"
+        ],
+        [
+          "s01/CWE80_XSS__Servlet_database_68b.java",
+          "badSink",
+          "CWE-80"
+        ],
+        [
+          "s01/CWE80_XSS__Servlet_getCookies_Servlet_68b.java",
+          "badSink",
+          "CWE-80"
+        ],
+        [
+          "s01/CWE80_XSS__Servlet_getParameter_Servlet_68b.java",
+          "badSink",
+          "CWE-80"
+        ],
+        [
+          "s01/CWE80_XSS__Servlet_getQueryString_Servlet_68b.java",
+          "badSink",
+          "CWE-80"
+        ],
+        [
+          "s01/CWE80_XSS__Servlet_listen_tcp_68b.java",
+          "badSink",
+          "CWE-80"
+        ],
+        [
+          "s02/CWE80_XSS__Servlet_PropertiesFile_68b.java",
+          "badSink",
+          "CWE-80"
+        ],
+        [
+          "s02/CWE80_XSS__Servlet_URLConnection_68b.java",
+          "badSink",
+          "CWE-80"
+        ]
+      ],
+      "parse_warning_count": 360
+    },
+    {
+      "cwe": "CWE-81",
+      "gt_instances": 333,
+      "raw_findings": 428,
+      "finding_instances": 428,
+      "duplicates_collapsed": 0,
+      "unmapped_findings": 0,
+      "tp": 324,
+      "fp": 104,
+      "fn": 9,
+      "precision": 0.7570093457943925,
+      "recall": 0.972972972972973,
+      "f1": 0.8515111695137977,
+      "fp_examples": [
+        [
+          "CWE81_XSS_Error_Message__Servlet_File_45.java",
+          "goodG2BSink",
+          "CWE-81"
+        ],
+        [
+          "CWE81_XSS_Error_Message__Servlet_File_51b.java",
+          "goodG2BSink",
+          "CWE-81"
+        ],
+        [
+          "CWE81_XSS_Error_Message__Servlet_File_52c.java",
+          "goodG2BSink",
+          "CWE-81"
+        ],
+        [
+          "CWE81_XSS_Error_Message__Servlet_File_53d.java",
+          "goodG2BSink",
+          "CWE-81"
+        ],
+        [
+          "CWE81_XSS_Error_Message__Servlet_File_54e.java",
+          "goodG2BSink",
+          "CWE-81"
+        ],
+        [
+          "CWE81_XSS_Error_Message__Servlet_File_66b.java",
+          "goodG2BSink",
+          "CWE-81"
+        ],
+        [
+          "CWE81_XSS_Error_Message__Servlet_File_67b.java",
+          "goodG2BSink",
+          "CWE-81"
+        ],
+        [
+          "CWE81_XSS_Error_Message__Servlet_File_71b.java",
+          "goodG2BSink",
+          "CWE-81"
+        ],
+        [
+          "CWE81_XSS_Error_Message__Servlet_File_73b.java",
+          "goodG2BSink",
+          "CWE-81"
+        ],
+        [
+          "CWE81_XSS_Error_Message__Servlet_File_74b.java",
+          "goodG2BSink",
+          "CWE-81"
+        ],
+        [
+          "CWE81_XSS_Error_Message__Servlet_File_75b.java",
+          "goodG2BSink",
+          "CWE-81"
+        ],
+        [
+          "CWE81_XSS_Error_Message__Servlet_File_81_goodG2B.java",
+          "action",
+          "CWE-81"
+        ],
+        [
+          "CWE81_XSS_Error_Message__Servlet_PropertiesFile_45.java",
+          "goodG2BSink",
+          "CWE-81"
+        ],
+        [
+          "CWE81_XSS_Error_Message__Servlet_PropertiesFile_51b.java",
+          "goodG2BSink",
+          "CWE-81"
+        ],
+        [
+          "CWE81_XSS_Error_Message__Servlet_PropertiesFile_52c.java",
+          "goodG2BSink",
+          "CWE-81"
+        ],
+        [
+          "CWE81_XSS_Error_Message__Servlet_PropertiesFile_53d.java",
+          "goodG2BSink",
+          "CWE-81"
+        ],
+        [
+          "CWE81_XSS_Error_Message__Servlet_PropertiesFile_54e.java",
+          "goodG2BSink",
+          "CWE-81"
+        ],
+        [
+          "CWE81_XSS_Error_Message__Servlet_PropertiesFile_66b.java",
+          "goodG2BSink",
+          "CWE-81"
+        ],
+        [
+          "CWE81_XSS_Error_Message__Servlet_PropertiesFile_67b.java",
+          "goodG2BSink",
+          "CWE-81"
+        ],
+        [
+          "CWE81_XSS_Error_Message__Servlet_PropertiesFile_71b.java",
+          "goodG2BSink",
+          "CWE-81"
+        ]
+      ],
+      "fn_examples": [
+        [
+          "CWE81_XSS_Error_Message__Servlet_File_68b.java",
+          "badSink",
+          "CWE-81"
+        ],
+        [
+          "CWE81_XSS_Error_Message__Servlet_PropertiesFile_68b.java",
+          "badSink",
+          "CWE-81"
+        ],
+        [
+          "CWE81_XSS_Error_Message__Servlet_URLConnection_68b.java",
+          "badSink",
+          "CWE-81"
+        ],
+        [
+          "CWE81_XSS_Error_Message__Servlet_connect_tcp_68b.java",
+          "badSink",
+          "CWE-81"
+        ],
+        [
+          "CWE81_XSS_Error_Message__Servlet_database_68b.java",
+          "badSink",
+          "CWE-81"
+        ],
+        [
+          "CWE81_XSS_Error_Message__Servlet_getCookies_Servlet_68b.java",
+          "badSink",
+          "CWE-81"
+        ],
+        [
+          "CWE81_XSS_Error_Message__Servlet_getParameter_Servlet_68b.java",
+          "badSink",
+          "CWE-81"
+        ],
+        [
+          "CWE81_XSS_Error_Message__Servlet_getQueryString_Servlet_68b.java",
+          "badSink",
+          "CWE-81"
+        ],
+        [
+          "CWE81_XSS_Error_Message__Servlet_listen_tcp_68b.java",
+          "badSink",
+          "CWE-81"
+        ]
+      ],
+      "parse_warning_count": 180
+    },
+    {
+      "cwe": "CWE-83",
+      "gt_instances": 333,
+      "raw_findings": 428,
+      "finding_instances": 428,
+      "duplicates_collapsed": 0,
+      "unmapped_findings": 0,
+      "tp": 324,
+      "fp": 104,
+      "fn": 9,
+      "precision": 0.7570093457943925,
+      "recall": 0.972972972972973,
+      "f1": 0.8515111695137977,
+      "fp_examples": [
+        [
+          "CWE83_XSS_Attribute__Servlet_File_45.java",
+          "goodG2BSink",
+          "CWE-83"
+        ],
+        [
+          "CWE83_XSS_Attribute__Servlet_File_51b.java",
+          "goodG2BSink",
+          "CWE-83"
+        ],
+        [
+          "CWE83_XSS_Attribute__Servlet_File_52c.java",
+          "goodG2BSink",
+          "CWE-83"
+        ],
+        [
+          "CWE83_XSS_Attribute__Servlet_File_53d.java",
+          "goodG2BSink",
+          "CWE-83"
+        ],
+        [
+          "CWE83_XSS_Attribute__Servlet_File_54e.java",
+          "goodG2BSink",
+          "CWE-83"
+        ],
+        [
+          "CWE83_XSS_Attribute__Servlet_File_66b.java",
+          "goodG2BSink",
+          "CWE-83"
+        ],
+        [
+          "CWE83_XSS_Attribute__Servlet_File_67b.java",
+          "goodG2BSink",
+          "CWE-83"
+        ],
+        [
+          "CWE83_XSS_Attribute__Servlet_File_71b.java",
+          "goodG2BSink",
+          "CWE-83"
+        ],
+        [
+          "CWE83_XSS_Attribute__Servlet_File_73b.java",
+          "goodG2BSink",
+          "CWE-83"
+        ],
+        [
+          "CWE83_XSS_Attribute__Servlet_File_74b.java",
+          "goodG2BSink",
+          "CWE-83"
+        ],
+        [
+          "CWE83_XSS_Attribute__Servlet_File_75b.java",
+          "goodG2BSink",
+          "CWE-83"
+        ],
+        [
+          "CWE83_XSS_Attribute__Servlet_File_81_goodG2B.java",
+          "action",
+          "CWE-83"
+        ],
+        [
+          "CWE83_XSS_Attribute__Servlet_PropertiesFile_45.java",
+          "goodG2BSink",
+          "CWE-83"
+        ],
+        [
+          "CWE83_XSS_Attribute__Servlet_PropertiesFile_51b.java",
+          "goodG2BSink",
+          "CWE-83"
+        ],
+        [
+          "CWE83_XSS_Attribute__Servlet_PropertiesFile_52c.java",
+          "goodG2BSink",
+          "CWE-83"
+        ],
+        [
+          "CWE83_XSS_Attribute__Servlet_PropertiesFile_53d.java",
+          "goodG2BSink",
+          "CWE-83"
+        ],
+        [
+          "CWE83_XSS_Attribute__Servlet_PropertiesFile_54e.java",
+          "goodG2BSink",
+          "CWE-83"
+        ],
+        [
+          "CWE83_XSS_Attribute__Servlet_PropertiesFile_66b.java",
+          "goodG2BSink",
+          "CWE-83"
+        ],
+        [
+          "CWE83_XSS_Attribute__Servlet_PropertiesFile_67b.java",
+          "goodG2BSink",
+          "CWE-83"
+        ],
+        [
+          "CWE83_XSS_Attribute__Servlet_PropertiesFile_71b.java",
+          "goodG2BSink",
+          "CWE-83"
+        ]
+      ],
+      "fn_examples": [
+        [
+          "CWE83_XSS_Attribute__Servlet_File_68b.java",
+          "badSink",
+          "CWE-83"
+        ],
+        [
+          "CWE83_XSS_Attribute__Servlet_PropertiesFile_68b.java",
+          "badSink",
+          "CWE-83"
+        ],
+        [
+          "CWE83_XSS_Attribute__Servlet_URLConnection_68b.java",
+          "badSink",
+          "CWE-83"
+        ],
+        [
+          "CWE83_XSS_Attribute__Servlet_connect_tcp_68b.java",
+          "badSink",
+          "CWE-83"
+        ],
+        [
+          "CWE83_XSS_Attribute__Servlet_database_68b.java",
+          "badSink",
+          "CWE-83"
+        ],
+        [
+          "CWE83_XSS_Attribute__Servlet_getCookies_Servlet_68b.java",
+          "badSink",
+          "CWE-83"
+        ],
+        [
+          "CWE83_XSS_Attribute__Servlet_getParameter_Servlet_68b.java",
+          "badSink",
+          "CWE-83"
+        ],
+        [
+          "CWE83_XSS_Attribute__Servlet_getQueryString_Servlet_68b.java",
+          "badSink",
+          "CWE-83"
+        ],
+        [
+          "CWE83_XSS_Attribute__Servlet_listen_tcp_68b.java",
+          "badSink",
+          "CWE-83"
+        ]
+      ],
+      "parse_warning_count": 180
+    },
+    {
+      "cwe": "CWE-89",
+      "gt_instances": 2315,
+      "raw_findings": 2324,
+      "finding_instances": 2324,
+      "duplicates_collapsed": 0,
+      "unmapped_findings": 0,
+      "tp": 1728,
+      "fp": 596,
+      "fn": 587,
+      "precision": 0.7435456110154905,
+      "recall": 0.7464362850971922,
+      "f1": 0.744988143996551,
+      "fp_examples": [
+        [
+          "s01/CWE89_SQL_Injection__connect_tcp_executeQuery_22b.java",
+          "goodG2BSink",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__connect_tcp_executeQuery_45.java",
+          "goodG2BSink",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__connect_tcp_executeQuery_51b.java",
+          "goodG2BSink",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__connect_tcp_executeQuery_52c.java",
+          "goodG2BSink",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__connect_tcp_executeQuery_53d.java",
+          "goodG2BSink",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__connect_tcp_executeQuery_54e.java",
+          "goodG2BSink",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__connect_tcp_executeQuery_66b.java",
+          "goodG2BSink",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__connect_tcp_executeQuery_71b.java",
+          "goodG2BSink",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__connect_tcp_executeQuery_73b.java",
+          "goodG2BSink",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__connect_tcp_executeQuery_74b.java",
+          "goodG2BSink",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__connect_tcp_executeQuery_75b.java",
+          "goodG2BSink",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__connect_tcp_executeQuery_81_goodG2B.java",
+          "action",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__connect_tcp_executeUpdate_22b.java",
+          "goodG2BSink",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__connect_tcp_executeUpdate_45.java",
+          "goodG2BSink",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__connect_tcp_executeUpdate_51b.java",
+          "goodG2BSink",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__connect_tcp_executeUpdate_52c.java",
+          "goodG2BSink",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__connect_tcp_executeUpdate_53d.java",
+          "goodG2BSink",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__connect_tcp_executeUpdate_54e.java",
+          "goodG2BSink",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__connect_tcp_executeUpdate_66b.java",
+          "goodG2BSink",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__connect_tcp_executeUpdate_71b.java",
+          "goodG2BSink",
+          "CWE-89"
+        ]
+      ],
+      "fn_examples": [
+        [
+          "s01/CWE89_SQL_Injection__Environment_executeBatch_01.java",
+          "bad",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__Environment_executeBatch_02.java",
+          "bad",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__Environment_executeBatch_03.java",
+          "bad",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__Environment_executeBatch_04.java",
+          "bad",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__Environment_executeBatch_05.java",
+          "bad",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__Environment_executeBatch_06.java",
+          "bad",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__Environment_executeBatch_07.java",
+          "bad",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__Environment_executeBatch_08.java",
+          "bad",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__Environment_executeBatch_09.java",
+          "bad",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__Environment_executeBatch_10.java",
+          "bad",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__Environment_executeBatch_11.java",
+          "bad",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__Environment_executeBatch_12.java",
+          "bad",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__Environment_executeBatch_13.java",
+          "bad",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__Environment_executeBatch_14.java",
+          "bad",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__Environment_executeBatch_15.java",
+          "bad",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__Environment_executeBatch_16.java",
+          "bad",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__Environment_executeBatch_17.java",
+          "bad",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__Environment_executeBatch_21.java",
+          "badSink",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__Environment_executeBatch_22b.java",
+          "badSink",
+          "CWE-89"
+        ],
+        [
+          "s01/CWE89_SQL_Injection__Environment_executeBatch_31.java",
+          "bad",
+          "CWE-89"
+        ]
+      ],
+      "parse_warning_count": 1105
+    },
+    {
+      "cwe": "CWE-90",
+      "gt_instances": 444,
+      "raw_findings": 569,
+      "finding_instances": 569,
+      "duplicates_collapsed": 0,
+      "unmapped_findings": 0,
+      "tp": 432,
+      "fp": 137,
+      "fn": 12,
+      "precision": 0.7592267135325131,
+      "recall": 0.972972972972973,
+      "f1": 0.8529121421520236,
+      "fp_examples": [
+        [
+          "CWE90_LDAP_Injection__Environment_45.java",
+          "goodG2BSink",
+          "CWE-90"
+        ],
+        [
+          "CWE90_LDAP_Injection__Environment_51b.java",
+          "goodG2BSink",
+          "CWE-90"
+        ],
+        [
+          "CWE90_LDAP_Injection__Environment_52c.java",
+          "goodG2BSink",
+          "CWE-90"
+        ],
+        [
+          "CWE90_LDAP_Injection__Environment_53d.java",
+          "goodG2BSink",
+          "CWE-90"
+        ],
+        [
+          "CWE90_LDAP_Injection__Environment_54e.java",
+          "goodG2BSink",
+          "CWE-90"
+        ],
+        [
+          "CWE90_LDAP_Injection__Environment_66b.java",
+          "goodG2BSink",
+          "CWE-90"
+        ],
+        [
+          "CWE90_LDAP_Injection__Environment_71b.java",
+          "goodG2BSink",
+          "CWE-90"
+        ],
+        [
+          "CWE90_LDAP_Injection__Environment_73b.java",
+          "goodG2BSink",
+          "CWE-90"
+        ],
+        [
+          "CWE90_LDAP_Injection__Environment_74b.java",
+          "goodG2BSink",
+          "CWE-90"
+        ],
+        [
+          "CWE90_LDAP_Injection__Environment_75b.java",
+          "goodG2BSink",
+          "CWE-90"
+        ],
+        [
+          "CWE90_LDAP_Injection__Environment_81_goodG2B.java",
+          "action",
+          "CWE-90"
+        ],
+        [
+          "CWE90_LDAP_Injection__File_45.java",
+          "goodG2BSink",
+          "CWE-90"
+        ],
+        [
+          "CWE90_LDAP_Injection__File_51b.java",
+          "goodG2BSink",
+          "CWE-90"
+        ],
+        [
+          "CWE90_LDAP_Injection__File_52c.java",
+          "goodG2BSink",
+          "CWE-90"
+        ],
+        [
+          "CWE90_LDAP_Injection__File_53d.java",
+          "goodG2BSink",
+          "CWE-90"
+        ],
+        [
+          "CWE90_LDAP_Injection__File_54e.java",
+          "goodG2BSink",
+          "CWE-90"
+        ],
+        [
+          "CWE90_LDAP_Injection__File_66b.java",
+          "goodG2BSink",
+          "CWE-90"
+        ],
+        [
+          "CWE90_LDAP_Injection__File_67b.java",
+          "goodG2BSink",
+          "CWE-90"
+        ],
+        [
+          "CWE90_LDAP_Injection__File_71b.java",
+          "goodG2BSink",
+          "CWE-90"
+        ],
+        [
+          "CWE90_LDAP_Injection__File_73b.java",
+          "goodG2BSink",
+          "CWE-90"
+        ]
+      ],
+      "fn_examples": [
+        [
+          "CWE90_LDAP_Injection__Environment_68b.java",
+          "badSink",
+          "CWE-90"
+        ],
+        [
+          "CWE90_LDAP_Injection__File_68b.java",
+          "badSink",
+          "CWE-90"
+        ],
+        [
+          "CWE90_LDAP_Injection__PropertiesFile_68b.java",
+          "badSink",
+          "CWE-90"
+        ],
+        [
+          "CWE90_LDAP_Injection__Property_68b.java",
+          "badSink",
+          "CWE-90"
+        ],
+        [
+          "CWE90_LDAP_Injection__URLConnection_68b.java",
+          "badSink",
+          "CWE-90"
+        ],
+        [
+          "CWE90_LDAP_Injection__connect_tcp_68b.java",
+          "badSink",
+          "CWE-90"
+        ],
+        [
+          "CWE90_LDAP_Injection__console_readLine_68b.java",
+          "badSink",
+          "CWE-90"
+        ],
+        [
+          "CWE90_LDAP_Injection__database_68b.java",
+          "badSink",
+          "CWE-90"
+        ],
+        [
+          "CWE90_LDAP_Injection__getCookies_Servlet_68b.java",
+          "badSink",
+          "CWE-90"
+        ],
+        [
+          "CWE90_LDAP_Injection__getParameter_Servlet_68b.java",
+          "badSink",
+          "CWE-90"
+        ],
+        [
+          "CWE90_LDAP_Injection__getQueryString_Servlet_68b.java",
+          "badSink",
+          "CWE-90"
+        ],
+        [
+          "CWE90_LDAP_Injection__listen_tcp_68b.java",
+          "badSink",
+          "CWE-90"
+        ]
+      ],
+      "parse_warning_count": 240
+    },
+    {
+      "cwe": "CWE-113",
+      "gt_instances": 1332,
+      "raw_findings": 1743,
+      "finding_instances": 1743,
+      "duplicates_collapsed": 0,
+      "unmapped_findings": 0,
+      "tp": 1296,
+      "fp": 447,
+      "fn": 36,
+      "precision": 0.7435456110154905,
+      "recall": 0.972972972972973,
+      "f1": 0.8429268292682928,
+      "fp_examples": [
+        [
+          "s01/CWE113_HTTP_Response_Splitting__Environment_addCookieServlet_22b.java",
+          "goodG2BSink",
+          "CWE-113"
+        ],
+        [
+          "s01/CWE113_HTTP_Response_Splitting__Environment_addCookieServlet_45.java",
+          "goodG2BSink",
+          "CWE-113"
+        ],
+        [
+          "s01/CWE113_HTTP_Response_Splitting__Environment_addCookieServlet_51b.java",
+          "goodG2BSink",
+          "CWE-113"
+        ],
+        [
+          "s01/CWE113_HTTP_Response_Splitting__Environment_addCookieServlet_52c.java",
+          "goodG2BSink",
+          "CWE-113"
+        ],
+        [
+          "s01/CWE113_HTTP_Response_Splitting__Environment_addCookieServlet_53d.java",
+          "goodG2BSink",
+          "CWE-113"
+        ],
+        [
+          "s01/CWE113_HTTP_Response_Splitting__Environment_addCookieServlet_54e.java",
+          "goodG2BSink",
+          "CWE-113"
+        ],
+        [
+          "s01/CWE113_HTTP_Response_Splitting__Environment_addCookieServlet_66b.java",
+          "goodG2BSink",
+          "CWE-113"
+        ],
+        [
+          "s01/CWE113_HTTP_Response_Splitting__Environment_addCookieServlet_71b.java",
+          "goodG2BSink",
+          "CWE-113"
+        ],
+        [
+          "s01/CWE113_HTTP_Response_Splitting__Environment_addCookieServlet_73b.java",
+          "goodG2BSink",
+          "CWE-113"
+        ],
+        [
+          "s01/CWE113_HTTP_Response_Splitting__Environment_addCookieServlet_74b.java",
+          "goodG2BSink",
+          "CWE-113"
+        ],
+        [
+          "s01/CWE113_HTTP_Response_Splitting__Environment_addCookieServlet_75b.java",
+          "goodG2BSink",
+          "CWE-113"
+        ],
+        [
+          "s01/CWE113_HTTP_Response_Splitting__Environment_addCookieServlet_81_goodG2B.java",
+          "action",
+          "CWE-113"
+        ],
+        [
+          "s01/CWE113_HTTP_Response_Splitting__Environment_addHeaderServlet_22b.java",
+          "goodG2BSink",
+          "CWE-113"
+        ],
+        [
+          "s01/CWE113_HTTP_Response_Splitting__Environment_addHeaderServlet_45.java",
+          "goodG2BSink",
+          "CWE-113"
+        ],
+        [
+          "s01/CWE113_HTTP_Response_Splitting__Environment_addHeaderServlet_51b.java",
+          "goodG2BSink",
+          "CWE-113"
+        ],
+        [
+          "s01/CWE113_HTTP_Response_Splitting__Environment_addHeaderServlet_52c.java",
+          "goodG2BSink",
+          "CWE-113"
+        ],
+        [
+          "s01/CWE113_HTTP_Response_Splitting__Environment_addHeaderServlet_53d.java",
+          "goodG2BSink",
+          "CWE-113"
+        ],
+        [
+          "s01/CWE113_HTTP_Response_Splitting__Environment_addHeaderServlet_54e.java",
+          "goodG2BSink",
+          "CWE-113"
+        ],
+        [
+          "s01/CWE113_HTTP_Response_Splitting__Environment_addHeaderServlet_66b.java",
+          "goodG2BSink",
+          "CWE-113"
+        ],
+        [
+          "s01/CWE113_HTTP_Response_Splitting__Environment_addHeaderServlet_71b.java",
+          "goodG2BSink",
+          "CWE-113"
+        ]
+      ],
+      "fn_examples": [
+        [
+          "s01/CWE113_HTTP_Response_Splitting__Environment_addCookieServlet_68b.java",
+          "badSink",
+          "CWE-113"
+        ],
+        [
+          "s01/CWE113_HTTP_Response_Splitting__Environment_addHeaderServlet_68b.java",
+          "badSink",
+          "CWE-113"
+        ],
+        [
+          "s01/CWE113_HTTP_Response_Splitting__Environment_setHeaderServlet_68b.java",
+          "badSink",
+          "CWE-113"
+        ],
+        [
+          "s01/CWE113_HTTP_Response_Splitting__File_addCookieServlet_68b.java",
+          "badSink",
+          "CWE-113"
+        ],
+        [
+          "s01/CWE113_HTTP_Response_Splitting__File_addHeaderServlet_68b.java",
+          "badSink",
+          "CWE-113"
+        ],
+        [
+          "s01/CWE113_HTTP_Response_Splitting__File_setHeaderServlet_68b.java",
+          "badSink",
+          "CWE-113"
+        ],
+        [
+          "s01/CWE113_HTTP_Response_Splitting__connect_tcp_addCookieServlet_68b.java",
+          "badSink",
+          "CWE-113"
+        ],
+        [
+          "s01/CWE113_HTTP_Response_Splitting__connect_tcp_addHeaderServlet_68b.java",
+          "badSink",
+          "CWE-113"
+        ],
+        [
+          "s01/CWE113_HTTP_Response_Splitting__connect_tcp_setHeaderServlet_68b.java",
+          "badSink",
+          "CWE-113"
+        ],
+        [
+          "s01/CWE113_HTTP_Response_Splitting__console_readLine_addCookieServlet_68b.java",
+          "badSink",
+          "CWE-113"
+        ],
+        [
+          "s01/CWE113_HTTP_Response_Splitting__console_readLine_addHeaderServlet_68b.java",
+          "badSink",
+          "CWE-113"
+        ],
+        [
+          "s01/CWE113_HTTP_Response_Splitting__console_readLine_setHeaderServlet_68b.java",
+          "badSink",
+          "CWE-113"
+        ],
+        [
+          "s01/CWE113_HTTP_Response_Splitting__database_addCookieServlet_68b.java",
+          "badSink",
+          "CWE-113"
+        ],
+        [
+          "s01/CWE113_HTTP_Response_Splitting__database_addHeaderServlet_68b.java",
+          "badSink",
+          "CWE-113"
+        ],
+        [
+          "s01/CWE113_HTTP_Response_Splitting__database_setHeaderServlet_68b.java",
+          "badSink",
+          "CWE-113"
+        ],
+        [
+          "s01/CWE113_HTTP_Response_Splitting__getCookies_Servlet_addCookieServlet_68b.java",
+          "badSink",
+          "CWE-113"
+        ],
+        [
+          "s02/CWE113_HTTP_Response_Splitting__PropertiesFile_addCookieServlet_68b.java",
+          "badSink",
+          "CWE-113"
+        ],
+        [
+          "s02/CWE113_HTTP_Response_Splitting__PropertiesFile_addHeaderServlet_68b.java",
+          "badSink",
+          "CWE-113"
+        ],
+        [
+          "s02/CWE113_HTTP_Response_Splitting__PropertiesFile_setHeaderServlet_68b.java",
+          "badSink",
+          "CWE-113"
+        ],
+        [
+          "s02/CWE113_HTTP_Response_Splitting__Property_addCookieServlet_68b.java",
+          "badSink",
+          "CWE-113"
+        ]
+      ],
+      "parse_warning_count": 720
+    },
+    {
+      "cwe": "CWE-134",
+      "gt_instances": 666,
+      "raw_findings": 1836,
+      "finding_instances": 1800,
+      "duplicates_collapsed": 36,
+      "unmapped_findings": 0,
+      "tp": 648,
+      "fp": 1152,
+      "fn": 18,
+      "precision": 0.36,
+      "recall": 0.972972972972973,
+      "f1": 0.5255474452554745,
+      "fp_examples": [
+        [
+          "s01/CWE134_Uncontrolled_Format_String__Environment_format_01.java",
+          "goodB2G",
+          "CWE-134"
+        ],
+        [
+          "s01/CWE134_Uncontrolled_Format_String__Environment_format_02.java",
+          "goodB2G1",
+          "CWE-134"
+        ],
+        [
+          "s01/CWE134_Uncontrolled_Format_String__Environment_format_02.java",
+          "goodB2G2",
+          "CWE-134"
+        ],
+        [
+          "s01/CWE134_Uncontrolled_Format_String__Environment_format_03.java",
+          "goodB2G1",
+          "CWE-134"
+        ],
+        [
+          "s01/CWE134_Uncontrolled_Format_String__Environment_format_03.java",
+          "goodB2G2",
+          "CWE-134"
+        ],
+        [
+          "s01/CWE134_Uncontrolled_Format_String__Environment_format_04.java",
+          "goodB2G1",
+          "CWE-134"
+        ],
+        [
+          "s01/CWE134_Uncontrolled_Format_String__Environment_format_04.java",
+          "goodB2G2",
+          "CWE-134"
+        ],
+        [
+          "s01/CWE134_Uncontrolled_Format_String__Environment_format_05.java",
+          "goodB2G1",
+          "CWE-134"
+        ],
+        [
+          "s01/CWE134_Uncontrolled_Format_String__Environment_format_05.java",
+          "goodB2G2",
+          "CWE-134"
+        ],
+        [
+          "s01/CWE134_Uncontrolled_Format_String__Environment_format_06.java",
+          "goodB2G1",
+          "CWE-134"
+        ],
+        [
+          "s01/CWE134_Uncontrolled_Format_String__Environment_format_06.java",
+          "goodB2G2",
+          "CWE-134"
+        ],
+        [
+          "s01/CWE134_Uncontrolled_Format_String__Environment_format_07.java",
+          "goodB2G1",
+          "CWE-134"
+        ],
+        [
+          "s01/CWE134_Uncontrolled_Format_String__Environment_format_07.java",
+          "goodB2G2",
+          "CWE-134"
+        ],
+        [
+          "s01/CWE134_Uncontrolled_Format_String__Environment_format_08.java",
+          "goodB2G1",
+          "CWE-134"
+        ],
+        [
+          "s01/CWE134_Uncontrolled_Format_String__Environment_format_08.java",
+          "goodB2G2",
+          "CWE-134"
+        ],
+        [
+          "s01/CWE134_Uncontrolled_Format_String__Environment_format_09.java",
+          "goodB2G1",
+          "CWE-134"
+        ],
+        [
+          "s01/CWE134_Uncontrolled_Format_String__Environment_format_09.java",
+          "goodB2G2",
+          "CWE-134"
+        ],
+        [
+          "s01/CWE134_Uncontrolled_Format_String__Environment_format_10.java",
+          "goodB2G1",
+          "CWE-134"
+        ],
+        [
+          "s01/CWE134_Uncontrolled_Format_String__Environment_format_10.java",
+          "goodB2G2",
+          "CWE-134"
+        ],
+        [
+          "s01/CWE134_Uncontrolled_Format_String__Environment_format_11.java",
+          "goodB2G1",
+          "CWE-134"
+        ]
+      ],
+      "fn_examples": [
+        [
+          "s01/CWE134_Uncontrolled_Format_String__Environment_format_68b.java",
+          "badSink",
+          "CWE-134"
+        ],
+        [
+          "s01/CWE134_Uncontrolled_Format_String__Environment_printf_68b.java",
+          "badSink",
+          "CWE-134"
+        ],
+        [
+          "s01/CWE134_Uncontrolled_Format_String__File_format_68b.java",
+          "badSink",
+          "CWE-134"
+        ],
+        [
+          "s01/CWE134_Uncontrolled_Format_String__File_printf_68b.java",
+          "badSink",
+          "CWE-134"
+        ],
+        [
+          "s01/CWE134_Uncontrolled_Format_String__PropertiesFile_format_68b.java",
+          "badSink",
+          "CWE-134"
+        ],
+        [
+          "s01/CWE134_Uncontrolled_Format_String__PropertiesFile_printf_68b.java",
+          "badSink",
+          "CWE-134"
+        ],
+        [
+          "s01/CWE134_Uncontrolled_Format_String__Property_format_68b.java",
+          "badSink",
+          "CWE-134"
+        ],
+        [
+          "s01/CWE134_Uncontrolled_Format_String__Property_printf_68b.java",
+          "badSink",
+          "CWE-134"
+        ],
+        [
+          "s01/CWE134_Uncontrolled_Format_String__connect_tcp_format_68b.java",
+          "badSink",
+          "CWE-134"
+        ],
+        [
+          "s01/CWE134_Uncontrolled_Format_String__connect_tcp_printf_68b.java",
+          "badSink",
+          "CWE-134"
+        ],
+        [
+          "s01/CWE134_Uncontrolled_Format_String__console_readLine_format_68b.java",
+          "badSink",
+          "CWE-134"
+        ],
+        [
+          "s01/CWE134_Uncontrolled_Format_String__console_readLine_printf_68b.java",
+          "badSink",
+          "CWE-134"
+        ],
+        [
+          "s01/CWE134_Uncontrolled_Format_String__database_format_68b.java",
+          "badSink",
+          "CWE-134"
+        ],
+        [
+          "s01/CWE134_Uncontrolled_Format_String__database_printf_68b.java",
+          "badSink",
+          "CWE-134"
+        ],
+        [
+          "s01/CWE134_Uncontrolled_Format_String__listen_tcp_format_68b.java",
+          "badSink",
+          "CWE-134"
+        ],
+        [
+          "s01/CWE134_Uncontrolled_Format_String__listen_tcp_printf_68b.java",
+          "badSink",
+          "CWE-134"
+        ],
+        [
+          "s02/CWE134_Uncontrolled_Format_String__URLConnection_format_68b.java",
+          "badSink",
+          "CWE-134"
+        ],
+        [
+          "s02/CWE134_Uncontrolled_Format_String__URLConnection_printf_68b.java",
+          "badSink",
+          "CWE-134"
+        ]
+      ],
+      "parse_warning_count": 360
+    },
+    {
+      "cwe": "CWE-256",
+      "gt_instances": 37,
+      "raw_findings": 140,
+      "finding_instances": 137,
+      "duplicates_collapsed": 3,
+      "unmapped_findings": 0,
+      "tp": 36,
+      "fp": 101,
+      "fn": 1,
+      "precision": 0.26277372262773724,
+      "recall": 0.972972972972973,
+      "f1": 0.4137931034482759,
+      "fp_examples": [
+        [
+          "CWE256_Plaintext_Storage_of_Password__basic_01.java",
+          "goodB2G",
+          "CWE-256"
+        ],
+        [
+          "CWE256_Plaintext_Storage_of_Password__basic_01.java",
+          "goodG2B",
+          "CWE-256"
+        ],
+        [
+          "CWE256_Plaintext_Storage_of_Password__basic_02.java",
+          "goodB2G1",
+          "CWE-256"
+        ],
+        [
+          "CWE256_Plaintext_Storage_of_Password__basic_02.java",
+          "goodB2G2",
+          "CWE-256"
+        ],
+        [
+          "CWE256_Plaintext_Storage_of_Password__basic_02.java",
+          "goodG2B1",
+          "CWE-256"
+        ],
+        [
+          "CWE256_Plaintext_Storage_of_Password__basic_02.java",
+          "goodG2B2",
+          "CWE-256"
+        ],
+        [
+          "CWE256_Plaintext_Storage_of_Password__basic_03.java",
+          "goodB2G1",
+          "CWE-256"
+        ],
+        [
+          "CWE256_Plaintext_Storage_of_Password__basic_03.java",
+          "goodB2G2",
+          "CWE-256"
+        ],
+        [
+          "CWE256_Plaintext_Storage_of_Password__basic_03.java",
+          "goodG2B1",
+          "CWE-256"
+        ],
+        [
+          "CWE256_Plaintext_Storage_of_Password__basic_03.java",
+          "goodG2B2",
+          "CWE-256"
+        ],
+        [
+          "CWE256_Plaintext_Storage_of_Password__basic_04.java",
+          "goodB2G1",
+          "CWE-256"
+        ],
+        [
+          "CWE256_Plaintext_Storage_of_Password__basic_04.java",
+          "goodB2G2",
+          "CWE-256"
+        ],
+        [
+          "CWE256_Plaintext_Storage_of_Password__basic_04.java",
+          "goodG2B1",
+          "CWE-256"
+        ],
+        [
+          "CWE256_Plaintext_Storage_of_Password__basic_04.java",
+          "goodG2B2",
+          "CWE-256"
+        ],
+        [
+          "CWE256_Plaintext_Storage_of_Password__basic_05.java",
+          "goodB2G1",
+          "CWE-256"
+        ],
+        [
+          "CWE256_Plaintext_Storage_of_Password__basic_05.java",
+          "goodB2G2",
+          "CWE-256"
+        ],
+        [
+          "CWE256_Plaintext_Storage_of_Password__basic_05.java",
+          "goodG2B1",
+          "CWE-256"
+        ],
+        [
+          "CWE256_Plaintext_Storage_of_Password__basic_05.java",
+          "goodG2B2",
+          "CWE-256"
+        ],
+        [
+          "CWE256_Plaintext_Storage_of_Password__basic_06.java",
+          "goodB2G1",
+          "CWE-256"
+        ],
+        [
+          "CWE256_Plaintext_Storage_of_Password__basic_06.java",
+          "goodB2G2",
+          "CWE-256"
+        ]
+      ],
+      "fn_examples": [
+        [
+          "CWE256_Plaintext_Storage_of_Password__basic_68b.java",
+          "badSink",
+          "CWE-256"
+        ]
+      ],
+      "parse_warning_count": 20
+    },
+    {
+      "cwe": "CWE-259",
+      "gt_instances": 111,
+      "raw_findings": 189,
+      "finding_instances": 189,
+      "duplicates_collapsed": 0,
+      "unmapped_findings": 0,
+      "tp": 36,
+      "fp": 153,
+      "fn": 75,
+      "precision": 0.19047619047619047,
+      "recall": 0.32432432432432434,
+      "f1": 0.24,
+      "fp_examples": [
+        [
+          "CWE259_Hard_Coded_Password__driverManager_01.java",
+          "goodG2B",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_02.java",
+          "goodG2B1",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_02.java",
+          "goodG2B2",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_03.java",
+          "goodG2B1",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_03.java",
+          "goodG2B2",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_04.java",
+          "goodG2B1",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_04.java",
+          "goodG2B2",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_05.java",
+          "goodG2B1",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_05.java",
+          "goodG2B2",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_06.java",
+          "goodG2B1",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_06.java",
+          "goodG2B2",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_07.java",
+          "goodG2B1",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_07.java",
+          "goodG2B2",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_08.java",
+          "goodG2B1",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_08.java",
+          "goodG2B2",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_09.java",
+          "goodG2B1",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_09.java",
+          "goodG2B2",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_10.java",
+          "goodG2B1",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_10.java",
+          "goodG2B2",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_11.java",
+          "goodG2B1",
+          "CWE-259"
+        ]
+      ],
+      "fn_examples": [
+        [
+          "CWE259_Hard_Coded_Password__driverManager_01.java",
+          "bad",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_02.java",
+          "bad",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_03.java",
+          "bad",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_04.java",
+          "bad",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_05.java",
+          "bad",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_06.java",
+          "bad",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_07.java",
+          "bad",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_08.java",
+          "bad",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_09.java",
+          "bad",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_10.java",
+          "bad",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_11.java",
+          "bad",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_13.java",
+          "bad",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_14.java",
+          "bad",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_15.java",
+          "bad",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_16.java",
+          "bad",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_17.java",
+          "bad",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_21.java",
+          "bad",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_22a.java",
+          "bad",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_31.java",
+          "bad",
+          "CWE-259"
+        ],
+        [
+          "CWE259_Hard_Coded_Password__driverManager_41.java",
+          "badSink",
+          "CWE-259"
+        ]
+      ],
+      "parse_warning_count": 60
+    },
+    {
+      "cwe": "CWE-315",
+      "gt_instances": 37,
+      "raw_findings": 117,
+      "finding_instances": 114,
+      "duplicates_collapsed": 3,
+      "unmapped_findings": 0,
+      "tp": 13,
+      "fp": 101,
+      "fn": 24,
+      "precision": 0.11403508771929824,
+      "recall": 0.35135135135135137,
+      "f1": 0.17218543046357615,
+      "fp_examples": [
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_01.java",
+          "goodB2G",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_01.java",
+          "goodG2B",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_02.java",
+          "goodB2G1",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_02.java",
+          "goodB2G2",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_02.java",
+          "goodG2B1",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_02.java",
+          "goodG2B2",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_03.java",
+          "goodB2G1",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_03.java",
+          "goodB2G2",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_03.java",
+          "goodG2B1",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_03.java",
+          "goodG2B2",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_04.java",
+          "goodB2G1",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_04.java",
+          "goodB2G2",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_04.java",
+          "goodG2B1",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_04.java",
+          "goodG2B2",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_05.java",
+          "goodB2G1",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_05.java",
+          "goodB2G2",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_05.java",
+          "goodG2B1",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_05.java",
+          "goodG2B2",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_06.java",
+          "goodB2G1",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_06.java",
+          "goodB2G2",
+          "CWE-315"
+        ]
+      ],
+      "fn_examples": [
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_01.java",
+          "bad",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_02.java",
+          "bad",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_03.java",
+          "bad",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_04.java",
+          "bad",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_05.java",
+          "bad",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_06.java",
+          "bad",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_07.java",
+          "bad",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_08.java",
+          "bad",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_09.java",
+          "bad",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_10.java",
+          "bad",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_11.java",
+          "bad",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_13.java",
+          "bad",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_14.java",
+          "bad",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_15.java",
+          "bad",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_16.java",
+          "bad",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_17.java",
+          "bad",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_21.java",
+          "badSink",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_31.java",
+          "bad",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_41.java",
+          "badSink",
+          "CWE-315"
+        ],
+        [
+          "CWE315_Plaintext_Storage_in_Cookie__Servlet_42.java",
+          "bad",
+          "CWE-315"
+        ]
+      ],
+      "parse_warning_count": 20
+    },
+    {
+      "cwe": "CWE-319",
+      "gt_instances": 389,
+      "raw_findings": 961,
+      "finding_instances": 943,
+      "duplicates_collapsed": 18,
+      "unmapped_findings": 0,
+      "tp": 336,
+      "fp": 607,
+      "fn": 53,
+      "precision": 0.3563096500530223,
+      "recall": 0.8637532133676092,
+      "f1": 0.5045045045045046,
+      "fp_examples": [
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__URLConnection_driverManager_01.java",
+          "goodB2G",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__URLConnection_driverManager_02.java",
+          "goodB2G1",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__URLConnection_driverManager_02.java",
+          "goodB2G2",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__URLConnection_driverManager_03.java",
+          "goodB2G1",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__URLConnection_driverManager_03.java",
+          "goodB2G2",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__URLConnection_driverManager_04.java",
+          "goodB2G1",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__URLConnection_driverManager_04.java",
+          "goodB2G2",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__URLConnection_driverManager_05.java",
+          "goodB2G1",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__URLConnection_driverManager_05.java",
+          "goodB2G2",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__URLConnection_driverManager_06.java",
+          "goodB2G1",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__URLConnection_driverManager_06.java",
+          "goodB2G2",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__URLConnection_driverManager_07.java",
+          "goodB2G1",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__URLConnection_driverManager_07.java",
+          "goodB2G2",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__URLConnection_driverManager_08.java",
+          "goodB2G1",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__URLConnection_driverManager_08.java",
+          "goodB2G2",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__URLConnection_driverManager_09.java",
+          "goodB2G1",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__URLConnection_driverManager_09.java",
+          "goodB2G2",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__URLConnection_driverManager_10.java",
+          "goodB2G1",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__URLConnection_driverManager_10.java",
+          "goodB2G2",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__URLConnection_driverManager_11.java",
+          "goodB2G1",
+          "CWE-319"
+        ]
+      ],
+      "fn_examples": [
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__URLConnection_driverManager_68b.java",
+          "badSink",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__URLConnection_kerberosKey_68b.java",
+          "badSink",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__URLConnection_passwordAuth_68b.java",
+          "badSink",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__connect_tcp_driverManager_68b.java",
+          "badSink",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__connect_tcp_kerberosKey_68b.java",
+          "badSink",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__connect_tcp_passwordAuth_68b.java",
+          "badSink",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__listen_tcp_driverManager_68b.java",
+          "badSink",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__listen_tcp_kerberosKey_68b.java",
+          "badSink",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__listen_tcp_passwordAuth_68b.java",
+          "badSink",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__send_01.java",
+          "bad",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__send_02.java",
+          "bad",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__send_03.java",
+          "bad",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__send_04.java",
+          "bad",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__send_05.java",
+          "bad",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__send_06.java",
+          "bad",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__send_07.java",
+          "bad",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__send_08.java",
+          "bad",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__send_09.java",
+          "bad",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__send_10.java",
+          "bad",
+          "CWE-319"
+        ],
+        [
+          "CWE319_Cleartext_Tx_Sensitive_Info__send_11.java",
+          "bad",
+          "CWE-319"
+        ]
+      ],
+      "parse_warning_count": 181
+    },
+    {
+      "cwe": "CWE-321",
+      "gt_instances": 37,
+      "raw_findings": 89,
+      "finding_instances": 89,
+      "duplicates_collapsed": 0,
+      "unmapped_findings": 0,
+      "tp": 37,
+      "fp": 52,
+      "fn": 0,
+      "precision": 0.4157303370786517,
+      "recall": 1.0,
+      "f1": 0.5873015873015873,
+      "fp_examples": [
+        [
+          "CWE321_Hard_Coded_Cryptographic_Key__basic_01.java",
+          "goodG2B",
+          "CWE-321"
+        ],
+        [
+          "CWE321_Hard_Coded_Cryptographic_Key__basic_02.java",
+          "goodG2B1",
+          "CWE-321"
+        ],
+        [
+          "CWE321_Hard_Coded_Cryptographic_Key__basic_02.java",
+          "goodG2B2",
+          "CWE-321"
+        ],
+        [
+          "CWE321_Hard_Coded_Cryptographic_Key__basic_03.java",
+          "goodG2B1",
+          "CWE-321"
+        ],
+        [
+          "CWE321_Hard_Coded_Cryptographic_Key__basic_03.java",
+          "goodG2B2",
+          "CWE-321"
+        ],
+        [
+          "CWE321_Hard_Coded_Cryptographic_Key__basic_04.java",
+          "goodG2B1",
+          "CWE-321"
+        ],
+        [
+          "CWE321_Hard_Coded_Cryptographic_Key__basic_04.java",
+          "goodG2B2",
+          "CWE-321"
+        ],
+        [
+          "CWE321_Hard_Coded_Cryptographic_Key__basic_05.java",
+          "goodG2B1",
+          "CWE-321"
+        ],
+        [
+          "CWE321_Hard_Coded_Cryptographic_Key__basic_05.java",
+          "goodG2B2",
+          "CWE-321"
+        ],
+        [
+          "CWE321_Hard_Coded_Cryptographic_Key__basic_06.java",
+          "goodG2B1",
+          "CWE-321"
+        ],
+        [
+          "CWE321_Hard_Coded_Cryptographic_Key__basic_06.java",
+          "goodG2B2",
+          "CWE-321"
+        ],
+        [
+          "CWE321_Hard_Coded_Cryptographic_Key__basic_07.java",
+          "goodG2B1",
+          "CWE-321"
+        ],
+        [
+          "CWE321_Hard_Coded_Cryptographic_Key__basic_07.java",
+          "goodG2B2",
+          "CWE-321"
+        ],
+        [
+          "CWE321_Hard_Coded_Cryptographic_Key__basic_08.java",
+          "goodG2B1",
+          "CWE-321"
+        ],
+        [
+          "CWE321_Hard_Coded_Cryptographic_Key__basic_08.java",
+          "goodG2B2",
+          "CWE-321"
+        ],
+        [
+          "CWE321_Hard_Coded_Cryptographic_Key__basic_09.java",
+          "goodG2B1",
+          "CWE-321"
+        ],
+        [
+          "CWE321_Hard_Coded_Cryptographic_Key__basic_09.java",
+          "goodG2B2",
+          "CWE-321"
+        ],
+        [
+          "CWE321_Hard_Coded_Cryptographic_Key__basic_10.java",
+          "goodG2B1",
+          "CWE-321"
+        ],
+        [
+          "CWE321_Hard_Coded_Cryptographic_Key__basic_10.java",
+          "goodG2B2",
+          "CWE-321"
+        ],
+        [
+          "CWE321_Hard_Coded_Cryptographic_Key__basic_11.java",
+          "goodG2B1",
+          "CWE-321"
+        ]
+      ],
+      "fn_examples": [],
+      "parse_warning_count": 20
+    },
+    {
+      "cwe": "CWE-470",
+      "gt_instances": 444,
+      "raw_findings": 569,
+      "finding_instances": 569,
+      "duplicates_collapsed": 0,
+      "unmapped_findings": 0,
+      "tp": 432,
+      "fp": 137,
+      "fn": 12,
+      "precision": 0.7592267135325131,
+      "recall": 0.972972972972973,
+      "f1": 0.8529121421520236,
+      "fp_examples": [
+        [
+          "CWE470_Unsafe_Reflection__Environment_45.java",
+          "goodG2BSink",
+          "CWE-470"
+        ],
+        [
+          "CWE470_Unsafe_Reflection__Environment_51b.java",
+          "goodG2BSink",
+          "CWE-470"
+        ],
+        [
+          "CWE470_Unsafe_Reflection__Environment_52c.java",
+          "goodG2BSink",
+          "CWE-470"
+        ],
+        [
+          "CWE470_Unsafe_Reflection__Environment_53d.java",
+          "goodG2BSink",
+          "CWE-470"
+        ],
+        [
+          "CWE470_Unsafe_Reflection__Environment_54e.java",
+          "goodG2BSink",
+          "CWE-470"
+        ],
+        [
+          "CWE470_Unsafe_Reflection__Environment_66b.java",
+          "goodG2BSink",
+          "CWE-470"
+        ],
+        [
+          "CWE470_Unsafe_Reflection__Environment_71b.java",
+          "goodG2BSink",
+          "CWE-470"
+        ],
+        [
+          "CWE470_Unsafe_Reflection__Environment_73b.java",
+          "goodG2BSink",
+          "CWE-470"
+        ],
+        [
+          "CWE470_Unsafe_Reflection__Environment_74b.java",
+          "goodG2BSink",
+          "CWE-470"
+        ],
+        [
+          "CWE470_Unsafe_Reflection__Environment_75b.java",
+          "goodG2BSink",
+          "CWE-470"
+        ],
+        [
+          "CWE470_Unsafe_Reflection__Environment_81_goodG2B.java",
+          "action",
+          "CWE-470"
+        ],
+        [
+          "CWE470_Unsafe_Reflection__File_45.java",
+          "goodG2BSink",
+          "CWE-470"
+        ],
+        [
+          "CWE470_Unsafe_Reflection__File_51b.java",
+          "goodG2BSink",
+          "CWE-470"
+        ],
+        [
+          "CWE470_Unsafe_Reflection__File_52c.java",
+          "goodG2BSink",
+          "CWE-470"
+        ],
+        [
+          "CWE470_Unsafe_Reflection__File_53d.java",
+          "goodG2BSink",
+          "CWE-470"
+        ],
+        [
+          "CWE470_Unsafe_Reflection__File_54e.java",
+          "goodG2BSink",
+          "CWE-470"
+        ],
+        [
+          "CWE470_Unsafe_Reflection__File_66b.java",
+          "goodG2BSink",
+          "CWE-470"
+        ],
+        [
+          "CWE470_Unsafe_Reflection__File_67b.java",
+          "goodG2BSink",
+          "CWE-470"
+        ],
+        [
+          "CWE470_Unsafe_Reflection__File_71b.java",
+          "goodG2BSink",
+          "CWE-470"
+        ],
+        [
+          "CWE470_Unsafe_Reflection__File_73b.java",
+          "goodG2BSink",
+          "CWE-470"
+        ]
+      ],
+      "fn_examples": [
+        [
+          "CWE470_Unsafe_Reflection__Environment_68b.java",
+          "badSink",
+          "CWE-470"
+        ],
+        [
+          "CWE470_Unsafe_Reflection__File_68b.java",
+          "badSink",
+          "CWE-470"
+        ],
+        [
+          "CWE470_Unsafe_Reflection__PropertiesFile_68b.java",
+          "badSink",
+          "CWE-470"
+        ],
+        [
+          "CWE470_Unsafe_Reflection__Property_68b.java",
+          "badSink",
+          "CWE-470"
+        ],
+        [
+          "CWE470_Unsafe_Reflection__URLConnection_68b.java",
+          "badSink",
+          "CWE-470"
+        ],
+        [
+          "CWE470_Unsafe_Reflection__connect_tcp_68b.java",
+          "badSink",
+          "CWE-470"
+        ],
+        [
+          "CWE470_Unsafe_Reflection__console_readLine_68b.java",
+          "badSink",
+          "CWE-470"
+        ],
+        [
+          "CWE470_Unsafe_Reflection__database_68b.java",
+          "badSink",
+          "CWE-470"
+        ],
+        [
+          "CWE470_Unsafe_Reflection__getCookies_Servlet_68b.java",
+          "badSink",
+          "CWE-470"
+        ],
+        [
+          "CWE470_Unsafe_Reflection__getParameter_Servlet_68b.java",
+          "badSink",
+          "CWE-470"
+        ],
+        [
+          "CWE470_Unsafe_Reflection__getQueryString_Servlet_68b.java",
+          "badSink",
+          "CWE-470"
+        ],
+        [
+          "CWE470_Unsafe_Reflection__listen_tcp_68b.java",
+          "badSink",
+          "CWE-470"
+        ]
+      ],
+      "parse_warning_count": 240
+    },
+    {
+      "cwe": "CWE-601",
+      "gt_instances": 333,
+      "raw_findings": 428,
+      "finding_instances": 428,
+      "duplicates_collapsed": 0,
+      "unmapped_findings": 0,
+      "tp": 324,
+      "fp": 104,
+      "fn": 9,
+      "precision": 0.7570093457943925,
+      "recall": 0.972972972972973,
+      "f1": 0.8515111695137977,
+      "fp_examples": [
+        [
+          "CWE601_Open_Redirect__Servlet_File_45.java",
+          "goodG2BSink",
+          "CWE-601"
+        ],
+        [
+          "CWE601_Open_Redirect__Servlet_File_51b.java",
+          "goodG2BSink",
+          "CWE-601"
+        ],
+        [
+          "CWE601_Open_Redirect__Servlet_File_52c.java",
+          "goodG2BSink",
+          "CWE-601"
+        ],
+        [
+          "CWE601_Open_Redirect__Servlet_File_53d.java",
+          "goodG2BSink",
+          "CWE-601"
+        ],
+        [
+          "CWE601_Open_Redirect__Servlet_File_54e.java",
+          "goodG2BSink",
+          "CWE-601"
+        ],
+        [
+          "CWE601_Open_Redirect__Servlet_File_66b.java",
+          "goodG2BSink",
+          "CWE-601"
+        ],
+        [
+          "CWE601_Open_Redirect__Servlet_File_67b.java",
+          "goodG2BSink",
+          "CWE-601"
+        ],
+        [
+          "CWE601_Open_Redirect__Servlet_File_71b.java",
+          "goodG2BSink",
+          "CWE-601"
+        ],
+        [
+          "CWE601_Open_Redirect__Servlet_File_73b.java",
+          "goodG2BSink",
+          "CWE-601"
+        ],
+        [
+          "CWE601_Open_Redirect__Servlet_File_74b.java",
+          "goodG2BSink",
+          "CWE-601"
+        ],
+        [
+          "CWE601_Open_Redirect__Servlet_File_75b.java",
+          "goodG2BSink",
+          "CWE-601"
+        ],
+        [
+          "CWE601_Open_Redirect__Servlet_File_81_goodG2B.java",
+          "action",
+          "CWE-601"
+        ],
+        [
+          "CWE601_Open_Redirect__Servlet_PropertiesFile_45.java",
+          "goodG2BSink",
+          "CWE-601"
+        ],
+        [
+          "CWE601_Open_Redirect__Servlet_PropertiesFile_51b.java",
+          "goodG2BSink",
+          "CWE-601"
+        ],
+        [
+          "CWE601_Open_Redirect__Servlet_PropertiesFile_52c.java",
+          "goodG2BSink",
+          "CWE-601"
+        ],
+        [
+          "CWE601_Open_Redirect__Servlet_PropertiesFile_53d.java",
+          "goodG2BSink",
+          "CWE-601"
+        ],
+        [
+          "CWE601_Open_Redirect__Servlet_PropertiesFile_54e.java",
+          "goodG2BSink",
+          "CWE-601"
+        ],
+        [
+          "CWE601_Open_Redirect__Servlet_PropertiesFile_66b.java",
+          "goodG2BSink",
+          "CWE-601"
+        ],
+        [
+          "CWE601_Open_Redirect__Servlet_PropertiesFile_67b.java",
+          "goodG2BSink",
+          "CWE-601"
+        ],
+        [
+          "CWE601_Open_Redirect__Servlet_PropertiesFile_71b.java",
+          "goodG2BSink",
+          "CWE-601"
+        ]
+      ],
+      "fn_examples": [
+        [
+          "CWE601_Open_Redirect__Servlet_File_68b.java",
+          "badSink",
+          "CWE-601"
+        ],
+        [
+          "CWE601_Open_Redirect__Servlet_PropertiesFile_68b.java",
+          "badSink",
+          "CWE-601"
+        ],
+        [
+          "CWE601_Open_Redirect__Servlet_URLConnection_68b.java",
+          "badSink",
+          "CWE-601"
+        ],
+        [
+          "CWE601_Open_Redirect__Servlet_connect_tcp_68b.java",
+          "badSink",
+          "CWE-601"
+        ],
+        [
+          "CWE601_Open_Redirect__Servlet_database_68b.java",
+          "badSink",
+          "CWE-601"
+        ],
+        [
+          "CWE601_Open_Redirect__Servlet_getCookies_Servlet_68b.java",
+          "badSink",
+          "CWE-601"
+        ],
+        [
+          "CWE601_Open_Redirect__Servlet_getParameter_Servlet_68b.java",
+          "badSink",
+          "CWE-601"
+        ],
+        [
+          "CWE601_Open_Redirect__Servlet_getQueryString_Servlet_68b.java",
+          "badSink",
+          "CWE-601"
+        ],
+        [
+          "CWE601_Open_Redirect__Servlet_listen_tcp_68b.java",
+          "badSink",
+          "CWE-601"
+        ]
+      ],
+      "parse_warning_count": 180
+    },
+    {
+      "cwe": "CWE-643",
+      "gt_instances": 444,
+      "raw_findings": 1224,
+      "finding_instances": 1200,
+      "duplicates_collapsed": 24,
+      "unmapped_findings": 0,
+      "tp": 432,
+      "fp": 768,
+      "fn": 12,
+      "precision": 0.36,
+      "recall": 0.972972972972973,
+      "f1": 0.5255474452554745,
+      "fp_examples": [
+        [
+          "CWE643_Xpath_Injection__Environment_01.java",
+          "goodB2G",
+          "CWE-643"
+        ],
+        [
+          "CWE643_Xpath_Injection__Environment_02.java",
+          "goodB2G1",
+          "CWE-643"
+        ],
+        [
+          "CWE643_Xpath_Injection__Environment_02.java",
+          "goodB2G2",
+          "CWE-643"
+        ],
+        [
+          "CWE643_Xpath_Injection__Environment_03.java",
+          "goodB2G1",
+          "CWE-643"
+        ],
+        [
+          "CWE643_Xpath_Injection__Environment_03.java",
+          "goodB2G2",
+          "CWE-643"
+        ],
+        [
+          "CWE643_Xpath_Injection__Environment_04.java",
+          "goodB2G1",
+          "CWE-643"
+        ],
+        [
+          "CWE643_Xpath_Injection__Environment_04.java",
+          "goodB2G2",
+          "CWE-643"
+        ],
+        [
+          "CWE643_Xpath_Injection__Environment_05.java",
+          "goodB2G1",
+          "CWE-643"
+        ],
+        [
+          "CWE643_Xpath_Injection__Environment_05.java",
+          "goodB2G2",
+          "CWE-643"
+        ],
+        [
+          "CWE643_Xpath_Injection__Environment_06.java",
+          "goodB2G1",
+          "CWE-643"
+        ],
+        [
+          "CWE643_Xpath_Injection__Environment_06.java",
+          "goodB2G2",
+          "CWE-643"
+        ],
+        [
+          "CWE643_Xpath_Injection__Environment_07.java",
+          "goodB2G1",
+          "CWE-643"
+        ],
+        [
+          "CWE643_Xpath_Injection__Environment_07.java",
+          "goodB2G2",
+          "CWE-643"
+        ],
+        [
+          "CWE643_Xpath_Injection__Environment_08.java",
+          "goodB2G1",
+          "CWE-643"
+        ],
+        [
+          "CWE643_Xpath_Injection__Environment_08.java",
+          "goodB2G2",
+          "CWE-643"
+        ],
+        [
+          "CWE643_Xpath_Injection__Environment_09.java",
+          "goodB2G1",
+          "CWE-643"
+        ],
+        [
+          "CWE643_Xpath_Injection__Environment_09.java",
+          "goodB2G2",
+          "CWE-643"
+        ],
+        [
+          "CWE643_Xpath_Injection__Environment_10.java",
+          "goodB2G1",
+          "CWE-643"
+        ],
+        [
+          "CWE643_Xpath_Injection__Environment_10.java",
+          "goodB2G2",
+          "CWE-643"
+        ],
+        [
+          "CWE643_Xpath_Injection__Environment_11.java",
+          "goodB2G1",
+          "CWE-643"
+        ]
+      ],
+      "fn_examples": [
+        [
+          "CWE643_Xpath_Injection__Environment_68b.java",
+          "badSink",
+          "CWE-643"
+        ],
+        [
+          "CWE643_Xpath_Injection__File_68b.java",
+          "badSink",
+          "CWE-643"
+        ],
+        [
+          "CWE643_Xpath_Injection__PropertiesFile_68b.java",
+          "badSink",
+          "CWE-643"
+        ],
+        [
+          "CWE643_Xpath_Injection__Property_68b.java",
+          "badSink",
+          "CWE-643"
+        ],
+        [
+          "CWE643_Xpath_Injection__URLConnection_68b.java",
+          "badSink",
+          "CWE-643"
+        ],
+        [
+          "CWE643_Xpath_Injection__connect_tcp_68b.java",
+          "badSink",
+          "CWE-643"
+        ],
+        [
+          "CWE643_Xpath_Injection__console_readLine_68b.java",
+          "badSink",
+          "CWE-643"
+        ],
+        [
+          "CWE643_Xpath_Injection__database_68b.java",
+          "badSink",
+          "CWE-643"
+        ],
+        [
+          "CWE643_Xpath_Injection__getCookies_Servlet_68b.java",
+          "badSink",
+          "CWE-643"
+        ],
+        [
+          "CWE643_Xpath_Injection__getParameter_Servlet_68b.java",
+          "badSink",
+          "CWE-643"
+        ],
+        [
+          "CWE643_Xpath_Injection__getQueryString_Servlet_68b.java",
+          "badSink",
+          "CWE-643"
+        ],
+        [
+          "CWE643_Xpath_Injection__listen_tcp_68b.java",
+          "badSink",
+          "CWE-643"
+        ]
+      ],
+      "parse_warning_count": 240
+    },
+    {
+      "cwe": "CWE-15",
+      "gt_instances": 444,
+      "raw_findings": 569,
+      "finding_instances": 569,
+      "duplicates_collapsed": 0,
+      "unmapped_findings": 0,
+      "tp": 432,
+      "fp": 137,
+      "fn": 12,
+      "precision": 0.7592267135325131,
+      "recall": 0.972972972972973,
+      "f1": 0.8529121421520236,
+      "fp_examples": [
+        [
+          "CWE15_External_Control_of_System_or_Configuration_Setting__Environment_45.java",
+          "goodG2BSink",
+          "CWE-15"
+        ],
+        [
+          "CWE15_External_Control_of_System_or_Configuration_Setting__Environment_51b.java",
+          "goodG2BSink",
+          "CWE-15"
+        ],
+        [
+          "CWE15_External_Control_of_System_or_Configuration_Setting__Environment_52c.java",
+          "goodG2BSink",
+          "CWE-15"
+        ],
+        [
+          "CWE15_External_Control_of_System_or_Configuration_Setting__Environment_53d.java",
+          "goodG2BSink",
+          "CWE-15"
+        ],
+        [
+          "CWE15_External_Control_of_System_or_Configuration_Setting__Environment_54e.java",
+          "goodG2BSink",
+          "CWE-15"
+        ],
+        [
+          "CWE15_External_Control_of_System_or_Configuration_Setting__Environment_66b.java",
+          "goodG2BSink",
+          "CWE-15"
+        ],
+        [
+          "CWE15_External_Control_of_System_or_Configuration_Setting__Environment_71b.java",
+          "goodG2BSink",
+          "CWE-15"
+        ],
+        [
+          "CWE15_External_Control_of_System_or_Configuration_Setting__Environment_73b.java",
+          "goodG2BSink",
+          "CWE-15"
+        ],
+        [
+          "CWE15_External_Control_of_System_or_Configuration_Setting__Environment_74b.java",
+          "goodG2BSink",
+          "CWE-15"
+        ],
+        [
+          "CWE15_External_Control_of_System_or_Configuration_Setting__Environment_75b.java",
+          "goodG2BSink",
+          "CWE-15"
+        ],
+        [
+          "CWE15_External_Control_of_System_or_Configuration_Setting__Environment_81_goodG2B.java",
+          "action",
+          "CWE-15"
+        ],
+        [
+          "CWE15_External_Control_of_System_or_Configuration_Setting__File_45.java",
+          "goodG2BSink",
+          "CWE-15"
+        ],
+        [
+          "CWE15_External_Control_of_System_or_Configuration_Setting__File_51b.java",
+          "goodG2BSink",
+          "CWE-15"
+        ],
+        [
+          "CWE15_External_Control_of_System_or_Configuration_Setting__File_52c.java",
+          "goodG2BSink",
+          "CWE-15"
+        ],
+        [
+          "CWE15_External_Control_of_System_or_Configuration_Setting__File_53d.java",
+          "goodG2BSink",
+          "CWE-15"
+        ],
+        [
+          "CWE15_External_Control_of_System_or_Configuration_Setting__File_54e.java",
+          "goodG2BSink",
+          "CWE-15"
+        ],
+        [
+          "CWE15_External_Control_of_System_or_Configuration_Setting__File_66b.java",
+          "goodG2BSink",
+          "CWE-15"
+        ],
+        [
+          "CWE15_External_Control_of_System_or_Configuration_Setting__File_67b.java",
+          "goodG2BSink",
+          "CWE-15"
+        ],
+        [
+          "CWE15_External_Control_of_System_or_Configuration_Setting__File_71b.java",
+          "goodG2BSink",
+          "CWE-15"
+        ],
+        [
+          "CWE15_External_Control_of_System_or_Configuration_Setting__File_73b.java",
+          "goodG2BSink",
+          "CWE-15"
+        ]
+      ],
+      "fn_examples": [
+        [
+          "CWE15_External_Control_of_System_or_Configuration_Setting__Environment_68b.java",
+          "badSink",
+          "CWE-15"
+        ],
+        [
+          "CWE15_External_Control_of_System_or_Configuration_Setting__File_68b.java",
+          "badSink",
+          "CWE-15"
+        ],
+        [
+          "CWE15_External_Control_of_System_or_Configuration_Setting__PropertiesFile_68b.java",
+          "badSink",
+          "CWE-15"
+        ],
+        [
+          "CWE15_External_Control_of_System_or_Configuration_Setting__Property_68b.java",
+          "badSink",
+          "CWE-15"
+        ],
+        [
+          "CWE15_External_Control_of_System_or_Configuration_Setting__URLConnection_68b.java",
+          "badSink",
+          "CWE-15"
+        ],
+        [
+          "CWE15_External_Control_of_System_or_Configuration_Setting__connect_tcp_68b.java",
+          "badSink",
+          "CWE-15"
+        ],
+        [
+          "CWE15_External_Control_of_System_or_Configuration_Setting__console_readLine_68b.java",
+          "badSink",
+          "CWE-15"
+        ],
+        [
+          "CWE15_External_Control_of_System_or_Configuration_Setting__database_68b.java",
+          "badSink",
+          "CWE-15"
+        ],
+        [
+          "CWE15_External_Control_of_System_or_Configuration_Setting__getCookies_Servlet_68b.java",
+          "badSink",
+          "CWE-15"
+        ],
+        [
+          "CWE15_External_Control_of_System_or_Configuration_Setting__getParameter_Servlet_68b.java",
+          "badSink",
+          "CWE-15"
+        ],
+        [
+          "CWE15_External_Control_of_System_or_Configuration_Setting__getQueryString_Servlet_68b.java",
+          "badSink",
+          "CWE-15"
+        ],
+        [
+          "CWE15_External_Control_of_System_or_Configuration_Setting__listen_tcp_68b.java",
+          "badSink",
+          "CWE-15"
+        ]
+      ],
+      "parse_warning_count": 240
+    },
+    {
+      "cwe": "CWE-114",
+      "gt_instances": 17,
+      "raw_findings": 17,
+      "finding_instances": 17,
+      "duplicates_collapsed": 0,
+      "unmapped_findings": 0,
+      "tp": 17,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "fp_examples": [],
+      "fn_examples": [],
+      "parse_warning_count": 0
+    },
+    {
+      "cwe": "CWE-209",
+      "gt_instances": 34,
+      "raw_findings": 34,
+      "finding_instances": 34,
+      "duplicates_collapsed": 0,
+      "unmapped_findings": 0,
+      "tp": 34,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "fp_examples": [],
+      "fn_examples": [],
+      "parse_warning_count": 0
+    },
+    {
+      "cwe": "CWE-327",
+      "gt_instances": 34,
+      "raw_findings": 68,
+      "finding_instances": 34,
+      "duplicates_collapsed": 34,
+      "unmapped_findings": 0,
+      "tp": 34,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "fp_examples": [],
+      "fn_examples": [],
+      "parse_warning_count": 0
+    },
+    {
+      "cwe": "CWE-328",
+      "gt_instances": 51,
+      "raw_findings": 51,
+      "finding_instances": 51,
+      "duplicates_collapsed": 0,
+      "unmapped_findings": 0,
+      "tp": 51,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "fp_examples": [],
+      "fn_examples": [],
+      "parse_warning_count": 0
+    },
+    {
+      "cwe": "CWE-329",
+      "gt_instances": 0,
+      "raw_findings": 0,
+      "finding_instances": 0,
+      "duplicates_collapsed": 0,
+      "unmapped_findings": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "fp_examples": [],
+      "fn_examples": [],
+      "parse_warning_count": 17
+    },
+    {
+      "cwe": "CWE-336",
+      "gt_instances": 0,
+      "raw_findings": 0,
+      "finding_instances": 0,
+      "duplicates_collapsed": 0,
+      "unmapped_findings": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "fp_examples": [],
+      "fn_examples": [],
+      "parse_warning_count": 17
+    },
+    {
+      "cwe": "CWE-338",
+      "gt_instances": 34,
+      "raw_findings": 34,
+      "finding_instances": 34,
+      "duplicates_collapsed": 0,
+      "unmapped_findings": 0,
+      "tp": 34,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "fp_examples": [],
+      "fn_examples": [],
+      "parse_warning_count": 0
+    },
+    {
+      "cwe": "CWE-378",
+      "gt_instances": 0,
+      "raw_findings": 0,
+      "finding_instances": 0,
+      "duplicates_collapsed": 0,
+      "unmapped_findings": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "fp_examples": [],
+      "fn_examples": [],
+      "parse_warning_count": 17
+    },
+    {
+      "cwe": "CWE-379",
+      "gt_instances": 0,
+      "raw_findings": 0,
+      "finding_instances": 0,
+      "duplicates_collapsed": 0,
+      "unmapped_findings": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "fp_examples": [],
+      "fn_examples": [],
+      "parse_warning_count": 17
+    },
+    {
+      "cwe": "CWE-382",
+      "gt_instances": 34,
+      "raw_findings": 34,
+      "finding_instances": 34,
+      "duplicates_collapsed": 0,
+      "unmapped_findings": 0,
+      "tp": 34,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "fp_examples": [],
+      "fn_examples": [],
+      "parse_warning_count": 0
+    },
+    {
+      "cwe": "CWE-477",
+      "gt_instances": 68,
+      "raw_findings": 68,
+      "finding_instances": 68,
+      "duplicates_collapsed": 0,
+      "unmapped_findings": 0,
+      "tp": 68,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "fp_examples": [],
+      "fn_examples": [],
+      "parse_warning_count": 0
+    },
+    {
+      "cwe": "CWE-533",
+      "gt_instances": 17,
+      "raw_findings": 49,
+      "finding_instances": 47,
+      "duplicates_collapsed": 2,
+      "unmapped_findings": 0,
+      "tp": 17,
+      "fp": 30,
+      "fn": 0,
+      "precision": 0.3617021276595745,
+      "recall": 1.0,
+      "f1": 0.53125,
+      "fp_examples": [
+        [
+          "CWE533_Info_Exposure_Server_Log__Servlet_01.java",
+          "good1",
+          "CWE-533"
+        ],
+        [
+          "CWE533_Info_Exposure_Server_Log__Servlet_02.java",
+          "good1",
+          "CWE-533"
+        ],
+        [
+          "CWE533_Info_Exposure_Server_Log__Servlet_02.java",
+          "good2",
+          "CWE-533"
+        ],
+        [
+          "CWE533_Info_Exposure_Server_Log__Servlet_03.java",
+          "good1",
+          "CWE-533"
+        ],
+        [
+          "CWE533_Info_Exposure_Server_Log__Servlet_03.java",
+          "good2",
+          "CWE-533"
+        ],
+        [
+          "CWE533_Info_Exposure_Server_Log__Servlet_04.java",
+          "good1",
+          "CWE-533"
+        ],
+        [
+          "CWE533_Info_Exposure_Server_Log__Servlet_04.java",
+          "good2",
+          "CWE-533"
+        ],
+        [
+          "CWE533_Info_Exposure_Server_Log__Servlet_05.java",
+          "good1",
+          "CWE-533"
+        ],
+        [
+          "CWE533_Info_Exposure_Server_Log__Servlet_05.java",
+          "good2",
+          "CWE-533"
+        ],
+        [
+          "CWE533_Info_Exposure_Server_Log__Servlet_06.java",
+          "good1",
+          "CWE-533"
+        ],
+        [
+          "CWE533_Info_Exposure_Server_Log__Servlet_06.java",
+          "good2",
+          "CWE-533"
+        ],
+        [
+          "CWE533_Info_Exposure_Server_Log__Servlet_07.java",
+          "good1",
+          "CWE-533"
+        ],
+        [
+          "CWE533_Info_Exposure_Server_Log__Servlet_07.java",
+          "good2",
+          "CWE-533"
+        ],
+        [
+          "CWE533_Info_Exposure_Server_Log__Servlet_08.java",
+          "good1",
+          "CWE-533"
+        ],
+        [
+          "CWE533_Info_Exposure_Server_Log__Servlet_08.java",
+          "good2",
+          "CWE-533"
+        ],
+        [
+          "CWE533_Info_Exposure_Server_Log__Servlet_09.java",
+          "good1",
+          "CWE-533"
+        ],
+        [
+          "CWE533_Info_Exposure_Server_Log__Servlet_09.java",
+          "good2",
+          "CWE-533"
+        ],
+        [
+          "CWE533_Info_Exposure_Server_Log__Servlet_10.java",
+          "good1",
+          "CWE-533"
+        ],
+        [
+          "CWE533_Info_Exposure_Server_Log__Servlet_10.java",
+          "good2",
+          "CWE-533"
+        ],
+        [
+          "CWE533_Info_Exposure_Server_Log__Servlet_11.java",
+          "good1",
+          "CWE-533"
+        ]
+      ],
+      "fn_examples": [],
+      "parse_warning_count": 0
+    },
+    {
+      "cwe": "CWE-534",
+      "gt_instances": 17,
+      "raw_findings": 49,
+      "finding_instances": 47,
+      "duplicates_collapsed": 2,
+      "unmapped_findings": 0,
+      "tp": 17,
+      "fp": 30,
+      "fn": 0,
+      "precision": 0.3617021276595745,
+      "recall": 1.0,
+      "f1": 0.53125,
+      "fp_examples": [
+        [
+          "CWE534_Info_Exposure_Debug_Log__Servlet_01.java",
+          "good1",
+          "CWE-534"
+        ],
+        [
+          "CWE534_Info_Exposure_Debug_Log__Servlet_02.java",
+          "good1",
+          "CWE-534"
+        ],
+        [
+          "CWE534_Info_Exposure_Debug_Log__Servlet_02.java",
+          "good2",
+          "CWE-534"
+        ],
+        [
+          "CWE534_Info_Exposure_Debug_Log__Servlet_03.java",
+          "good1",
+          "CWE-534"
+        ],
+        [
+          "CWE534_Info_Exposure_Debug_Log__Servlet_03.java",
+          "good2",
+          "CWE-534"
+        ],
+        [
+          "CWE534_Info_Exposure_Debug_Log__Servlet_04.java",
+          "good1",
+          "CWE-534"
+        ],
+        [
+          "CWE534_Info_Exposure_Debug_Log__Servlet_04.java",
+          "good2",
+          "CWE-534"
+        ],
+        [
+          "CWE534_Info_Exposure_Debug_Log__Servlet_05.java",
+          "good1",
+          "CWE-534"
+        ],
+        [
+          "CWE534_Info_Exposure_Debug_Log__Servlet_05.java",
+          "good2",
+          "CWE-534"
+        ],
+        [
+          "CWE534_Info_Exposure_Debug_Log__Servlet_06.java",
+          "good1",
+          "CWE-534"
+        ],
+        [
+          "CWE534_Info_Exposure_Debug_Log__Servlet_06.java",
+          "good2",
+          "CWE-534"
+        ],
+        [
+          "CWE534_Info_Exposure_Debug_Log__Servlet_07.java",
+          "good1",
+          "CWE-534"
+        ],
+        [
+          "CWE534_Info_Exposure_Debug_Log__Servlet_07.java",
+          "good2",
+          "CWE-534"
+        ],
+        [
+          "CWE534_Info_Exposure_Debug_Log__Servlet_08.java",
+          "good1",
+          "CWE-534"
+        ],
+        [
+          "CWE534_Info_Exposure_Debug_Log__Servlet_08.java",
+          "good2",
+          "CWE-534"
+        ],
+        [
+          "CWE534_Info_Exposure_Debug_Log__Servlet_09.java",
+          "good1",
+          "CWE-534"
+        ],
+        [
+          "CWE534_Info_Exposure_Debug_Log__Servlet_09.java",
+          "good2",
+          "CWE-534"
+        ],
+        [
+          "CWE534_Info_Exposure_Debug_Log__Servlet_10.java",
+          "good1",
+          "CWE-534"
+        ],
+        [
+          "CWE534_Info_Exposure_Debug_Log__Servlet_10.java",
+          "good2",
+          "CWE-534"
+        ],
+        [
+          "CWE534_Info_Exposure_Debug_Log__Servlet_11.java",
+          "good1",
+          "CWE-534"
+        ]
+      ],
+      "fn_examples": [],
+      "parse_warning_count": 0
+    },
+    {
+      "cwe": "CWE-539",
+      "gt_instances": 17,
+      "raw_findings": 17,
+      "finding_instances": 17,
+      "duplicates_collapsed": 0,
+      "unmapped_findings": 0,
+      "tp": 17,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "fp_examples": [],
+      "fn_examples": [],
+      "parse_warning_count": 0
+    },
+    {
+      "cwe": "CWE-598",
+      "gt_instances": 17,
+      "raw_findings": 17,
+      "finding_instances": 17,
+      "duplicates_collapsed": 0,
+      "unmapped_findings": 0,
+      "tp": 17,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "fp_examples": [],
+      "fn_examples": [],
+      "parse_warning_count": 0
+    },
+    {
+      "cwe": "CWE-698",
+      "gt_instances": 0,
+      "raw_findings": 0,
+      "finding_instances": 0,
+      "duplicates_collapsed": 0,
+      "unmapped_findings": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "fp_examples": [],
+      "fn_examples": [],
+      "parse_warning_count": 17
+    },
+    {
+      "cwe": "CWE-759",
+      "gt_instances": 17,
+      "raw_findings": 49,
+      "finding_instances": 47,
+      "duplicates_collapsed": 2,
+      "unmapped_findings": 0,
+      "tp": 17,
+      "fp": 30,
+      "fn": 0,
+      "precision": 0.3617021276595745,
+      "recall": 1.0,
+      "f1": 0.53125,
+      "fp_examples": [
+        [
+          "CWE759_Unsalted_One_Way_Hash__basic_01.java",
+          "good1",
+          "CWE-759"
+        ],
+        [
+          "CWE759_Unsalted_One_Way_Hash__basic_02.java",
+          "good1",
+          "CWE-759"
+        ],
+        [
+          "CWE759_Unsalted_One_Way_Hash__basic_02.java",
+          "good2",
+          "CWE-759"
+        ],
+        [
+          "CWE759_Unsalted_One_Way_Hash__basic_03.java",
+          "good1",
+          "CWE-759"
+        ],
+        [
+          "CWE759_Unsalted_One_Way_Hash__basic_03.java",
+          "good2",
+          "CWE-759"
+        ],
+        [
+          "CWE759_Unsalted_One_Way_Hash__basic_04.java",
+          "good1",
+          "CWE-759"
+        ],
+        [
+          "CWE759_Unsalted_One_Way_Hash__basic_04.java",
+          "good2",
+          "CWE-759"
+        ],
+        [
+          "CWE759_Unsalted_One_Way_Hash__basic_05.java",
+          "good1",
+          "CWE-759"
+        ],
+        [
+          "CWE759_Unsalted_One_Way_Hash__basic_05.java",
+          "good2",
+          "CWE-759"
+        ],
+        [
+          "CWE759_Unsalted_One_Way_Hash__basic_06.java",
+          "good1",
+          "CWE-759"
+        ],
+        [
+          "CWE759_Unsalted_One_Way_Hash__basic_06.java",
+          "good2",
+          "CWE-759"
+        ],
+        [
+          "CWE759_Unsalted_One_Way_Hash__basic_07.java",
+          "good1",
+          "CWE-759"
+        ],
+        [
+          "CWE759_Unsalted_One_Way_Hash__basic_07.java",
+          "good2",
+          "CWE-759"
+        ],
+        [
+          "CWE759_Unsalted_One_Way_Hash__basic_08.java",
+          "good1",
+          "CWE-759"
+        ],
+        [
+          "CWE759_Unsalted_One_Way_Hash__basic_08.java",
+          "good2",
+          "CWE-759"
+        ],
+        [
+          "CWE759_Unsalted_One_Way_Hash__basic_09.java",
+          "good1",
+          "CWE-759"
+        ],
+        [
+          "CWE759_Unsalted_One_Way_Hash__basic_09.java",
+          "good2",
+          "CWE-759"
+        ],
+        [
+          "CWE759_Unsalted_One_Way_Hash__basic_10.java",
+          "good1",
+          "CWE-759"
+        ],
+        [
+          "CWE759_Unsalted_One_Way_Hash__basic_10.java",
+          "good2",
+          "CWE-759"
+        ],
+        [
+          "CWE759_Unsalted_One_Way_Hash__basic_11.java",
+          "good1",
+          "CWE-759"
+        ]
+      ],
+      "fn_examples": [],
+      "parse_warning_count": 0
+    },
+    {
+      "cwe": "CWE-760",
+      "gt_instances": 17,
+      "raw_findings": 49,
+      "finding_instances": 47,
+      "duplicates_collapsed": 2,
+      "unmapped_findings": 0,
+      "tp": 17,
+      "fp": 30,
+      "fn": 0,
+      "precision": 0.3617021276595745,
+      "recall": 1.0,
+      "f1": 0.53125,
+      "fp_examples": [
+        [
+          "CWE760_Predictable_Salt_One_Way_Hash__basic_01.java",
+          "good1",
+          "CWE-760"
+        ],
+        [
+          "CWE760_Predictable_Salt_One_Way_Hash__basic_02.java",
+          "good1",
+          "CWE-760"
+        ],
+        [
+          "CWE760_Predictable_Salt_One_Way_Hash__basic_02.java",
+          "good2",
+          "CWE-760"
+        ],
+        [
+          "CWE760_Predictable_Salt_One_Way_Hash__basic_03.java",
+          "good1",
+          "CWE-760"
+        ],
+        [
+          "CWE760_Predictable_Salt_One_Way_Hash__basic_03.java",
+          "good2",
+          "CWE-760"
+        ],
+        [
+          "CWE760_Predictable_Salt_One_Way_Hash__basic_04.java",
+          "good1",
+          "CWE-760"
+        ],
+        [
+          "CWE760_Predictable_Salt_One_Way_Hash__basic_04.java",
+          "good2",
+          "CWE-760"
+        ],
+        [
+          "CWE760_Predictable_Salt_One_Way_Hash__basic_05.java",
+          "good1",
+          "CWE-760"
+        ],
+        [
+          "CWE760_Predictable_Salt_One_Way_Hash__basic_05.java",
+          "good2",
+          "CWE-760"
+        ],
+        [
+          "CWE760_Predictable_Salt_One_Way_Hash__basic_06.java",
+          "good1",
+          "CWE-760"
+        ],
+        [
+          "CWE760_Predictable_Salt_One_Way_Hash__basic_06.java",
+          "good2",
+          "CWE-760"
+        ],
+        [
+          "CWE760_Predictable_Salt_One_Way_Hash__basic_07.java",
+          "good1",
+          "CWE-760"
+        ],
+        [
+          "CWE760_Predictable_Salt_One_Way_Hash__basic_07.java",
+          "good2",
+          "CWE-760"
+        ],
+        [
+          "CWE760_Predictable_Salt_One_Way_Hash__basic_08.java",
+          "good1",
+          "CWE-760"
+        ],
+        [
+          "CWE760_Predictable_Salt_One_Way_Hash__basic_08.java",
+          "good2",
+          "CWE-760"
+        ],
+        [
+          "CWE760_Predictable_Salt_One_Way_Hash__basic_09.java",
+          "good1",
+          "CWE-760"
+        ],
+        [
+          "CWE760_Predictable_Salt_One_Way_Hash__basic_09.java",
+          "good2",
+          "CWE-760"
+        ],
+        [
+          "CWE760_Predictable_Salt_One_Way_Hash__basic_10.java",
+          "good1",
+          "CWE-760"
+        ],
+        [
+          "CWE760_Predictable_Salt_One_Way_Hash__basic_10.java",
+          "good2",
+          "CWE-760"
+        ],
+        [
+          "CWE760_Predictable_Salt_One_Way_Hash__basic_11.java",
+          "good1",
+          "CWE-760"
+        ]
+      ],
+      "fn_examples": [],
+      "parse_warning_count": 0
+    },
+    {
+      "cwe": "CWE-526",
+      "gt_instances": 17,
+      "raw_findings": 17,
+      "finding_instances": 17,
+      "duplicates_collapsed": 0,
+      "unmapped_findings": 0,
+      "tp": 17,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "fp_examples": [],
+      "fn_examples": [],
+      "parse_warning_count": 17
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "n_target": 20,
+  "n_scored": 20,
+  "unparsed": 0,
+  "unparsed_rate": 0.0,
+  "critic_yes": 0,
+  "critic_no": 20,
+  "T1_accuracy": 0.5,
+  "T1_trivial_always_NO": 0.5,
+  "T1_margin": 0.0,
+  "T3_status": "FAIL",
+  "T3_pairs": 10,
+  "T3_inner_disagreement": 0.0,
+  "T3_yes_rate": 0.0,
+  "pair_correct": 0.0,
+  "by_lang": {
+    "JavaScript": {
+      "n": 4,
+      "acc": 0.5,
+      "yes": 0
+    },
+    "Python": {
+      "n": 16,
+      "acc": 0.5,
+      "yes": 0
+    }
+  },
+  "PROMISING": false,
+  "strategy": "A_external",
+  "usage": {
+    "input_tokens": 5584,
+    "output_tokens": 1617
+  }
+}

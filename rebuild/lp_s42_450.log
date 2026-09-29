@@ -1,0 +1,37 @@
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+==((====))==  Unsloth 2026.8.15: Fast Qwen3_5 patching. Transformers: 5.5.0.
+   \\   /|    NVIDIA A100-SXM4-80GB. Num GPUs = 1. Max memory: 79.25 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.11.0+cu130. CUDA: 8.0. CUDA Toolkit: 13.0. Triton: 3.6.0
+\        /    Bfloat16 = TRUE. FA [Xformers = 0.0.35. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Unsloth: Fast downloading is enabled - ignore downloading bars which are red colored!
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+Loading weights:   0%|          | 0/760 [00:00<?, ?it/s]Loading weights:   0%|          | 1/760 [00:00<03:16,  3.85it/s]Loading weights:   0%|          | 2/760 [00:00<03:15,  3.87it/s]Loading weights:   1%|▏         | 10/760 [00:00<00:33, 22.42it/s]Loading weights:   4%|▎         | 27/760 [00:00<00:12, 59.46it/s]Loading weights:   6%|▌         | 43/760 [00:00<00:08, 85.62it/s]Loading weights:   9%|▊         | 66/760 [00:00<00:05, 124.78it/s]Loading weights:  12%|█▏        | 90/760 [00:01<00:04, 154.54it/s]Loading weights:  14%|█▍        | 108/760 [00:01<00:04, 160.71it/s]Loading weights:  18%|█▊        | 135/760 [00:01<00:03, 188.37it/s]Loading weights:  20%|██        | 155/760 [00:01<00:03, 188.80it/s]Loading weights:  24%|██▍       | 183/760 [00:01<00:02, 209.15it/s]Loading weights:  27%|██▋       | 205/760 [00:01<00:02, 195.11it/s]Loading weights:  30%|██▉       | 226/760 [00:01<00:02, 198.22it/s]Loading weights:  33%|███▎      | 250/760 [00:01<00:02, 207.21it/s]Loading weights:  36%|███▌      | 272/760 [00:01<00:02, 204.03it/s]Loading weights:  39%|███▊      | 293/760 [00:02<00:02, 204.81it/s]Loading weights:  41%|████▏     | 314/760 [00:02<00:02, 199.10it/s]Loading weights:  45%|████▌     | 345/760 [00:02<00:01, 225.63it/s]Loading weights:  48%|████▊     | 368/760 [00:02<00:01, 210.83it/s]Loading weights:  52%|█████▏    | 397/760 [00:02<00:01, 232.29it/s]Loading weights:  55%|█████▌    | 421/760 [00:02<00:01, 208.79it/s]Loading weights:  74%|███████▍  | 565/760 [00:02<00:00, 528.73it/s]Loading weights:  98%|█████████▊| 745/760 [00:02<00:00, 871.85it/s]Loading weights: 100%|██████████| 760/760 [00:02<00:00, 269.57it/s]
+[tok] ' NONE' -> [41451] / ' CWE' -> [49149]
+test 8/1197 (7s)
+test 208/1197 (26s)
+test 408/1197 (48s)
+test 608/1197 (69s)
+test 808/1197 (89s)
+test 1008/1197 (117s)
+[test] 1197건 139s (116ms/건) -> /workspace/rebuild/out/v3s42_450_logprob_test.jsonl
+primevul_report 8/288 (1s)
+primevul_report 208/288 (36s)
+[primevul_report] 288건 50s (173ms/건) -> /workspace/rebuild/out/v3s42_450_logprob_primevul_report.jsonl
+cleanvul_v2_report 8/2706 (2s)
+cleanvul_v2_report 208/2706 (25s)
+cleanvul_v2_report 408/2706 (40s)
+cleanvul_v2_report 608/2706 (66s)
+cleanvul_v2_report 808/2706 (85s)
+cleanvul_v2_report 1008/2706 (106s)
+cleanvul_v2_report 1208/2706 (127s)
+cleanvul_v2_report 1408/2706 (148s)
+cleanvul_v2_report 1608/2706 (167s)
+cleanvul_v2_report 1808/2706 (198s)
+cleanvul_v2_report 2008/2706 (217s)
+cleanvul_v2_report 2208/2706 (245s)
+cleanvul_v2_report 2408/2706 (263s)
+cleanvul_v2_report 2608/2706 (277s)
+[cleanvul_v2_report] 2706건 289s (107ms/건) -> /workspace/rebuild/out/v3s42_450_logprob_cleanvul_v2_report.jsonl
+LOGPROB_DONE

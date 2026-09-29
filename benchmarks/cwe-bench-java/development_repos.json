@@ -1,0 +1,8 @@
+{
+  "purpose": "G3 product-pipeline development only; excluded by repository URL from final held-out",
+  "projects": [
+    "perwendel__spark_CVE-2018-9159_2.7.1",
+    "codehaus-plexus__plexus-utils_CVE-2017-1000487_3.0.15",
+    "jmrozanec__cron-utils_CVE-2021-41269_9.1.5"
+  ]
+}

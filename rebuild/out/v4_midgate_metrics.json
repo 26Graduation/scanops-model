@@ -1,0 +1,24 @@
+{
+  "spec": "V4_TRAIN_RUN_SPEC §10-1 MID-GATE",
+  "n": 676,
+  "auc_v4_step750": 0.6263,
+  "auc_v3s42_step750": 0.6381,
+  "auc_v1": 0.623,
+  "delta_vs_v3s42": {
+    "point": -0.0118,
+    "ci95": [
+      -0.0264,
+      0.0022
+    ]
+  },
+  "delta_vs_v1": {
+    "point": 0.0033,
+    "ci95": [
+      -0.0124,
+      0.0186
+    ]
+  },
+  "gate": "MID-GATE-STOP",
+  "gate_rule": "ΔAUC 점추정 ≤ 0 → 즉시 terminate",
+  "note": "CI 는 사후 참고다. 게이트는 사전등록대로 점추정으로 판정했다."
+}

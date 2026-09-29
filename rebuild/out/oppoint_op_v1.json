@@ -1,0 +1,726 @@
+{
+  "spec": "rebuild/OPPOINT_RUN_SPEC.md §8",
+  "tag": "v1",
+  "seed": 42,
+  "n_boot": 2000,
+  "tune_sources": {
+    "cleanvul_v2_tune": 676,
+    "val": 1183
+  },
+  "ops": {
+    "OP-0": {
+      "tau": 0.0,
+      "rule": "τ=0 (현 배포 greedy 와 동일 지점). 기준선",
+      "feasible": true,
+      "tune_at_tau": {
+        "cleanvul_v2_tune": {
+          "n": 676,
+          "n_vuln": 338,
+          "n_safe": 338,
+          "recall": 0.4882,
+          "fpr": 0.3077,
+          "precision": 0.6134,
+          "f1": 0.5437,
+          "parse_fail": 0
+        },
+        "val": {
+          "n": 1183,
+          "n_vuln": 518,
+          "n_safe": 665,
+          "recall": 0.8205,
+          "fpr": 0.2361,
+          "precision": 0.7302,
+          "f1": 0.7727,
+          "parse_fail": 0
+        }
+      },
+      "tune_mean_f1": 0.6582,
+      "tune_max_fpr": 0.3077
+    },
+    "OP-A": {
+      "tau": -1.625,
+      "rule": "두 tune 소스 평균 F1 최대 (제약 없음)",
+      "feasible": true,
+      "tune_at_tau": {
+        "cleanvul_v2_tune": {
+          "n": 676,
+          "n_vuln": 338,
+          "n_safe": 338,
+          "recall": 0.8609,
+          "fpr": 0.716,
+          "precision": 0.546,
+          "f1": 0.6682,
+          "parse_fail": 0
+        },
+        "val": {
+          "n": 1183,
+          "n_vuln": 518,
+          "n_safe": 665,
+          "recall": 0.9575,
+          "fpr": 0.4887,
+          "precision": 0.6041,
+          "f1": 0.7409,
+          "parse_fail": 0
+        }
+      },
+      "tune_mean_f1": 0.70455,
+      "tune_max_fpr": 0.716
+    },
+    "OP-B": {
+      "tau": 1.0,
+      "rule": "두 소스 모두 FPR ≤ 0.15 아래 평균 F1 최대",
+      "feasible": true,
+      "tune_at_tau": {
+        "cleanvul_v2_tune": {
+          "n": 676,
+          "n_vuln": 338,
+          "n_safe": 338,
+          "recall": 0.2544,
+          "fpr": 0.145,
+          "precision": 0.637,
+          "f1": 0.3636,
+          "parse_fail": 0
+        },
+        "val": {
+          "n": 1183,
+          "n_vuln": 518,
+          "n_safe": 665,
+          "recall": 0.6313,
+          "fpr": 0.0962,
+          "precision": 0.8363,
+          "f1": 0.7195,
+          "parse_fail": 0
+        }
+      },
+      "tune_mean_f1": 0.54155,
+      "tune_max_fpr": 0.145
+    },
+    "OP-C": {
+      "tau": 1.25,
+      "rule": "두 소스 모두 FPR ≤ 0.1 아래 평균 F1 최대",
+      "feasible": true,
+      "tune_at_tau": {
+        "cleanvul_v2_tune": {
+          "n": 676,
+          "n_vuln": 338,
+          "n_safe": 338,
+          "recall": 0.1923,
+          "fpr": 0.0917,
+          "precision": 0.6771,
+          "f1": 0.2995,
+          "parse_fail": 0
+        },
+        "val": {
+          "n": 1183,
+          "n_vuln": 518,
+          "n_safe": 665,
+          "recall": 0.5541,
+          "fpr": 0.0722,
+          "precision": 0.8567,
+          "f1": 0.6729,
+          "parse_fail": 0
+        }
+      },
+      "tune_mean_f1": 0.4862,
+      "tune_max_fpr": 0.0917
+    }
+  },
+  "results": {
+    "test": {
+      "label": "내부 test",
+      "kind": "도메인 안",
+      "n": 1197,
+      "auc": 0.9052,
+      "trivial_all_vuln": {
+        "n": 1197,
+        "n_vuln": 552,
+        "n_safe": 645,
+        "recall": 1.0,
+        "fpr": 1.0,
+        "precision": 0.4612,
+        "f1": 0.6312,
+        "parse_fail": 0
+      },
+      "ops": {
+        "OP-0": {
+          "n": 1197,
+          "n_vuln": 552,
+          "n_safe": 645,
+          "recall": 0.8098,
+          "fpr": 0.1721,
+          "precision": 0.8011,
+          "f1": 0.8054,
+          "parse_fail": 0,
+          "tau": 0.0,
+          "precision_ci95": [
+            0.7682,
+            0.8339
+          ],
+          "recall_ci95": [
+            0.7784,
+            0.8422
+          ],
+          "f1_ci95": [
+            0.7799,
+            0.8299
+          ]
+        },
+        "OP-A": {
+          "n": 1197,
+          "n_vuln": 552,
+          "n_safe": 645,
+          "recall": 0.9475,
+          "fpr": 0.3783,
+          "precision": 0.6819,
+          "f1": 0.793,
+          "parse_fail": 0,
+          "tau": -1.625,
+          "precision_ci95": [
+            0.6486,
+            0.7156
+          ],
+          "recall_ci95": [
+            0.929,
+            0.9655
+          ],
+          "f1_ci95": [
+            0.7684,
+            0.8173
+          ]
+        },
+        "OP-B": {
+          "n": 1197,
+          "n_vuln": 552,
+          "n_safe": 645,
+          "recall": 0.6377,
+          "fpr": 0.0729,
+          "precision": 0.8822,
+          "f1": 0.7403,
+          "parse_fail": 0,
+          "tau": 1.0,
+          "precision_ci95": [
+            0.8495,
+            0.9142
+          ],
+          "recall_ci95": [
+            0.5963,
+            0.6777
+          ],
+          "f1_ci95": [
+            0.707,
+            0.77
+          ]
+        },
+        "OP-C": {
+          "n": 1197,
+          "n_vuln": 552,
+          "n_safe": 645,
+          "recall": 0.5652,
+          "fpr": 0.0543,
+          "precision": 0.8991,
+          "f1": 0.6941,
+          "parse_fail": 0,
+          "tau": 1.25,
+          "precision_ci95": [
+            0.8649,
+            0.9298
+          ],
+          "recall_ci95": [
+            0.5222,
+            0.6074
+          ],
+          "f1_ci95": [
+            0.6581,
+            0.7281
+          ]
+        }
+      }
+    },
+    "cleanvul_v2_report": {
+      "label": "CleanVul_v2 report",
+      "kind": "도메인 밖 (주)",
+      "n": 2706,
+      "auc": 0.6165,
+      "trivial_all_vuln": {
+        "n": 2706,
+        "n_vuln": 1353,
+        "n_safe": 1353,
+        "recall": 1.0,
+        "fpr": 1.0,
+        "precision": 0.5,
+        "f1": 0.6667,
+        "parse_fail": 0
+      },
+      "ops": {
+        "OP-0": {
+          "n": 2706,
+          "n_vuln": 1353,
+          "n_safe": 1353,
+          "recall": 0.4435,
+          "fpr": 0.2801,
+          "precision": 0.6129,
+          "f1": 0.5146,
+          "parse_fail": 0,
+          "tau": 0.0,
+          "precision_ci95": [
+            0.5965,
+            0.631
+          ],
+          "recall_ci95": [
+            0.4183,
+            0.4708
+          ],
+          "f1_ci95": [
+            0.4956,
+            0.5353
+          ]
+        },
+        "OP-A": {
+          "n": 2706,
+          "n_vuln": 1353,
+          "n_safe": 1353,
+          "recall": 0.8588,
+          "fpr": 0.7428,
+          "precision": 0.5362,
+          "f1": 0.6602,
+          "parse_fail": 0,
+          "tau": -1.625,
+          "precision_ci95": [
+            0.5297,
+            0.5426
+          ],
+          "recall_ci95": [
+            0.8396,
+            0.8773
+          ],
+          "f1_ci95": [
+            0.6524,
+            0.668
+          ]
+        },
+        "OP-B": {
+          "n": 2706,
+          "n_vuln": 1353,
+          "n_safe": 1353,
+          "recall": 0.2203,
+          "fpr": 0.1308,
+          "precision": 0.6274,
+          "f1": 0.326,
+          "parse_fail": 0,
+          "tau": 1.0,
+          "precision_ci95": [
+            0.6009,
+            0.6547
+          ],
+          "recall_ci95": [
+            0.1981,
+            0.2424
+          ],
+          "f1_ci95": [
+            0.3002,
+            0.3512
+          ]
+        },
+        "OP-C": {
+          "n": 2706,
+          "n_vuln": 1353,
+          "n_safe": 1353,
+          "recall": 0.167,
+          "fpr": 0.0998,
+          "precision": 0.626,
+          "f1": 0.2637,
+          "parse_fail": 0,
+          "tau": 1.25,
+          "precision_ci95": [
+            0.5934,
+            0.6584
+          ],
+          "recall_ci95": [
+            0.1478,
+            0.187
+          ],
+          "f1_ci95": [
+            0.2382,
+            0.2895
+          ]
+        }
+      }
+    },
+    "primevul_report": {
+      "label": "PrimeVul report",
+      "kind": "도메인 밖",
+      "n": 288,
+      "auc": 0.5618,
+      "trivial_all_vuln": {
+        "n": 288,
+        "n_vuln": 144,
+        "n_safe": 144,
+        "recall": 1.0,
+        "fpr": 1.0,
+        "precision": 0.5,
+        "f1": 0.6667,
+        "parse_fail": 0
+      },
+      "ops": {
+        "OP-0": {
+          "n": 288,
+          "n_vuln": 144,
+          "n_safe": 144,
+          "recall": 0.2083,
+          "fpr": 0.1667,
+          "precision": 0.5556,
+          "f1": 0.303,
+          "parse_fail": 0,
+          "tau": 0.0,
+          "precision_ci95": [
+            0.5088,
+            0.6154
+          ],
+          "recall_ci95": [
+            0.1458,
+            0.2778
+          ],
+          "f1_ci95": [
+            0.227,
+            0.371
+          ]
+        },
+        "OP-A": {
+          "n": 288,
+          "n_vuln": 144,
+          "n_safe": 144,
+          "recall": 0.8125,
+          "fpr": 0.7153,
+          "precision": 0.5318,
+          "f1": 0.6429,
+          "parse_fail": 0,
+          "tau": -1.625,
+          "precision_ci95": [
+            0.5146,
+            0.5517
+          ],
+          "recall_ci95": [
+            0.7431,
+            0.875
+          ],
+          "f1_ci95": [
+            0.6149,
+            0.6667
+          ]
+        },
+        "OP-B": {
+          "n": 288,
+          "n_vuln": 144,
+          "n_safe": 144,
+          "recall": 0.0069,
+          "fpr": 0.0,
+          "precision": 1.0,
+          "f1": 0.0138,
+          "parse_fail": 0,
+          "tau": 1.0,
+          "precision_ci95": [
+            0.0,
+            1.0
+          ],
+          "recall_ci95": [
+            0.0,
+            0.0208
+          ],
+          "f1_ci95": [
+            0.0,
+            0.0408
+          ]
+        },
+        "OP-C": {
+          "n": 288,
+          "n_vuln": 144,
+          "n_safe": 144,
+          "recall": 0.0,
+          "fpr": 0.0,
+          "precision": 0.0,
+          "f1": 0.0,
+          "parse_fail": 0,
+          "tau": 1.25,
+          "precision_ci95": [
+            0.0,
+            0.0
+          ],
+          "recall_ci95": [
+            0.0,
+            0.0
+          ],
+          "f1_ci95": [
+            0.0,
+            0.0
+          ]
+        }
+      }
+    },
+    "cvefixes157": {
+      "label": "CVEfixes 157",
+      "kind": "도메인 밖",
+      "n": 157,
+      "auc": 0.8732,
+      "trivial_all_vuln": {
+        "n": 157,
+        "n_vuln": 80,
+        "n_safe": 77,
+        "recall": 1.0,
+        "fpr": 1.0,
+        "precision": 0.5096,
+        "f1": 0.6751,
+        "parse_fail": 0
+      },
+      "ops": {
+        "OP-0": {
+          "n": 157,
+          "n_vuln": 80,
+          "n_safe": 77,
+          "recall": 0.875,
+          "fpr": 0.3117,
+          "precision": 0.7447,
+          "f1": 0.8046,
+          "parse_fail": 0,
+          "tau": 0.0,
+          "precision_ci95": [
+            0.6531,
+            0.8286
+          ],
+          "recall_ci95": [
+            0.7955,
+            0.9452
+          ],
+          "f1_ci95": [
+            0.7355,
+            0.8636
+          ]
+        },
+        "OP-A": {
+          "n": 157,
+          "n_vuln": 80,
+          "n_safe": 77,
+          "recall": 0.95,
+          "fpr": 0.5325,
+          "precision": 0.6496,
+          "f1": 0.7716,
+          "parse_fail": 0,
+          "tau": -1.625,
+          "precision_ci95": [
+            0.5603,
+            0.7311
+          ],
+          "recall_ci95": [
+            0.8941,
+            0.9886
+          ],
+          "f1_ci95": [
+            0.6995,
+            0.8308
+          ]
+        },
+        "OP-B": {
+          "n": 157,
+          "n_vuln": 80,
+          "n_safe": 77,
+          "recall": 0.7,
+          "fpr": 0.1429,
+          "precision": 0.8358,
+          "f1": 0.7619,
+          "parse_fail": 0,
+          "tau": 1.0,
+          "precision_ci95": [
+            0.7391,
+            0.918
+          ],
+          "recall_ci95": [
+            0.5949,
+            0.7976
+          ],
+          "f1_ci95": [
+            0.6767,
+            0.8345
+          ]
+        },
+        "OP-C": {
+          "n": 157,
+          "n_vuln": 80,
+          "n_safe": 77,
+          "recall": 0.625,
+          "fpr": 0.0779,
+          "precision": 0.8929,
+          "f1": 0.7353,
+          "parse_fail": 0,
+          "tau": 1.25,
+          "precision_ci95": [
+            0.8036,
+            0.9661
+          ],
+          "recall_ci95": [
+            0.5195,
+            0.7333
+          ],
+          "f1_ci95": [
+            0.6446,
+            0.8133
+          ]
+        }
+      }
+    },
+    "cybernative154": {
+      "label": "CyberNative 154",
+      "kind": "도메인 밖 (독립 출처)",
+      "n": 154,
+      "auc": 0.9126,
+      "trivial_all_vuln": {
+        "n": 154,
+        "n_vuln": 77,
+        "n_safe": 77,
+        "recall": 1.0,
+        "fpr": 1.0,
+        "precision": 0.5,
+        "f1": 0.6667,
+        "parse_fail": 0
+      },
+      "ops": {
+        "OP-0": {
+          "n": 154,
+          "n_vuln": 77,
+          "n_safe": 77,
+          "recall": 0.6753,
+          "fpr": 0.0649,
+          "precision": 0.9123,
+          "f1": 0.7761,
+          "parse_fail": 0,
+          "tau": 0.0,
+          "precision_ci95": [
+            0.8361,
+            0.9821
+          ],
+          "recall_ci95": [
+            0.5714,
+            0.7761
+          ],
+          "f1_ci95": [
+            0.6935,
+            0.8485
+          ]
+        },
+        "OP-A": {
+          "n": 154,
+          "n_vuln": 77,
+          "n_safe": 77,
+          "recall": 0.8831,
+          "fpr": 0.2727,
+          "precision": 0.764,
+          "f1": 0.8193,
+          "parse_fail": 0,
+          "tau": -1.625,
+          "precision_ci95": [
+            0.6771,
+            0.8495
+          ],
+          "recall_ci95": [
+            0.8077,
+            0.9481
+          ],
+          "f1_ci95": [
+            0.7517,
+            0.88
+          ]
+        },
+        "OP-B": {
+          "n": 154,
+          "n_vuln": 77,
+          "n_safe": 77,
+          "recall": 0.5844,
+          "fpr": 0.039,
+          "precision": 0.9375,
+          "f1": 0.72,
+          "parse_fail": 0,
+          "tau": 1.0,
+          "precision_ci95": [
+            0.8621,
+            1.0
+          ],
+          "recall_ci95": [
+            0.4762,
+            0.6932
+          ],
+          "f1_ci95": [
+            0.6275,
+            0.803
+          ]
+        },
+        "OP-C": {
+          "n": 154,
+          "n_vuln": 77,
+          "n_safe": 77,
+          "recall": 0.5714,
+          "fpr": 0.039,
+          "precision": 0.9362,
+          "f1": 0.7097,
+          "parse_fail": 0,
+          "tau": 1.25,
+          "precision_ci95": [
+            0.8571,
+            1.0
+          ],
+          "recall_ci95": [
+            0.4638,
+            0.68
+          ],
+          "f1_ci95": [
+            0.6154,
+            0.7937
+          ]
+        }
+      }
+    }
+  },
+  "splits_not_scored": [],
+  "verdict": {
+    "gate": "OP-INSUFFICIENT",
+    "chosen": null,
+    "per_op": {
+      "OP-A": {
+        "cond1_internal_test_recall>=0.75_and_fpr<=0.15": false,
+        "cond2_cleanvul_delta_precision_vs_OP0_ci_lower>0": false,
+        "delta_precision_detail": {
+          "delta_precision": -0.0767,
+          "ci95": [
+            -0.093,
+            -0.0616
+          ],
+          "ci_lower_gt_0": false
+        },
+        "passes": false
+      },
+      "OP-B": {
+        "cond1_internal_test_recall>=0.75_and_fpr<=0.15": false,
+        "cond2_cleanvul_delta_precision_vs_OP0_ci_lower>0": false,
+        "delta_precision_detail": {
+          "delta_precision": 0.0145,
+          "ci95": [
+            -0.008,
+            0.0372
+          ],
+          "ci_lower_gt_0": false
+        },
+        "passes": false
+      },
+      "OP-C": {
+        "cond1_internal_test_recall>=0.75_and_fpr<=0.15": false,
+        "cond2_cleanvul_delta_precision_vs_OP0_ci_lower>0": false,
+        "delta_precision_detail": {
+          "delta_precision": 0.0131,
+          "ci95": [
+            -0.0169,
+            0.0428
+          ],
+          "ci_lower_gt_0": false
+        },
+        "passes": false
+      }
+    }
+  }
+}

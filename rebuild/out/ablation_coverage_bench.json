@@ -1,0 +1,441 @@
+{
+  "cat_cwe_11": {
+    "sqli": "CWE-89",
+    "cmdi": "CWE-78",
+    "xss": "CWE-79",
+    "pathtraver": "CWE-22",
+    "ssrf": "CWE-918",
+    "deser": "CWE-502",
+    "codei": "CWE-94",
+    "crypto": "CWE-327",
+    "hash": "CWE-328",
+    "weakrand": "CWE-330",
+    "secret": "CWE-798"
+  },
+  "taint7_cwe": [
+    22,
+    78,
+    79,
+    89,
+    94,
+    502,
+    918
+  ],
+  "all11_cwe": [
+    22,
+    78,
+    79,
+    89,
+    94,
+    327,
+    328,
+    330,
+    502,
+    798,
+    918
+  ],
+  "cvefixes": {
+    "meta_fields": [
+      "code",
+      "cve",
+      "cwe",
+      "label",
+      "language",
+      "published",
+      "severity"
+    ],
+    "cwe_field": "cwe (톱레벨) — 실재 확인",
+    "n": 157,
+    "n_vuln": 80,
+    "cwe_distribution_vuln": {
+      "NVD-CWE-noinfo": 55,
+      "CWE-22": 3,
+      "CWE-601": 2,
+      "CWE-776": 1,
+      "CWE-284": 1,
+      "CWE-416": 1,
+      "CWE-287": 1,
+      "CWE-755": 1,
+      "CWE-200": 1,
+      "CWE-444": 1,
+      "CWE-915": 1,
+      "CWE-89": 1,
+      "CWE-79": 1,
+      "CWE-94": 1,
+      "CWE-78": 1,
+      "CWE-250": 1,
+      "CWE-20": 1,
+      "CWE-532": 1,
+      "CWE-770": 1,
+      "CWE-274": 1,
+      "NVD-CWE-Other": 1,
+      "CWE-407": 1,
+      "CWE-77": 1
+    },
+    "n_noinfo": 56,
+    "n_informative": 24,
+    "intersection": {
+      "taint7_hits": [
+        [
+          "CWE-22",
+          3
+        ],
+        [
+          "CWE-78",
+          1
+        ],
+        [
+          "CWE-79",
+          1
+        ],
+        [
+          "CWE-89",
+          1
+        ],
+        [
+          "CWE-94",
+          1
+        ]
+      ],
+      "all11_hits": [
+        [
+          "CWE-22",
+          3
+        ],
+        [
+          "CWE-78",
+          1
+        ],
+        [
+          "CWE-79",
+          1
+        ],
+        [
+          "CWE-89",
+          1
+        ],
+        [
+          "CWE-94",
+          1
+        ]
+      ],
+      "taint7_over_all_vuln": {
+        "n": 7,
+        "d": 80,
+        "ratio": 0.0875
+      },
+      "taint7_over_informative": {
+        "n": 7,
+        "d": 24,
+        "ratio": 0.2917
+      },
+      "all11_over_all_vuln": {
+        "n": 7,
+        "d": 80,
+        "ratio": 0.0875
+      },
+      "all11_over_informative": {
+        "n": 7,
+        "d": 24,
+        "ratio": 0.2917
+      }
+    },
+    "graph": {
+      "by_language": {
+        "C": {
+          "n": 16,
+          "graph_supported": false,
+          "vuln": 0,
+          "safe": 0,
+          "unknown": 16,
+          "unknown_ratio": 1.0
+        },
+        "C#": {
+          "n": 13,
+          "graph_supported": true,
+          "vuln": 0,
+          "safe": 0,
+          "unknown": 13,
+          "unknown_ratio": 1.0
+        },
+        "C++": {
+          "n": 16,
+          "graph_supported": false,
+          "vuln": 0,
+          "safe": 0,
+          "unknown": 16,
+          "unknown_ratio": 1.0
+        },
+        "Go": {
+          "n": 16,
+          "graph_supported": true,
+          "vuln": 0,
+          "safe": 0,
+          "unknown": 16,
+          "unknown_ratio": 1.0
+        },
+        "Java": {
+          "n": 16,
+          "graph_supported": true,
+          "vuln": 0,
+          "safe": 2,
+          "unknown": 14,
+          "unknown_ratio": 0.875
+        },
+        "Node.js / Express": {
+          "n": 16,
+          "graph_supported": true,
+          "vuln": 0,
+          "safe": 0,
+          "unknown": 16,
+          "unknown_ratio": 1.0
+        },
+        "PHP": {
+          "n": 16,
+          "graph_supported": true,
+          "vuln": 0,
+          "safe": 0,
+          "unknown": 16,
+          "unknown_ratio": 1.0
+        },
+        "Python": {
+          "n": 16,
+          "graph_supported": true,
+          "vuln": 0,
+          "safe": 1,
+          "unknown": 15,
+          "unknown_ratio": 0.9375
+        },
+        "Ruby": {
+          "n": 16,
+          "graph_supported": true,
+          "vuln": 0,
+          "safe": 0,
+          "unknown": 16,
+          "unknown_ratio": 1.0
+        },
+        "TypeScript": {
+          "n": 16,
+          "graph_supported": true,
+          "vuln": 0,
+          "safe": 0,
+          "unknown": 16,
+          "unknown_ratio": 1.0
+        }
+      },
+      "total": {
+        "vuln": 0,
+        "safe": 3,
+        "unknown": 154,
+        "n": 157,
+        "unknown_ratio": 0.9809
+      },
+      "unknown_reasons": {
+        "sink 미발견 (multi_graph.py:229)": {
+          "Node.js / Express": 16,
+          "Go": 16,
+          "Python": 15,
+          "PHP": 15,
+          "Ruby": 14,
+          "C#": 13,
+          "TypeScript": 16
+        },
+        "언어키 None (multi_graph.py:173)": {
+          "C++": 16,
+          "C": 16
+        },
+        "카테고리 미결정 (java_graph.py:415)": {
+          "Java": 14
+        },
+        "source 미발견 (multi_graph.py:223)": {
+          "PHP": 1,
+          "Ruby": 2
+        }
+      }
+    }
+  },
+  "owasp": {
+    "meta_fields": [
+      "code",
+      "label",
+      "language"
+    ],
+    "cwe_field": "없음 — @WebServlet 경로에서 카테고리 추출 (110/110 성공)",
+    "n": 110,
+    "n_extract_fail": 0,
+    "category_distribution": {
+      "cmdi": 10,
+      "crypto": 10,
+      "hash": 10,
+      "ldapi": 10,
+      "pathtraver": 10,
+      "securecookie": 10,
+      "sqli": 10,
+      "trustbound": 10,
+      "weakrand": 10,
+      "xpathi": 10,
+      "xss": 10
+    },
+    "taint_categories": [
+      "cmdi",
+      "ldapi",
+      "pathtraver",
+      "sqli",
+      "trustbound",
+      "xpathi",
+      "xss"
+    ],
+    "nontaint_categories": [
+      "crypto",
+      "hash",
+      "securecookie",
+      "weakrand"
+    ],
+    "graph": {
+      "by_language": {
+        "Java": {
+          "n": 110,
+          "graph_supported": true,
+          "vuln": 47,
+          "safe": 34,
+          "unknown": 29,
+          "unknown_ratio": 0.2636
+        }
+      },
+      "total": {
+        "vuln": 47,
+        "safe": 34,
+        "unknown": 29,
+        "n": 110,
+        "unknown_ratio": 0.2636
+      },
+      "unknown_reasons": {
+        "흐름 미해결(source는 있음) (java_graph.py:433)": {
+          "Java": 21
+        },
+        "외부설정 유래 (java_graph.py:368/380)": {
+          "Java": 8
+        }
+      }
+    },
+    "graph_taint_subset": {
+      "by_language": {
+        "Java": {
+          "n": 70,
+          "graph_supported": true,
+          "vuln": 30,
+          "safe": 19,
+          "unknown": 21,
+          "unknown_ratio": 0.3
+        }
+      },
+      "total": {
+        "vuln": 30,
+        "safe": 19,
+        "unknown": 21,
+        "n": 70,
+        "unknown_ratio": 0.3
+      },
+      "unknown_reasons": {
+        "흐름 미해결(source는 있음) (java_graph.py:433)": {
+          "Java": 21
+        }
+      }
+    },
+    "graph_by_category": {
+      "cmdi": {
+        "vuln": 5,
+        "safe": 3,
+        "unknown": 2,
+        "n": 10,
+        "correct": 7
+      },
+      "crypto": {
+        "vuln": 3,
+        "safe": 3,
+        "unknown": 4,
+        "n": 10,
+        "correct": 6
+      },
+      "hash": {
+        "vuln": 4,
+        "safe": 2,
+        "unknown": 4,
+        "n": 10,
+        "correct": 6
+      },
+      "ldapi": {
+        "vuln": 6,
+        "safe": 3,
+        "unknown": 1,
+        "n": 10,
+        "correct": 8
+      },
+      "pathtraver": {
+        "vuln": 5,
+        "safe": 2,
+        "unknown": 3,
+        "n": 10,
+        "correct": 7
+      },
+      "securecookie": {
+        "vuln": 5,
+        "safe": 5,
+        "unknown": 0,
+        "n": 10,
+        "correct": 10
+      },
+      "sqli": {
+        "vuln": 4,
+        "safe": 2,
+        "unknown": 4,
+        "n": 10,
+        "correct": 6
+      },
+      "trustbound": {
+        "vuln": 4,
+        "safe": 5,
+        "unknown": 1,
+        "n": 10,
+        "correct": 9
+      },
+      "weakrand": {
+        "vuln": 5,
+        "safe": 5,
+        "unknown": 0,
+        "n": 10,
+        "correct": 10
+      },
+      "xpathi": {
+        "vuln": 4,
+        "safe": 1,
+        "unknown": 5,
+        "n": 10,
+        "correct": 5
+      },
+      "xss": {
+        "vuln": 2,
+        "safe": 3,
+        "unknown": 5,
+        "n": 10,
+        "correct": 5
+      }
+    }
+  },
+  "prereg_verdict": {
+    "B_rule_deficit": {
+      "condition": "OWASP graph unknown 비율 > 0.50",
+      "measured_overall": 0.2636,
+      "measured_taint_subset": 0.3,
+      "holds": false,
+      "caveat": "OWASP는 java_graph가 그 형태를 알고 설계된 자산(과적합 경고)이므로 이 결과는 (B)의 반증 용도로만 쓰고 graph 성능 근거로 인용하지 않는다"
+    },
+    "A_bench_mismatch": {
+      "condition": "CVEfixes taint 계열 CWE 비중 < 0.30",
+      "measured_over_all_vuln": 0.0875,
+      "measured_over_informative": 0.2917,
+      "holds_over_all_vuln": true,
+      "holds_over_informative": true
+    }
+  }
+}

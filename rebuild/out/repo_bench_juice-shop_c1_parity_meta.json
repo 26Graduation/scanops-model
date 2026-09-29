@@ -1,0 +1,15 @@
+{
+  "model": "claude-opus-5",
+  "batch_id": "msgbatch_01WjbdPqESekiiUgveBHMqct",
+  "strong": false,
+  "n_units": 263,
+  "n_files": 257,
+  "prompt_sha256_16": "d91fa59450be5f4f",
+  "usage": {
+    "input": 350992,
+    "output": 31464
+  },
+  "cost_usd_batch50pct": 1.2708,
+  "called_at": "2026-08-17 20:41:38 KST",
+  "unparsed": 0
+}

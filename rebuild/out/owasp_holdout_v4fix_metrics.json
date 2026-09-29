@@ -1,0 +1,45 @@
+{
+  "split": "holdout",
+  "n": 56,
+  "gate_preregistered": "IMPROVED = FPR <= 0.50 AND recall >= 0.75",
+  "verdict": "NOT-IMPROVED",
+  "metrics": {
+    "n": 56,
+    "tp": 23,
+    "fp": 18,
+    "fn": 5,
+    "tn": 10,
+    "precision": 0.561,
+    "precision_ci95": [
+      0.4146,
+      0.7073
+    ],
+    "recall": 0.8214,
+    "fpr": 0.6429,
+    "f1": 0.6667
+  },
+  "trivial_all_vuln": {
+    "n": 56,
+    "tp": 28,
+    "fp": 28,
+    "fn": 0,
+    "tn": 0,
+    "precision": 0.5,
+    "precision_ci95": [
+      0.375,
+      0.625
+    ],
+    "recall": 1.0,
+    "fpr": 1.0,
+    "f1": 0.6667
+  },
+  "verdict_dist": {
+    "vuln": 41,
+    "safe_sanitized": 15
+  },
+  "baseline_full110_v4": {
+    "precision": 0.5172,
+    "recall": 0.8182,
+    "fpr": 0.7636
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "primevul_test": {
+    "tune": {
+      "n": 72,
+      "vuln": 36,
+      "safe": 36,
+      "lang": {
+        "C/C++": 72
+      },
+      "path": "primevul_tune.jsonl"
+    },
+    "report": {
+      "n": 288,
+      "vuln": 144,
+      "safe": 144,
+      "lang": {
+        "C/C++": 288
+      },
+      "path": "primevul_report.jsonl"
+    }
+  },
+  "cleanvul_v2_test": {
+    "tune": {
+      "n": 676,
+      "vuln": 338,
+      "safe": 338,
+      "lang": {
+        "Python": 144,
+        "Java": 222,
+        "C/C++": 208,
+        "JS/TS": 102
+      },
+      "path": "cleanvul_v2_tune.jsonl"
+    },
+    "report": {
+      "n": 2706,
+      "vuln": 1353,
+      "safe": 1353,
+      "lang": {
+        "Java": 890,
+        "C/C++": 828,
+        "Python": 576,
+        "JS/TS": 412
+      },
+      "path": "cleanvul_v2_report.jsonl"
+    }
+  }
+}

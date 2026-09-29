@@ -1,0 +1,29 @@
+{
+  "demo1_sanitizer_added": {
+    "changed_lines": [
+      3,
+      4
+    ],
+    "off": {
+      "prompt_tail": "ERABILITY: <CWE-id (CWE name)> or NONE\nSEVERITY: <CRITICAL|HIGH|MEDIUM|LOW|UNKNOWN> or NONE\nCVSS: <score 0.0-10.0> or 0.0\nREASON: <one-line explanation> or NONE",
+      "response": "<think>\n\n</think>\n\nVULNERABILITY: NONE\nSEVERITY: NONE\nCVSS: 0.0\nREASON: NONE"
+    },
+    "on": {
+      "prompt_tail": "``\n\nRespond in exactly this format:\nVULNERABILITY: <CWE-id (CWE name)> or NONE\nSEVERITY: <CRITICAL|HIGH|MEDIUM|LOW|UNKNOWN> or NONE\nCVSS: <score 0.0-10.0> or 0.0\nREASON: <one-line explanation> or NONE",
+      "response": "<think>\n\n</think>\n\nVULNERABILITY: NONE\nSEVERITY: NONE\nCVSS: 0.0\nREASON: NONE"
+    }
+  },
+  "demo2_vuln_introduced": {
+    "changed_lines": [
+      3
+    ],
+    "off": {
+      "prompt_tail": "ERABILITY: <CWE-id (CWE name)> or NONE\nSEVERITY: <CRITICAL|HIGH|MEDIUM|LOW|UNKNOWN> or NONE\nCVSS: <score 0.0-10.0> or 0.0\nREASON: <one-line explanation> or NONE",
+      "response": "<think>\n\n</think>\n\nVULNERABILITY: CWE-79 (Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting'))\nSEVERITY: MEDIUM\nCVSS: 6.1\nREASON: The manipulation leads to cross site scripting."
+    },
+    "on": {
+      "prompt_tail": "``\n\nRespond in exactly this format:\nVULNERABILITY: <CWE-id (CWE name)> or NONE\nSEVERITY: <CRITICAL|HIGH|MEDIUM|LOW|UNKNOWN> or NONE\nCVSS: <score 0.0-10.0> or 0.0\nREASON: <one-line explanation> or NONE",
+      "response": "<think>\n\n</think>\n\nVULNERABILITY: CWE-79 (Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting'))\nSEVERITY: MEDIUM\nCVSS: 6.1\nREASON: The manipulation leads to cross site scripting."
+    }
+  }
+}

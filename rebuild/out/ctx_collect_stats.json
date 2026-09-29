@@ -1,0 +1,18 @@
+{
+  "n_report_rows": 288,
+  "n_kept_rows": 248,
+  "n_pairs_total": 144,
+  "n_pairs_kept": 124,
+  "collect_success_rate": 0.8611,
+  "truncated_cases": 2,
+  "truncation_rate": 0.0081,
+  "tok_capped_mean": 2258.9,
+  "tok_capped_max": 7281,
+  "tok_full_mean": 2300.1,
+  "rate_limited": false,
+  "failures": {
+    "fail_commit_api_fail": 6,
+    "fail_no_repo_url": 30,
+    "fail_path_not_in_commit": 4
+  }
+}

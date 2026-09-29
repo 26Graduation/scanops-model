@@ -1,0 +1,80 @@
+{
+ "split": "sample",
+ "n": 240,
+ "DELTA": 0.5,
+ "TAU": 0.4375,
+ "arms": {
+  "all-vuln (자명)": {
+   "tp": 120,
+   "fp": 120,
+   "fn": 0,
+   "tn": 0,
+   "recall": 1.0,
+   "precision": 0.5,
+   "fpr": 1.0,
+   "f1": 0.6667
+  },
+  "all-safe (자명)": {
+   "tp": 0,
+   "fp": 0,
+   "fn": 120,
+   "tn": 120,
+   "recall": 0.0,
+   "precision": 0.0,
+   "fpr": 0.0,
+   "f1": 0.0
+  },
+  "b) LLM only": {
+   "tp": 64,
+   "fp": 45,
+   "fn": 56,
+   "tn": 75,
+   "recall": 0.5333,
+   "precision": 0.5872,
+   "fpr": 0.375,
+   "f1": 0.559,
+   "auc": 0.6157
+  },
+  "a) LLM + 자체graph": {
+   "tp": 65,
+   "fp": 45,
+   "fn": 55,
+   "tn": 75,
+   "recall": 0.5417,
+   "precision": 0.5909,
+   "fpr": 0.375,
+   "f1": 0.5652
+  },
+  "TRUST-JOERN": {
+   "tp": 91,
+   "fp": 73,
+   "fn": 29,
+   "tn": 47,
+   "recall": 0.7583,
+   "precision": 0.5549,
+   "fpr": 0.6083,
+   "f1": 0.6408
+  },
+  "JOERN-AS-SIGNAL": {
+   "tp": 72,
+   "fp": 47,
+   "fn": 48,
+   "tn": 73,
+   "recall": 0.6,
+   "precision": 0.605,
+   "fpr": 0.3917,
+   "f1": 0.6025,
+   "auc": 0.6238
+  },
+  "JOERN-NO-BETTER": {
+   "tp": 65,
+   "fp": 45,
+   "fn": 55,
+   "tn": 75,
+   "recall": 0.5417,
+   "precision": 0.5909,
+   "fpr": 0.375,
+   "f1": 0.5652
+  }
+ }
+}

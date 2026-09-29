@@ -1,0 +1,431 @@
+{
+  "_source": "시드 = scanops/core/multi_graph.py:114 SANITIZERS (자체 graph 가 쓰던 표). 여기에 언어별 항목을 추가했다. 추가분 출처는 각 항목의 _note 참조.",
+  "_semantics": "값은 Java java.util.regex 문법의 부분일치(find) 정규식. Joern 노드의 .code 텍스트에 대해 검사한다.",
+  "_role_note": "지시서 원문은 '중간 노드'만 검사하라고 했으나, 지시서가 제시한 예시(PreparedStatement.set*, parameterized execute(sql, params))가 모두 sink 쪽 신호다. 따라서 flow 의 모든 노드(source/intermediate/sink)를 검사하고 걸린 노드의 role 을 기록한다. 이 편차는 보고서 §2 에 명시한다.",
+  "_applies_to_note": "각 패턴에 applies_to 를 달았다. 매칭 조건 = (finding 카테고리가 applies_to 에 있음) OR (applies_to 에 '*'). sink 타입과 무관한 sanitizer 를 전역 적용하면 의미가 붕괴한다(§8 D-1).",
+  "_v4_dropped": "판별력 0 으로 제거: new URL(/urlparse(/parse_url( — 쌍의 양쪽에 모두 등장(어제 §2-5). URL 파싱은 검증이 아니다.",
+  "common": {
+    "sqli": [
+      {
+        "re": "\\.setString\\(|\\.setInt\\(|\\.setLong\\(|\\.setDouble\\(|\\.setBoolean\\(",
+        "applies_to": [
+          "sqli"
+        ]
+      },
+      {
+        "re": "AddWithValue|Parameters\\.Add",
+        "applies_to": [
+          "sqli"
+        ]
+      },
+      {
+        "re": "\\.execute\\([^)]*,\\s*[\\(\\[]",
+        "applies_to": [
+          "sqli"
+        ]
+      },
+      {
+        "re": "execute\\([\"'][^\"']*%s[\"']\\s*,",
+        "applies_to": [
+          "sqli"
+        ]
+      },
+      {
+        "re": "execute\\([\"'][^\"']*\\?[^\"']*[\"']\\s*,",
+        "applies_to": [
+          "sqli"
+        ]
+      }
+    ],
+    "cmdi": [
+      {
+        "re": "execFile\\(|execve\\(",
+        "applies_to": [
+          "cmdi"
+        ]
+      },
+      {
+        "re": "shell\\s*=\\s*False",
+        "applies_to": [
+          "cmdi"
+        ]
+      },
+      {
+        "re": "escapeshellarg\\(|shlex\\.quote\\(",
+        "applies_to": [
+          "cmdi"
+        ]
+      },
+      {
+        "re": "ProcessStartInfo|ArgumentList",
+        "applies_to": [
+          "cmdi"
+        ]
+      },
+      {
+        "re": "subprocess\\.(run|call|Popen)\\(\\s*\\[",
+        "applies_to": [
+          "cmdi"
+        ]
+      }
+    ],
+    "pathtraver": [
+      {
+        "re": "basename\\(|filepath\\.Base\\(",
+        "applies_to": [
+          "pathtraver"
+        ]
+      },
+      {
+        "re": "getCanonicalPath|getCanonicalFile",
+        "applies_to": [
+          "pathtraver"
+        ]
+      },
+      {
+        "re": "path\\.normalize|os\\.path\\.realpath|GetFullPath|filepath\\.Clean\\(",
+        "applies_to": [
+          "pathtraver"
+        ]
+      },
+      {
+        "re": "startsWith\\(|StartsWith\\(|\\.startswith\\(",
+        "applies_to": [
+          "pathtraver"
+        ]
+      },
+      {
+        "re": "secure_filename\\(",
+        "applies_to": [
+          "pathtraver"
+        ]
+      },
+      {
+        "re": "allowlist|allowedList|whitelist|ALLOWED",
+        "applies_to": [
+          "pathtraver"
+        ]
+      }
+    ],
+    "ssrf": [
+      {
+        "re": "allowlist|allowedList|whitelist|ALLOWED|ALLOW_LIST",
+        "applies_to": [
+          "ssrf"
+        ]
+      },
+      {
+        "re": "in_array\\([^)]*allow",
+        "applies_to": [
+          "ssrf"
+        ]
+      },
+      {
+        "re": "\\.includes\\(",
+        "applies_to": [
+          "ssrf"
+        ]
+      }
+    ],
+    "deser": [
+      {
+        "re": "json\\.(loads?|decode|Unmarshal)\\(",
+        "applies_to": [
+          "deser"
+        ]
+      },
+      {
+        "re": "json_decode\\(",
+        "applies_to": [
+          "deser"
+        ]
+      },
+      {
+        "re": "yaml\\.safe_load\\(|YAML\\.safe_load\\(",
+        "applies_to": [
+          "deser"
+        ]
+      },
+      {
+        "re": "JSON\\.parse\\(",
+        "applies_to": [
+          "deser"
+        ]
+      },
+      {
+        "re": "literal_eval\\(",
+        "applies_to": [
+          "deser"
+        ]
+      }
+    ],
+    "codei": [
+      {
+        "re": "literal_eval\\(",
+        "applies_to": [
+          "codei"
+        ]
+      },
+      {
+        "re": "FILTER_VALIDATE",
+        "applies_to": [
+          "codei"
+        ]
+      },
+      {
+        "re": "parseInt\\(|parseLong\\(|Number\\(|Integer\\.parse",
+        "applies_to": [
+          "codei"
+        ]
+      },
+      {
+        "re": "JSON\\.parse\\(",
+        "applies_to": [
+          "codei"
+        ]
+      }
+    ],
+    "xss": [
+      {
+        "re": "escapeHtml|htmlspecialchars\\(|HtmlEncode\\(|Encode\\.forHtml|HTMLEscapeString",
+        "applies_to": [
+          "xss"
+        ]
+      },
+      {
+        "re": "DOMPurify\\.sanitize\\(",
+        "applies_to": [
+          "xss"
+        ]
+      },
+      {
+        "re": "textContent\\s*=",
+        "applies_to": [
+          "xss"
+        ]
+      },
+      {
+        "re": "bleach\\.clean\\(",
+        "applies_to": [
+          "xss"
+        ]
+      },
+      {
+        "re": "ESAPI\\s*\\.\\s*encoder\\(\\)\\s*\\.\\s*encodeFor[A-Za-z]+",
+        "applies_to": [
+          "xss"
+        ],
+        "_why": "ESAPI Encoder.encodeForHTML/JavaScript/CSS/URL — 출력 컨텍스트 인코딩(XSS 표준 방어)"
+      },
+      {
+        "re": "URLEncoder\\.encode\\s*\\(",
+        "applies_to": [
+          "xss"
+        ],
+        "_why": "java.net.URLEncoder.encode — URL 컨텍스트 인코딩"
+      },
+      {
+        "re": "HtmlUtils\\.htmlEscape\\s*\\(",
+        "applies_to": [
+          "xss"
+        ],
+        "_why": "org.springframework.web.util.HtmlUtils.htmlEscape"
+      }
+    ],
+    "redirect": [
+      {
+        "re": "URLEncoder\\.encode\\s*\\(",
+        "applies_to": [
+          "redirect"
+        ],
+        "_why": "java.net.URLEncoder.encode — 리다이렉트 대상 URL 을 인코딩해 오픈 리다이렉트(CWE-601) 페이로드 조작을 막는다. URLDecoder.decode() 는 반대로 인코딩을 되돌려 오염을 재도입할 수 있으니(특히 encode 뒤에 decode 가 체이닝되는 경우), decode 자체는 sink/sanitizer 가 아니라 규칙 추가 대상은 아니지만 유의할 것."
+      }
+    ]
+  },
+  "JAVASRC": {
+    "_note": "지시서 §2 예시(escapeHtml*, encodeFor*, parseInt/Long, PreparedStatement.set*, isValid*, matches() 반영",
+    "sqli": [
+      {
+        "re": "createQuery\\([^)]*setParameter|setParameter\\(",
+        "applies_to": [
+          "sqli"
+        ]
+      }
+    ],
+    "xss": [
+      {
+        "re": "encodeFor[A-Za-z]+\\(",
+        "applies_to": [
+          "xss"
+        ]
+      },
+      {
+        "re": "StringEscapeUtils",
+        "applies_to": [
+          "xss"
+        ]
+      }
+    ],
+    "pathtraver": [
+      {
+        "re": "Paths\\.get\\([^)]*\\)\\.normalize\\(",
+        "applies_to": [
+          "pathtraver"
+        ]
+      },
+      {
+        "re": "\\.toRealPath\\(",
+        "applies_to": [
+          "pathtraver"
+        ]
+      }
+    ],
+    "codei": [
+      {
+        "re": "Integer\\.parseInt\\(|Long\\.parseLong\\(|Double\\.parseDouble\\(",
+        "applies_to": [
+          "codei"
+        ]
+      }
+    ],
+    "_any": [
+      {
+        "re": "Integer\\.parseInt\\(|Long\\.parseLong\\(",
+        "applies_to": [
+          "codei",
+          "sqli",
+          "pathtraver",
+          "ssrf"
+        ]
+      },
+      {
+        "re": "isValid[A-Za-z]*\\(",
+        "applies_to": [
+          "*"
+        ]
+      },
+      {
+        "re": "\\.matches\\(",
+        "applies_to": [
+          "*"
+        ]
+      },
+      {
+        "re": "Pattern\\.(compile|matches)\\(",
+        "applies_to": [
+          "*"
+        ]
+      }
+    ]
+  },
+  "PYTHONSRC": {
+    "_note": "지시서 §2 예시(html.escape, shlex.quote, int(, quote(, parameterized execute) 반영",
+    "xss": [
+      {
+        "re": "html\\.escape\\(|cgi\\.escape\\(|markupsafe\\.escape\\(|escape\\(",
+        "applies_to": [
+          "xss"
+        ]
+      }
+    ],
+    "cmdi": [
+      {
+        "re": "shlex\\.quote\\(|pipes\\.quote\\(",
+        "applies_to": [
+          "cmdi"
+        ]
+      }
+    ],
+    "pathtraver": [
+      {
+        "re": "werkzeug\\.utils\\.secure_filename|os\\.path\\.abspath\\(",
+        "applies_to": [
+          "pathtraver"
+        ]
+      }
+    ],
+    "_any": [
+      {
+        "re": "\\bint\\(|\\bfloat\\(",
+        "applies_to": [
+          "codei",
+          "sqli",
+          "pathtraver",
+          "ssrf"
+        ]
+      },
+      {
+        "re": "quote\\(|quote_plus\\(",
+        "applies_to": [
+          "cmdi",
+          "pathtraver",
+          "ssrf"
+        ]
+      },
+      {
+        "re": "re\\.(match|fullmatch)\\(",
+        "applies_to": [
+          "*"
+        ]
+      },
+      {
+        "re": "\\.isdigit\\(|\\.isalnum\\(",
+        "applies_to": [
+          "*"
+        ]
+      }
+    ]
+  },
+  "JSSRC": {
+    "_note": "지시서 §2 예시(encodeURIComponent, DOMPurify.sanitize, escape(, parseInt(, textContent=) 반영",
+    "xss": [
+      {
+        "re": "encodeURIComponent\\(|encodeURI\\(|escapeHtml\\(",
+        "applies_to": [
+          "xss"
+        ]
+      }
+    ],
+    "pathtraver": [
+      {
+        "re": "path\\.resolve\\(|path\\.basename\\(",
+        "applies_to": [
+          "pathtraver"
+        ]
+      }
+    ],
+    "_any": [
+      {
+        "re": "encodeURIComponent\\(",
+        "applies_to": [
+          "xss",
+          "ssrf",
+          "pathtraver"
+        ]
+      },
+      {
+        "re": "parseInt\\(|Number\\(",
+        "applies_to": [
+          "codei",
+          "sqli",
+          "pathtraver",
+          "ssrf"
+        ]
+      },
+      {
+        "re": "validator\\.[a-zA-Z]+\\(",
+        "applies_to": [
+          "*"
+        ]
+      },
+      {
+        "re": "\\.test\\(|\\.match\\(",
+        "applies_to": [
+          "*"
+        ]
+      }
+    ]
+  },
+  "_v4fix_note": "2026-08-17 추가: 출력 sink 앞의 표준 인코딩 API 3종을 xss sanitizer 로. OWASP 진단셋 과탐 24건 중 20건이 xss 규칙 발화였고(테스트 서블릿이 전부 response.getWriter() 로 끝난다), safe 변형은 그 출력을 인코딩한다. applies_to 는 xss 로만 한정 — 인코딩은 SQLi/cmdi 를 막지 못한다.",
+  "_v5_prepareStatement_demoted": "2026-09-02 제거: prepareStatement(/PreparedStatement 를 sqli sanitizer 에서 제외(= none, 중립 통과). prepareStatement() 는 '?' 플레이스홀더 + 별도 setX() 바인딩으로 쓸 때만 안전하다 — SQL 문자열 자체가 prepareStatement() 호출 전에 오염된 입력과 연결(concat)되어 만들어졌다면 여전히 취약한데, 기존 규칙은 이를 구분하지 못하고 무조건 안전 처리해 위양성 대신 위음성(false negative)을 만들었다. 현재 룰 테이블 구조는 API 이름만으로 분류하며 호출부별 인자 구성(argument provenance)을 분석하지 않으므로, 이 파일 안에서는 '안전하게 쓰인 prepareStatement 만 골라 sanitizer 로 남기기'가 불가능하다. 따라서 sanitizer 목록에서 빼서 중립(none)으로 되돌린다 — 오염된 입력이 SQL 문자열에 섞이면 executeQuery/executeUpdate/execute (이미 sink 로 등록됨) 까지 taint 가 정상적으로 이어진다. .setString/.setInt/... 바인딩 패턴은 여전히 sqli sanitizer 로 유지되므로 진짜 파라미터화 쿼리는 계속 안전 처리된다. 이 항목을 다시 sanitizer 로 되돌리기 전에 이 노트를 먼저 읽을 것."
+}

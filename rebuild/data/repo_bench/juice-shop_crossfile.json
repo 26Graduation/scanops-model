@@ -1,0 +1,69 @@
+{
+  "_rule": "cross_file = true iff (a) the taint path source→sink spans ≥2 files, OR (b) the marked line's verdict depends on a definition in another file of this repo. 'other file' must be named. 이 주석은 어떤 스캔 결과도 보기 전에 작성했다 (커밋 순서로 확인 가능). 판정 확신도는 전부 med = 공식 마커(파일:라인)는 high 지만 cross_file 여부는 소스 대조로 우리가 붙인 값이라 한 단계 낮춘다.",
+  "_not_marked": "아래에 없는 항목은 cross_file=false 다. 보수적으로 판단했다 — 예: routes/login.ts:34(소스 req.body 와 sink query 가 같은 줄), routes/search.ts:23, routes/updateProductReviews.ts:16/18/20, app.routing.ts:186/239/261/300, search-result.component.ts:144, *.sol 3건.",
+
+  "juice-shop:redirectCryptoCurrencyChallenge:lib/insecurity.ts:124": {
+    "cross_file": true, "source_file": "routes/redirect.ts", "source_line": 15, "confidence": "med",
+    "note": "allowlist 항목. 사용처는 routes/redirect.ts:15 security.isRedirectAllowed(toUrl), sink 은 :18 res.redirect(toUrl)."
+  },
+  "juice-shop:redirectCryptoCurrencyChallenge:lib/insecurity.ts:125": {
+    "cross_file": true, "source_file": "routes/redirect.ts", "source_line": 15, "confidence": "med",
+    "note": "위와 동일."
+  },
+  "juice-shop:redirectCryptoCurrencyChallenge:lib/insecurity.ts:126": {
+    "cross_file": true, "source_file": "routes/redirect.ts", "source_line": 15, "confidence": "med",
+    "note": "위와 동일."
+  },
+  "juice-shop:redirectChallenge:lib/insecurity.ts:136": {
+    "cross_file": true, "source_file": "routes/redirect.ts", "source_line": 14, "confidence": "med",
+    "note": "source = redirect.ts:14 query.to, sink = redirect.ts:18 res.redirect. 결함(부분 문자열 매칭)은 insecurity.ts:136. 경로가 두 파일에 걸친다."
+  },
+  "juice-shop:weakPasswordChallenge:models/user.ts:73": {
+    "cross_file": true, "source_file": "lib/insecurity.ts", "source_line": 41, "confidence": "med",
+    "note": "user.ts:73 은 security.hash 호출만 보인다. '약한 해시'라는 판정은 lib/insecurity.ts:41 의 md5 구현을 봐야 나온다."
+  },
+  "juice-shop:directoryListingChallenge:server.ts:288": {
+    "cross_file": true, "source_file": "routes/fileServer.ts", "source_line": 32, "confidence": "med",
+    "note": "server.ts 는 미들웨어를 붙일 뿐이고 실제 파일 sink 는 fileServer.ts:32 res.sendFile(path.resolve('ftp/', file))."
+  },
+  "juice-shop:directoryListingChallenge:server.ts:289": {
+    "cross_file": true, "source_file": "routes/fileServer.ts", "source_line": 32, "confidence": "med",
+    "note": "위와 동일. servePublicFiles() 정의는 fileServer.ts:13."
+  },
+  "juice-shop:accessLogDisclosureChallenge:server.ts:300": {
+    "cross_file": true, "source_file": "routes/logfileServer.ts", "source_line": 14, "confidence": "med",
+    "note": "sink 은 logfileServer.ts:14 res.sendFile(path.resolve('logs/', file))."
+  },
+  "juice-shop:accessLogDisclosureChallenge:server.ts:302": {
+    "cross_file": true, "source_file": "routes/logfileServer.ts", "source_line": 14, "confidence": "med",
+    "note": "위와 동일. serveLogFiles() 정의는 logfileServer.ts:9."
+  },
+  "juice-shop:exposedMetricsChallenge:server.ts:750": {
+    "cross_file": true, "source_file": "routes/metrics.ts", "source_line": 1, "confidence": "med",
+    "note": "인증 없이 노출되는 핸들러 본문은 routes/metrics.ts 에 있다."
+  },
+  "juice-shop:registerAdminChallenge:server.ts:530": {
+    "cross_file": true, "source_file": "models/user.ts", "source_line": 1, "confidence": "med",
+    "note": "REST 자동 라우트가 User 엔티티의 role 필드를 그대로 받는다. 무엇이 위험한지는 models/user.ts 의 스키마를 봐야 한다."
+  },
+  "juice-shop:changeProductChallenge:server.ts:389": {
+    "cross_file": true, "source_file": "lib/insecurity.ts", "source_line": 1, "confidence": "med",
+    "note": "주석 처리된 security.isAuthorized() 의 정의는 lib/insecurity.ts. 이 줄만 보면 '없는 것'이라 판정 근거가 다른 파일에 있다."
+  },
+  "juice-shop:resetPasswordMortyChallenge:server.ts:365": {
+    "cross_file": true, "source_file": "routes/resetPassword.ts", "source_line": 1, "confidence": "med",
+    "note": "X-Forwarded-For 로 rate limit 키를 만든다. 이 제한이 지키는 엔드포인트는 routes/resetPassword.ts 다."
+  },
+  "juice-shop:chatbotPromptInjectionChallenge:routes/chat.ts:184": {
+    "cross_file": true, "source_file": "lib/insecurity.ts", "source_line": 97, "confidence": "med",
+    "note": "generateCoupon 구현이 lib/insecurity.ts:97 에 있다. 할인율 상한이 실제로 강제되는지는 그 파일을 봐야 한다."
+  },
+  "juice-shop:restfulXssChallenge:frontend/src/app/search-result/search-result.component.ts:111": {
+    "cross_file": true, "source_file": "server.ts", "source_line": 1, "confidence": "med",
+    "note": "저장형 XSS. 페이로드는 server.ts 의 REST 자동 라우트로 들어가고, 이 컴포넌트가 bypassSecurityTrustHtml 로 렌더한다. 두 파일(그리고 두 계층)에 걸친다."
+  },
+  "juice-shop:adminSectionChallenge:frontend/src/app/app.routing.ts:79": {
+    "cross_file": true, "source_file": "frontend/src/app/app.guard.ts", "source_line": 1, "confidence": "med",
+    "note": "canActivate: [AdminGuard] 가 붙어 있다. 약한지 여부는 app.guard.ts 의 AdminGuard 구현을 봐야 한다."
+  }
+}

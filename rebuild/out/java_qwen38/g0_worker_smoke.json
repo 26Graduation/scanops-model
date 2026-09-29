@@ -1,0 +1,374 @@
+{
+  "pass": false,
+  "checks": {
+    "candidate_frontend_java": true,
+    "candidate_getParameter": true,
+    "candidate_println": true,
+    "vulnerable_sink_line": true,
+    "cross_file_path": false,
+    "sanitizer_hit": true,
+    "no_rule_errors": true
+  },
+  "candidates": {
+    "mode": "candidates",
+    "n_files": 3,
+    "data": {
+      "lang": "JAVASRC",
+      "n_calls_total": 8,
+      "n_call_candidates": 5,
+      "n_param_candidates": 12,
+      "n_assign_candidates": 0,
+      "calls": [
+        {
+          "name": "getParameter",
+          "n": 2,
+          "fulls": [
+            {
+              "full": "javax.servlet.http.HttpServletRequest.getParameter:<unresolvedSignature>(1)",
+              "n": 2
+            }
+          ],
+          "codes": [
+            "getParameter(\"q\")"
+          ],
+          "locs": [
+            "demo/Input.java:3",
+            "demo/Safe.java:7"
+          ]
+        },
+        {
+          "name": "println",
+          "n": 2,
+          "fulls": [
+            {
+              "full": "<unresolvedNamespace>.println:<unresolvedSignature>(1)",
+              "n": 2
+            }
+          ],
+          "codes": [
+            "getWriter().println(value)",
+            "getWriter().println(escaped)"
+          ],
+          "locs": [
+            "demo/App.java:7",
+            "demo/Safe.java:9"
+          ]
+        },
+        {
+          "name": "getWriter",
+          "n": 2,
+          "fulls": [
+            {
+              "full": "javax.servlet.http.HttpServletResponse.getWriter:<unresolvedSignature>(0)",
+              "n": 2
+            }
+          ],
+          "codes": [
+            "getWriter()"
+          ],
+          "locs": [
+            "demo/App.java:7",
+            "demo/Safe.java:9"
+          ]
+        },
+        {
+          "name": "read",
+          "n": 1,
+          "fulls": [
+            {
+              "full": "demo.Input.read:java.lang.String(javax.servlet.http.HttpServletRequest)",
+              "n": 1
+            }
+          ],
+          "codes": [
+            "read(req)"
+          ],
+          "locs": [
+            "demo/App.java:6"
+          ]
+        },
+        {
+          "name": "htmlEscape",
+          "n": 1,
+          "fulls": [
+            {
+              "full": "org.springframework.web.util.HtmlUtils.htmlEscape:<unresolvedSignature>(1)",
+              "n": 1
+            }
+          ],
+          "codes": [
+            "htmlEscape(value)"
+          ],
+          "locs": [
+            "demo/Safe.java:8"
+          ]
+        }
+      ],
+      "params": [
+        {
+          "method": "doGet",
+          "param": "resp",
+          "n": 2,
+          "locs": [
+            "demo/App.java:5",
+            "demo/Safe.java:6"
+          ]
+        },
+        {
+          "method": "doGet",
+          "param": "req",
+          "n": 2,
+          "locs": [
+            "demo/App.java:5",
+            "demo/Safe.java:6"
+          ]
+        },
+        {
+          "method": "getParameter",
+          "param": "p1",
+          "n": 1,
+          "locs": [
+            "<empty>:-1"
+          ]
+        },
+        {
+          "method": "htmlEscape",
+          "param": "p0",
+          "n": 1,
+          "locs": [
+            "<empty>:-1"
+          ]
+        },
+        {
+          "method": "<operator>.assignment",
+          "param": "p1",
+          "n": 1,
+          "locs": [
+            "<empty>:-1"
+          ]
+        },
+        {
+          "method": "htmlEscape",
+          "param": "p1",
+          "n": 1,
+          "locs": [
+            "<empty>:-1"
+          ]
+        },
+        {
+          "method": "getWriter",
+          "param": "p0",
+          "n": 1,
+          "locs": [
+            "<empty>:-1"
+          ]
+        },
+        {
+          "method": "read",
+          "param": "req",
+          "n": 1,
+          "locs": [
+            "demo/Input.java:3"
+          ]
+        },
+        {
+          "method": "println",
+          "param": "p0",
+          "n": 1,
+          "locs": [
+            "<empty>:-1"
+          ]
+        },
+        {
+          "method": "<operator>.assignment",
+          "param": "p2",
+          "n": 1,
+          "locs": [
+            "<empty>:-1"
+          ]
+        },
+        {
+          "method": "getParameter",
+          "param": "p0",
+          "n": 1,
+          "locs": [
+            "<empty>:-1"
+          ]
+        },
+        {
+          "method": "println",
+          "param": "p1",
+          "n": 1,
+          "locs": [
+            "<empty>:-1"
+          ]
+        }
+      ],
+      "assigns": []
+    },
+    "elapsed": 5.97,
+    "timed_out": false,
+    "rc": 0,
+    "peak_rss_mb": 26,
+    "stdout_tail": "let.http.HttpServletRequest.getParameter:<unresolvedSignature>(1): 2\n[INFO ] Number of definitions for <operator>.assignment: 2\n[INFO ] Number of definitions for javax.servlet.http.HttpServletResponse.getWriter:<unresolvedSignature>(0): 1\n[INFO ] Number of definitions for demo.Input.read:java.lang.String(javax.servlet.http.HttpServletRequest): 3\n[INFO ] Number of definitions for demo.App.doGet:void(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse): 13\n[INFO ] Number of definitions for demo.Safe.doGet:void(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse): 18\n[INFO ] Calculating reaching definitions for: org.springframework.web.util.HtmlUtils.htmlEscape:<unresolvedSignature>(1) in <empty>\n[INFO ] Calculating reaching definitions for: demo.Input.<init>:void() in demo/Input.java\n[INFO ] Calculating reaching definitions for: <unresolvedNamespace>.println:<unresolvedSignature>(1) in <empty>\n[INFO ] Number of definitions for org.springframework.web.util.HtmlUtils.htmlEscape:<unresolvedSignature>(1): 2\n[INFO ] Number of definitions for <unresolvedNamespace>.println:<unresolvedSignature>(1): 2\n[INFO ] Number of definitions for demo.Input.<init>:void(): 1\n[INFO ] Pass io.joern.dataflowengineoss.passes.reachingdef.ReachingDefPass completed in 46 ms (2% on mutations). 132 + 0 changes committed from 11 parts.\n[INFO ] Start of pass: io.shiftleft.semanticcpg.Overlays$$anon$1\n[INFO ] Pass io.shiftleft.semanticcpg.Overlays$$anon$1 completed in 0 ms (72% on mutations). 1 + 0 changes committed from 1 parts.\nThe graph has been modified. You may want to use the `save` command to persist changes to disk.  All changes will also be saved collectively on exit\n[dump_candidates] calls=8 call_cands=5 param_cands=12 assign_cands=0 -> /tmp/scanops_repo_java-smoke-candidates/out.json\n[INFO ] writing to storage at `/tmp/workspace/candgen/cpg.bin.tmp`\n[INFO ] closed graph at /tmp/workspace/candgen/cpg.bin.tmp\nclosing/saving project `candgen`\n"
+  },
+  "taint": {
+    "mode": "taint",
+    "n_files": 3,
+    "data": {
+      "arm": "S2C",
+      "n_rules": 1,
+      "n_source_rules": 1,
+      "n_prop_rules": 0,
+      "n_sanitizer_patterns": 1,
+      "n_call_sources": 2,
+      "n_param_sources": 14,
+      "src_mode": "params",
+      "n_fieldaccess_sources": 0,
+      "parsed": [
+        "<empty>",
+        "demo/App.java",
+        "demo/Input.java",
+        "demo/Safe.java"
+      ],
+      "seen": [
+        "<empty>",
+        "<unknown>",
+        "demo/App.java",
+        "demo/Input.java",
+        "demo/Safe.java"
+      ],
+      "rule_errors": [],
+      "findings": [
+        {
+          "file": "demo/Safe.java",
+          "category": "xss",
+          "cwe": "CWE-79",
+          "source": "HttpServletRequest req",
+          "sink": "getWriter().println(escaped)",
+          "line": 9,
+          "source_file": "demo/Safe.java",
+          "source_line": 6,
+          "rule_pattern": "^println$",
+          "rule_field": "name",
+          "sanitized": true,
+          "sanitizer_hits": [
+            {
+              "line": 8,
+              "code": "String escaped = HtmlUtils.htmlEscape(value)",
+              "role": "intermediate",
+              "pattern": "HtmlUtils\\.htmlEscape\\s*\\("
+            },
+            {
+              "line": 8,
+              "code": "String escaped = HtmlUtils.htmlEscape(value)",
+              "role": "intermediate",
+              "pattern": "HtmlUtils\\.htmlEscape\\s*\\("
+            },
+            {
+              "line": 8,
+              "code": "String escaped = HtmlUtils.htmlEscape(value)",
+              "role": "intermediate",
+              "pattern": "HtmlUtils\\.htmlEscape\\s*\\("
+            }
+          ],
+          "path": [
+            {
+              "file": "demo/Safe.java",
+              "line": 6,
+              "code": "HttpServletRequest req",
+              "role": "source"
+            },
+            {
+              "file": "demo/Safe.java",
+              "line": 7,
+              "code": "req",
+              "role": "intermediate"
+            },
+            {
+              "file": "demo/Safe.java",
+              "line": 7,
+              "code": "getParameter(\"q\")",
+              "role": "intermediate"
+            },
+            {
+              "file": "demo/Safe.java",
+              "line": 7,
+              "code": "value",
+              "role": "intermediate"
+            },
+            {
+              "file": "demo/Safe.java",
+              "line": 8,
+              "code": "value",
+              "role": "intermediate"
+            },
+            {
+              "file": "demo/Safe.java",
+              "line": 8,
+              "code": "htmlEscape(value)",
+              "role": "intermediate"
+            },
+            {
+              "file": "demo/Safe.java",
+              "line": 8,
+              "code": "escaped",
+              "role": "intermediate"
+            },
+            {
+              "file": "demo/Safe.java",
+              "line": 9,
+              "code": "escaped",
+              "role": "sink"
+            }
+          ]
+        },
+        {
+          "file": "demo/App.java",
+          "category": "xss",
+          "cwe": "CWE-79",
+          "source": "HttpServletResponse resp",
+          "sink": "getWriter().println(value)",
+          "line": 7,
+          "source_file": "demo/App.java",
+          "source_line": 5,
+          "rule_pattern": "^println$",
+          "rule_field": "name",
+          "sanitized": false,
+          "sanitizer_hits": [],
+          "path": [
+            {
+              "file": "demo/App.java",
+              "line": 5,
+              "code": "HttpServletResponse resp",
+              "role": "source"
+            },
+            {
+              "file": "demo/App.java",
+              "line": 7,
+              "code": "resp",
+              "role": "intermediate"
+            },
+            {
+              "file": "demo/App.java",
+              "line": 7,
+              "code": "getWriter()",
+              "role": "intermediate"
+            },
+            {
+              "file": "demo/App.java",
+              "line": 7,
+              "code": "value",
+              "role": "sink"
+            }
+          ]
+        }
+      ]
+    },
+    "elapsed": 6.51,
+    "timed_out": false,
+    "rc": 0,
+    "peak_rss_mb": 27,
+    "stdout_tail": "umber of definitions for javax.servlet.http.HttpServletRequest.getParameter:<unresolvedSignature>(1): 2\n[INFO ] Number of definitions for demo.App.<init>:void(): 1\n[INFO ] Number of definitions for demo.Input.<init>:void(): 1\n[INFO ] Number of definitions for demo.Input.read:java.lang.String(javax.servlet.http.HttpServletRequest): 3\n[INFO ] Number of definitions for demo.App.doGet:void(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse): 13\n[INFO ] Number of definitions for demo.Safe.doGet:void(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse): 18\n[INFO ] Calculating reaching definitions for: <unresolvedNamespace>.println:<unresolvedSignature>(1) in <empty>\n[INFO ] Calculating reaching definitions for: org.springframework.web.util.HtmlUtils.htmlEscape:<unresolvedSignature>(1) in <empty>\n[INFO ] Calculating reaching definitions for: javax.servlet.http.HttpServletResponse.getWriter:<unresolvedSignature>(0) in <empty>\n[INFO ] Number of definitions for <unresolvedNamespace>.println:<unresolvedSignature>(1): 2\n[INFO ] Number of definitions for org.springframework.web.util.HtmlUtils.htmlEscape:<unresolvedSignature>(1): 2\n[INFO ] Number of definitions for javax.servlet.http.HttpServletResponse.getWriter:<unresolvedSignature>(0): 1\n[INFO ] Pass io.joern.dataflowengineoss.passes.reachingdef.ReachingDefPass completed in 46 ms (2% on mutations). 132 + 0 changes committed from 11 parts.\n[INFO ] Start of pass: io.shiftleft.semanticcpg.Overlays$$anon$1\nThe graph has been modified. You may want to use the `save` command to persist changes to disk.  All changes will also be saved collectively on exit\n[INFO ] Pass io.shiftleft.semanticcpg.Overlays$$anon$1 completed in 0 ms (67% on mutations). 1 + 0 changes committed from 1 parts.\n[taint_spec arm=S2C] rules=1 src=1 prop=0 findings=7\n[INFO ] writing to storage at `/tmp/workspace/spec/cpg.bin.tmp`\n[INFO ] closed graph at /tmp/workspace/spec/cpg.bin.tmp\nclosing/saving project `spec`\n"
+  }
+}

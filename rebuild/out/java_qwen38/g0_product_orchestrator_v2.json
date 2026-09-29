@@ -1,0 +1,287 @@
+{
+  "pass": false,
+  "checks": {
+    "model_is_qwen38_max": true,
+    "critic_default_off": true,
+    "java_prompt_and_frontend": true,
+    "cross_file_vulnerability": true,
+    "safe_file_filtered": false,
+    "sink_line_present": true,
+    "path_present": true,
+    "frontend_cache": true
+  },
+  "findings": [
+    {
+      "file": "demo/App.java",
+      "category": "infoexpose",
+      "cwe": "CWE-526",
+      "source": "getParameter(\"q\")",
+      "sink": "getWriter().println(value)",
+      "line": 7,
+      "source_file": "demo/Input.java",
+      "source_line": 3,
+      "rule_pattern": "println",
+      "rule_field": "name",
+      "sanitized": false,
+      "sanitizer_hits": [],
+      "path": [
+        {
+          "file": "demo/Input.java",
+          "line": 3,
+          "code": "getParameter(\"q\")",
+          "role": "source"
+        },
+        {
+          "file": "demo/Input.java",
+          "line": 3,
+          "code": "return req.getParameter(\"q\");",
+          "role": "intermediate"
+        },
+        {
+          "file": "demo/Input.java",
+          "line": 3,
+          "code": "RET",
+          "role": "intermediate"
+        },
+        {
+          "file": "demo/App.java",
+          "line": 6,
+          "code": "read(req)",
+          "role": "intermediate"
+        },
+        {
+          "file": "demo/App.java",
+          "line": 6,
+          "code": "value",
+          "role": "intermediate"
+        },
+        {
+          "file": "demo/App.java",
+          "line": 7,
+          "code": "value",
+          "role": "sink"
+        }
+      ],
+      "_dup_count": 1,
+      "_uid": 0
+    },
+    {
+      "file": "demo/App.java",
+      "category": "sensitive",
+      "cwe": "CWE-319",
+      "source": "getParameter(\"q\")",
+      "sink": "getWriter().println(value)",
+      "line": 7,
+      "source_file": "demo/Input.java",
+      "source_line": 3,
+      "rule_pattern": "println",
+      "rule_field": "name",
+      "sanitized": false,
+      "sanitizer_hits": [],
+      "path": [
+        {
+          "file": "demo/Input.java",
+          "line": 3,
+          "code": "getParameter(\"q\")",
+          "role": "source"
+        },
+        {
+          "file": "demo/Input.java",
+          "line": 3,
+          "code": "return req.getParameter(\"q\");",
+          "role": "intermediate"
+        },
+        {
+          "file": "demo/Input.java",
+          "line": 3,
+          "code": "RET",
+          "role": "intermediate"
+        },
+        {
+          "file": "demo/App.java",
+          "line": 6,
+          "code": "read(req)",
+          "role": "intermediate"
+        },
+        {
+          "file": "demo/App.java",
+          "line": 6,
+          "code": "value",
+          "role": "intermediate"
+        },
+        {
+          "file": "demo/App.java",
+          "line": 7,
+          "code": "value",
+          "role": "sink"
+        }
+      ],
+      "_dup_count": 1,
+      "_uid": 1
+    },
+    {
+      "file": "demo/App.java",
+      "category": "xss",
+      "cwe": "CWE-83",
+      "source": "getParameter(\"q\")",
+      "sink": "getWriter().println(value)",
+      "line": 7,
+      "source_file": "demo/Input.java",
+      "source_line": 3,
+      "rule_pattern": "println",
+      "rule_field": "name",
+      "sanitized": false,
+      "sanitizer_hits": [],
+      "path": [
+        {
+          "file": "demo/Input.java",
+          "line": 3,
+          "code": "getParameter(\"q\")",
+          "role": "source"
+        },
+        {
+          "file": "demo/Input.java",
+          "line": 3,
+          "code": "return req.getParameter(\"q\");",
+          "role": "intermediate"
+        },
+        {
+          "file": "demo/Input.java",
+          "line": 3,
+          "code": "RET",
+          "role": "intermediate"
+        },
+        {
+          "file": "demo/App.java",
+          "line": 6,
+          "code": "read(req)",
+          "role": "intermediate"
+        },
+        {
+          "file": "demo/App.java",
+          "line": 6,
+          "code": "value",
+          "role": "intermediate"
+        },
+        {
+          "file": "demo/App.java",
+          "line": 7,
+          "code": "value",
+          "role": "sink"
+        }
+      ],
+      "_dup_count": 2,
+      "_uid": 2
+    },
+    {
+      "file": "demo/Safe.java",
+      "category": "infoexpose",
+      "cwe": "CWE-526",
+      "source": "getParameter(\"q\")",
+      "sink": "getWriter().println(escaped)",
+      "line": 9,
+      "source_file": "demo/Safe.java",
+      "source_line": 7,
+      "rule_pattern": "println",
+      "rule_field": "name",
+      "sanitized": false,
+      "sanitizer_hits": [],
+      "path": [
+        {
+          "file": "demo/Safe.java",
+          "line": 7,
+          "code": "getParameter(\"q\")",
+          "role": "source"
+        },
+        {
+          "file": "demo/Safe.java",
+          "line": 7,
+          "code": "value",
+          "role": "intermediate"
+        },
+        {
+          "file": "demo/Safe.java",
+          "line": 8,
+          "code": "value",
+          "role": "intermediate"
+        },
+        {
+          "file": "demo/Safe.java",
+          "line": 8,
+          "code": "htmlEscape(value)",
+          "role": "intermediate"
+        },
+        {
+          "file": "demo/Safe.java",
+          "line": 8,
+          "code": "escaped",
+          "role": "intermediate"
+        },
+        {
+          "file": "demo/Safe.java",
+          "line": 9,
+          "code": "escaped",
+          "role": "sink"
+        }
+      ],
+      "_dup_count": 1,
+      "_uid": 3
+    },
+    {
+      "file": "demo/Safe.java",
+      "category": "sensitive",
+      "cwe": "CWE-319",
+      "source": "getParameter(\"q\")",
+      "sink": "getWriter().println(escaped)",
+      "line": 9,
+      "source_file": "demo/Safe.java",
+      "source_line": 7,
+      "rule_pattern": "println",
+      "rule_field": "name",
+      "sanitized": false,
+      "sanitizer_hits": [],
+      "path": [
+        {
+          "file": "demo/Safe.java",
+          "line": 7,
+          "code": "getParameter(\"q\")",
+          "role": "source"
+        },
+        {
+          "file": "demo/Safe.java",
+          "line": 7,
+          "code": "value",
+          "role": "intermediate"
+        },
+        {
+          "file": "demo/Safe.java",
+          "line": 8,
+          "code": "value",
+          "role": "intermediate"
+        },
+        {
+          "file": "demo/Safe.java",
+          "line": 8,
+          "code": "htmlEscape(value)",
+          "role": "intermediate"
+        },
+        {
+          "file": "demo/Safe.java",
+          "line": 8,
+          "code": "escaped",
+          "role": "intermediate"
+        },
+        {
+          "file": "demo/Safe.java",
+          "line": 9,
+          "code": "escaped",
+          "role": "sink"
+        }
+      ],
+      "_dup_count": 1,
+      "_uid": 4
+    }
+  ],
+  "cache_path": "rebuild/out/java_qwen38/g0_product_cache_v2.json",
+  "model": "qwen3.8-max"
+}

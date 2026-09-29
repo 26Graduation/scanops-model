@@ -1,0 +1,18 @@
+{
+  "split": "primevul_tune",
+  "n_report_rows": 72,
+  "n_kept_rows": 64,
+  "n_pairs_total": 36,
+  "n_pairs_kept": 32,
+  "collect_success_rate": 0.8889,
+  "truncated_cases": 0,
+  "truncation_rate": 0.0,
+  "tok_capped_mean": 2307.0,
+  "tok_capped_max": 7114,
+  "tok_full_mean": 2307.0,
+  "rate_limited": false,
+  "failures": {
+    "fail_commit_api_fail": 2,
+    "fail_no_repo_url": 6
+  }
+}

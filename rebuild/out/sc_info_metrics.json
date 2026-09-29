@@ -1,0 +1,56 @@
+{
+  "spec": "rebuild/SC_INFO_RUN_SPEC.md",
+  "seed": 42,
+  "n_boot": 2000,
+  "sanity_check": {
+    "target_auc_from_V3_RESULTS_3_2": 0.58,
+    "tol": 0.005,
+    "observed": 0.5802,
+    "passed": true
+  },
+  "primary": {
+    "split": "primevul_report",
+    "n": 288,
+    "n_vuln": 144,
+    "auc_A_single_forward": 0.5802,
+    "auc_B_self_consistency": 0.5551,
+    "delta_auc": -0.0251,
+    "n_boot_used": 2000,
+    "ci_lo": -0.0886,
+    "ci_hi": 0.0345,
+    "n_pairs": 144,
+    "verdict": "SC-THRESHOLD-ONLY",
+    "auc_A_coarse_6bin": 0.572,
+    "coarsening_explains_null": false,
+    "vote_hist": {
+      "0": 3,
+      "1": 24,
+      "2": 52,
+      "3": 77,
+      "4": 97,
+      "5": 35
+    }
+  },
+  "confirmatory": {
+    "split": "cleanvul_v2_tune",
+    "n": 676,
+    "n_vuln": 338,
+    "auc_A_single_forward": 0.6381,
+    "auc_B_self_consistency": 0.5752,
+    "delta_auc": -0.0629,
+    "n_boot_used": 2000,
+    "ci_lo": -0.1021,
+    "ci_hi": -0.0248,
+    "n_pairs": 338,
+    "verdict": "SC-INFO-WORSE",
+    "vote_hist": {
+      "0": 17,
+      "1": 44,
+      "2": 125,
+      "3": 183,
+      "4": 198,
+      "5": 109
+    }
+  },
+  "FINAL_VERDICT": "SC-THRESHOLD-ONLY"
+}

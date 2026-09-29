@@ -1,0 +1,76 @@
+{
+  "engine": "scanops-qwen3.5-9b-qlora",
+  "dataset": "cleanvul",
+  "overall": {
+    "n": 11580,
+    "n_vuln": 5790,
+    "n_safe": 5790,
+    "recall": 0.3553,
+    "fpr": 0.2166,
+    "precision": 0.6213,
+    "f1": 0.452,
+    "parse_fail": 3
+  },
+  "by_language": {
+    "C/C++": {
+      "n": 6034,
+      "n_vuln": 3017,
+      "n_safe": 3017,
+      "recall": 0.1541,
+      "fpr": 0.0968,
+      "precision": 0.6143,
+      "f1": 0.2464,
+      "parse_fail": 3
+    },
+    "JS/TS": {
+      "n": 1218,
+      "n_vuln": 609,
+      "n_safe": 609,
+      "recall": 0.798,
+      "fpr": 0.6502,
+      "precision": 0.551,
+      "f1": 0.6519,
+      "parse_fail": 0
+    },
+    "Java": {
+      "n": 2420,
+      "n_vuln": 1210,
+      "n_safe": 1210,
+      "recall": 0.4504,
+      "fpr": 0.2,
+      "precision": 0.6925,
+      "f1": 0.5458,
+      "parse_fail": 0
+    },
+    "Python": {
+      "n": 1908,
+      "n_vuln": 954,
+      "n_safe": 954,
+      "recall": 0.5881,
+      "fpr": 0.3396,
+      "precision": 0.6339,
+      "f1": 0.6101,
+      "parse_fail": 0
+    }
+  },
+  "pairwise": {
+    "n_pairs": 5790,
+    "pair_correct": {
+      "n": 933,
+      "rate": 0.1611
+    },
+    "pair_vulnerable": {
+      "n": 1123,
+      "rate": 0.194
+    },
+    "pair_benign": {
+      "n": 3601,
+      "rate": 0.6219
+    },
+    "pair_reversed": {
+      "n": 131,
+      "rate": 0.0226
+    },
+    "pair_parse_fail": 2
+  }
+}

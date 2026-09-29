@@ -1,0 +1,134 @@
+{
+  "tag": "v1",
+  "eval": {
+    "test": {
+      "auc": 0.9052,
+      "n_items": 1197,
+      "n_pair_keys": 641,
+      "n_exact_1to1_pairs": 472,
+      "pair_key_source": "cve_id (pair_id 필드 없음)",
+      "paired_item_ratio": 0.7886,
+      "within_pair_rank_acc": 0.9068,
+      "within_pair_tie_rate": 0.0275,
+      "n_pairs_scored": 472,
+      "pairwise_at_tau0": {
+        "P-C": {
+          "n": 304,
+          "ratio": 0.6441
+        },
+        "P-V": {
+          "n": 82,
+          "ratio": 0.1737
+        },
+        "P-B": {
+          "n": 80,
+          "ratio": 0.1695
+        },
+        "P-R": {
+          "n": 6,
+          "ratio": 0.0127
+        }
+      }
+    },
+    "cleanvul_v2_report": {
+      "auc": 0.6165,
+      "n_items": 2706,
+      "n_pair_keys": 1353,
+      "n_exact_1to1_pairs": 1353,
+      "pair_key_source": "pair_id",
+      "paired_item_ratio": 1.0,
+      "within_pair_rank_acc": 0.5558,
+      "within_pair_tie_rate": 0.1774,
+      "n_pairs_scored": 1353,
+      "pairwise_at_tau0": {
+        "P-C": {
+          "n": 259,
+          "ratio": 0.1914
+        },
+        "P-V": {
+          "n": 341,
+          "ratio": 0.252
+        },
+        "P-B": {
+          "n": 715,
+          "ratio": 0.5285
+        },
+        "P-R": {
+          "n": 38,
+          "ratio": 0.0281
+        }
+      }
+    },
+    "primevul_report": {
+      "auc": 0.5618,
+      "n_items": 288,
+      "n_pair_keys": 144,
+      "n_exact_1to1_pairs": 144,
+      "pair_key_source": "pair_id",
+      "paired_item_ratio": 1.0,
+      "within_pair_rank_acc": 0.4931,
+      "within_pair_tie_rate": 0.3056,
+      "n_pairs_scored": 144,
+      "pairwise_at_tau0": {
+        "P-C": {
+          "n": 7,
+          "ratio": 0.0486
+        },
+        "P-V": {
+          "n": 23,
+          "ratio": 0.1597
+        },
+        "P-B": {
+          "n": 113,
+          "ratio": 0.7847
+        },
+        "P-R": {
+          "n": 1,
+          "ratio": 0.0069
+        }
+      }
+    },
+    "cvefixes157": {
+      "auc": 0.8732,
+      "n_items": 157,
+      "n_pair_keys": 157,
+      "n_exact_1to1_pairs": 0,
+      "pair_key_source": "pair_id",
+      "paired_item_ratio": 0.0
+    },
+    "cybernative154": {
+      "auc": 0.9126,
+      "n_items": 154,
+      "n_pair_keys": 154,
+      "n_exact_1to1_pairs": 0,
+      "pair_key_source": "pair_id",
+      "paired_item_ratio": 0.0
+    }
+  },
+  "train": {
+    "train_v3": {
+      "n_items": 13406,
+      "n_pair_keys": 7210,
+      "n_exact_1to1_pairs": 5533,
+      "pair_key_source": "pair_id",
+      "paired_item_ratio": 0.8255,
+      "source_dist": {
+        "cvefixes": 9191,
+        "primevul": 4162,
+        "cleanvul": 53
+      }
+    },
+    "val_v3": {
+      "n_items": 1489,
+      "n_pair_keys": 742,
+      "n_exact_1to1_pairs": 548,
+      "pair_key_source": "pair_id",
+      "paired_item_ratio": 0.7361,
+      "source_dist": {
+        "cvefixes": 1213,
+        "cleanvul": 120,
+        "primevul": 156
+      }
+    }
+  }
+}

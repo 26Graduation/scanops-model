@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LoRA Benchmark — ScanOps</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f4f8;color:#1e293b;padding:24px}
+  h1{font-size:1.55rem;font-weight:800;margin-bottom:4px}
+  .sub{color:#64748b;font-size:.85rem;margin-bottom:24px}
+  code{font-family:'JetBrains Mono','Fira Code',monospace;font-size:.82em;
+        background:#f1f5f9;padding:1px 5px;border-radius:4px}
+
+  .heroes{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:22px}
+  .hero{border-radius:12px;padding:18px 22px;flex:1;min-width:130px;color:#fff}
+  .hl{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;opacity:.7}
+  .hv{font-size:2rem;font-weight:800;margin-top:2px}
+  .hs{font-size:.72rem;opacity:.6;margin-top:2px}
+
+  .charts{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+  .cbox{background:#fff;border-radius:12px;padding:20px;flex:1;min-width:240px;
+         box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  .cbox h2{font-size:.88rem;font-weight:700;color:#334155;margin-bottom:12px}
+  canvas{max-height:220px}
+
+  .stitle{font-size:.8rem;font-weight:700;color:#475569;text-transform:uppercase;
+           letter-spacing:.05em;margin-bottom:10px}
+  .tw{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08);
+       margin-bottom:22px;overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:.85rem}
+  th{background:#f8fafc;padding:9px 14px;text-align:left;font-size:.7rem;font-weight:700;
+      text-transform:uppercase;letter-spacing:.05em;color:#64748b;border-bottom:1px solid #e2e8f0}
+  td{padding:10px 14px;border-bottom:1px solid #f1f5f9}
+  tr:last-child td{border-bottom:none}
+  .c{text-align:center}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:middle}
+
+  .card{background:#fff;border-radius:12px;margin-bottom:14px;overflow:hidden;
+         box-shadow:0 1px 4px rgba(0,0,0,.07)}
+  .chead{display:flex;align-items:center;gap:8px;padding:9px 14px;
+          background:#f8fafc;border-bottom:1px solid #e2e8f0;flex-wrap:wrap}
+  .cnum{font-weight:800;font-size:.78rem;color:#64748b}
+  .ctag{font-size:.7rem;font-weight:700;padding:2px 7px;border-radius:999px}
+  .cexp{font-size:.78rem;color:#475569;flex:1}
+  .ccode{background:#0f172a;padding:10px 14px;overflow-x:auto}
+  .ccode pre{color:#e2e8f0;font-family:'JetBrains Mono','Fira Code',monospace;
+              font-size:.77rem;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+  .cversus{display:flex;align-items:stretch}
+  .cver{flex:1;padding:12px 14px}
+  .pre-ver{background:#fffbeb;border-right:1px solid #fde68a}
+  .post-ver{background:#f0fdf4}
+  .vsep{display:flex;align-items:center;padding:0 10px;color:#94a3b8;
+         font-size:.85rem;font-weight:700;background:#f8fafc;
+         border-left:1px solid #e2e8f0;border-right:1px solid #e2e8f0}
+  .vlab{font-size:.68rem;font-weight:700;text-transform:uppercase;
+         letter-spacing:.05em;color:#94a3b8;margin-bottom:5px}
+  .vtxt{font-size:.82rem;color:#334155;margin-bottom:5px;line-height:1.4}
+  .vmeta{font-size:.75rem;color:#64748b}
+  .tok{color:#16a34a;font-weight:800}
+  .tmiss{color:#dc2626;font-weight:800}
+
+  @media(max-width:640px){
+    .heroes,.charts{flex-direction:column}
+    .cversus{flex-direction:column}
+    .vsep{padding:4px;border:none;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0}
+    .pre-ver{border-right:none;border-bottom:1px solid #fde68a}
+  }
+</style>
+</head>
+<body>
+<h1>LoRA Fine-tuning Benchmark</h1>
+<p class="sub">ScanOps · 2026-05-06 16:38 · Pre: <code>gemma:2b</code> via Ollama · Post: <code>TinyLlama-1.1B + LoRA</code> (50 examples, 3 epochs)</p>
+
+<div class="heroes">
+  <div class="hero" style="background:#dc2626;">
+    <div class="hl">Pre-LoRA (Gemma 2B)</div>
+    <div class="hv">20.0%</div>
+    <div class="hs">4/20 detected</div>
+  </div>
+  <div class="hero" style="background:#eab308;">
+    <div class="hl">Post-LoRA (TinyLlama)</div>
+    <div class="hv">35.0%</div>
+    <div class="hs">7/20 detected</div>
+  </div>
+  <div class="hero" style="background:#22c55e;">
+    <div class="hl">Detection Change</div>
+    <div class="hv">+15.0%p</div>
+    <div class="hs">percentage points</div>
+  </div>
+  <div class="hero" style="background:#334155;">
+    <div class="hl">Avg Inference Time</div>
+    <div class="hv">5.44s</div>
+    <div class="hs">Pre: 8.64s</div>
+  </div>
+  <div class="hero" style="background:#7c3aed;">
+    <div class="hl">Final Training Loss</div>
+    <div class="hv">1.049</div>
+    <div class="hs">3 epochs · 50 examples</div>
+  </div>
+</div>
+
+<div class="charts">
+  <div class="cbox">
+    <h2>Training Loss Curve</h2>
+    <canvas id="lossChart"></canvas>
+  </div>
+  <div class="cbox">
+    <h2>Detection Rate by Language</h2>
+    <canvas id="detChart"></canvas>
+  </div>
+</div>
+
+<p class="stitle">Detection by Language</p>
+<div class="tw">
+  <table>
+    <thead><tr><th>Language</th><th class="c">Pre-LoRA</th><th class="c">Post-LoRA</th><th class="c">Change</th></tr></thead>
+    <tbody><tr>
+          <td><span class="dot" style="background:#06b6d4;"></span>React / Next.js</td>
+          <td class="c">1/4</td><td class="c">3/4</td>
+          <td class="c" style="color:#22c55e;font-weight:700;">↑+2</td></tr><tr>
+          <td><span class="dot" style="background:#22c55e;"></span>Node.js / Express</td>
+          <td class="c">0/4</td><td class="c">1/4</td>
+          <td class="c" style="color:#22c55e;font-weight:700;">↑+1</td></tr><tr>
+          <td><span class="dot" style="background:#f97316;"></span>Java Spring Boot</td>
+          <td class="c">0/4</td><td class="c">1/4</td>
+          <td class="c" style="color:#22c55e;font-weight:700;">↑+1</td></tr><tr>
+          <td><span class="dot" style="background:#a855f7;"></span>Python</td>
+          <td class="c">2/4</td><td class="c">0/4</td>
+          <td class="c" style="color:#ef4444;font-weight:700;">↓-2</td></tr><tr>
+          <td><span class="dot" style="background:#64748b;"></span>C</td>
+          <td class="c">1/2</td><td class="c">2/2</td>
+          <td class="c" style="color:#22c55e;font-weight:700;">↑+1</td></tr><tr>
+          <td><span class="dot" style="background:#ec4899;"></span>GitHub Actions YAML</td>
+          <td class="c">0/2</td><td class="c">0/2</td>
+          <td class="c" style="color:#94a3b8;font-weight:700;">=</td></tr></tbody>
+  </table>
+</div>
+
+<p class="stitle">Case-by-Case</p>
+
+        <div class="card">
+          <div class="chead" style="border-left:4px solid #06b6d4;">
+            <span class="cnum">#1</span>
+            <span class="ctag" style="background:#06b6d420;color:#06b6d4;">React / Next.js</span>
+            <span class="cexp">Expected: <strong>XSS</strong></span>
+          </div>
+          <div class="ccode"><pre>return &lt;div dangerouslySetInnerHTML={{__html: userInput}} /&gt;;</pre></div>
+          <div class="cversus">
+            <div class="cver pre-ver">
+              <div class="vlab">Gemma 2B (Ollama · pre-LoRA)</div>
+              <div class="vtxt">Sure, here's the analysis of the code snippet you provided:</div>
+              <div class="vmeta"><span class="tmiss">✗</span> &nbsp; 10.99s</div>
+            </div>
+            <div class="vsep">→</div>
+            <div class="cver post-ver">
+              <div class="vlab">TinyLlama + LoRA (post-tuning)</div>
+              <div class="vtxt">CWE-79 Missing Cross-Site Scripting (XSS) Protection</div>
+              <div class="vmeta"><span class="tok">✓</span> &nbsp; 8.27s</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="chead" style="border-left:4px solid #06b6d4;">
+            <span class="cnum">#2</span>
+            <span class="ctag" style="background:#06b6d420;color:#06b6d4;">React / Next.js</span>
+            <span class="cexp">Expected: <strong>XSS</strong></span>
+          </div>
+          <div class="ccode"><pre>return &lt;a href={`javascript:${userAction}`}&gt;Click&lt;/a&gt;;</pre></div>
+          <div class="cversus">
+            <div class="cver pre-ver">
+              <div class="vlab">Gemma 2B (Ollama · pre-LoRA)</div>
+              <div class="vtxt">Sure, the provided code is vulnerable to a Cross-site Scripting (XSS) attack. </div>
+              <div class="vmeta"><span class="tok">✓</span> &nbsp; 7.56s</div>
+            </div>
+            <div class="vsep">→</div>
+            <div class="cver post-ver">
+              <div class="vlab">TinyLlama + LoRA (post-tuning)</div>
+              <div class="vtxt">CWE-787 Injection</div>
+              <div class="vmeta"><span class="tmiss">✗</span> &nbsp; 5.64s</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="chead" style="border-left:4px solid #06b6d4;">
+            <span class="cnum">#3</span>
+            <span class="ctag" style="background:#06b6d420;color:#06b6d4;">React / Next.js</span>
+            <span class="cexp">Expected: <strong>Code Injection via eval</strong></span>
+          </div>
+          <div class="ccode"><pre>eval(searchParams.get('callback'));</pre></div>
+          <div class="cversus">
+            <div class="cver pre-ver">
+              <div class="vlab">Gemma 2B (Ollama · pre-LoRA)</div>
+              <div class="vtxt">**Vulnerability:** Cross-Site Scripting (XSS)</div>
+              <div class="vmeta"><span class="tmiss">✗</span> &nbsp; 7.13s</div>
+            </div>
+            <div class="vsep">→</div>
+            <div class="cver post-ver">
+              <div class="vlab">TinyLlama + LoRA (post-tuning)</div>
+              <div class="vtxt">CWE-787 Security Bypass</div>
+              <div class="vmeta"><span class="tok">✓</span> &nbsp; 5.8s</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="chead" style="border-left:4px solid #06b6d4;">
+            <span class="cnum">#4</span>
+            <span class="ctag" style="background:#06b6d420;color:#06b6d4;">React / Next.js</span>
+            <span class="cexp">Expected: <strong>XSS via event handler</strong></span>
+          </div>
+          <div class="ccode"><pre>&lt;img src={user.avatar} onError={user.fallback} /&gt;</pre></div>
+          <div class="cversus">
+            <div class="cver pre-ver">
+              <div class="vlab">Gemma 2B (Ollama · pre-LoRA)</div>
+              <div class="vtxt">## Security vulnerabilities in the React / Next.js code:</div>
+              <div class="vmeta"><span class="tmiss">✗</span> &nbsp; 10.04s</div>
+            </div>
+            <div class="vsep">→</div>
+            <div class="cver post-ver">
+              <div class="vlab">TinyLlama + LoRA (post-tuning)</div>
+              <div class="vtxt">CWE-79: Insufficient Access Controls</div>
+              <div class="vmeta"><span class="tok">✓</span> &nbsp; 5.24s</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="chead" style="border-left:4px solid #22c55e;">
+            <span class="cnum">#5</span>
+            <span class="ctag" style="background:#22c55e20;color:#22c55e;">Node.js / Express</span>
+            <span class="cexp">Expected: <strong>SQL Injection</strong></span>
+          </div>
+          <div class="ccode"><pre>db.query("SELECT * FROM users WHERE id=" + req.params.id);</pre></div>
+          <div class="cversus">
+            <div class="cver pre-ver">
+              <div class="vlab">Gemma 2B (Ollama · pre-LoRA)</div>
+              <div class="vtxt">**Security Vulnerabilities:**</div>
+              <div class="vmeta"><span class="tmiss">✗</span> &nbsp; 9.06s</div>
+            </div>
+            <div class="vsep">→</div>
+            <div class="cver post-ver">
+              <div class="vlab">TinyLlama + LoRA (post-tuning)</div>
+              <div class="vtxt">SQL Injection</div>
+              <div class="vmeta"><span class="tok">✓</span> &nbsp; 5.21s</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="chead" style="border-left:4px solid #22c55e;">
+            <span class="cnum">#6</span>
+            <span class="ctag" style="background:#22c55e20;color:#22c55e;">Node.js / Express</span>
+            <span class="cexp">Expected: <strong>Command Injection</strong></span>
+          </div>
+          <div class="ccode"><pre>exec(req.body.command);</pre></div>
+          <div class="cversus">
+            <div class="cver pre-ver">
+              <div class="vlab">Gemma 2B (Ollama · pre-LoRA)</div>
+              <div class="vtxt">Sure, here's an analysis of the code you provided, highlighting potential securi</div>
+              <div class="vmeta"><span class="tmiss">✗</span> &nbsp; 11.47s</div>
+            </div>
+            <div class="vsep">→</div>
+            <div class="cver post-ver">
+              <div class="vlab">TinyLlama + LoRA (post-tuning)</div>
+              <div class="vtxt">CWE-200 STACK_OF_ERRORS</div>
+              <div class="vmeta"><span class="tmiss">✗</span> &nbsp; 5.52s</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="chead" style="border-left:4px solid #22c55e;">
+            <span class="cnum">#7</span>
+            <span class="ctag" style="background:#22c55e20;color:#22c55e;">Node.js / Express</span>
+            <span class="cexp">Expected: <strong>Insecure CORS</strong></span>
+          </div>
+          <div class="ccode"><pre>res.setHeader('Access-Control-Allow-Origin', '*');</pre></div>
+          <div class="cversus">
+            <div class="cver pre-ver">
+              <div class="vlab">Gemma 2B (Ollama · pre-LoRA)</div>
+              <div class="vtxt">Sure, here's an analysis of the code you provided:</div>
+              <div class="vmeta"><span class="tmiss">✗</span> &nbsp; 7.19s</div>
+            </div>
+            <div class="vsep">→</div>
+            <div class="cver post-ver">
+              <div class="vlab">TinyLlama + LoRA (post-tuning)</div>
+              <div class="vtxt">CWE-732 Cross-Site Scripting (XSS)</div>
+              <div class="vmeta"><span class="tmiss">✗</span> &nbsp; 6.23s</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="chead" style="border-left:4px solid #22c55e;">
+            <span class="cnum">#8</span>
+            <span class="ctag" style="background:#22c55e20;color:#22c55e;">Node.js / Express</span>
+            <span class="cexp">Expected: <strong>Hardcoded Secret</strong></span>
+          </div>
+          <div class="ccode"><pre>jwt.verify(token, 'hardcoded_secret_key');</pre></div>
+          <div class="cversus">
+            <div class="cver pre-ver">
+              <div class="vlab">Gemma 2B (Ollama · pre-LoRA)</div>
+              <div class="vtxt">## Security vulnerabilities in the code:</div>
+              <div class="vmeta"><span class="tmiss">✗</span> &nbsp; 9.42s</div>
+            </div>
+            <div class="vsep">→</div>
+            <div class="cver post-ver">
+              <div class="vlab">TinyLlama + LoRA (post-tuning)</div>
+              <div class="vtxt">CWE-200: Insufficient Authentication</div>
+              <div class="vmeta"><span class="tmiss">✗</span> &nbsp; 5.78s</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="chead" style="border-left:4px solid #f97316;">
+            <span class="cnum">#9</span>
+            <span class="ctag" style="background:#f9731620;color:#f97316;">Java Spring Boot</span>
+            <span class="cexp">Expected: <strong>SQL Injection</strong></span>
+          </div>
+          <div class="ccode"><pre>String query = "SELECT * FROM " + tableName;
+stmt.execute(query);</pre></div>
+          <div class="cversus">
+            <div class="cver pre-ver">
+              <div class="vlab">Gemma 2B (Ollama · pre-LoRA)</div>
+              <div class="vtxt">**Security Vulnerabilities:**</div>
+              <div class="vmeta"><span class="tmiss">✗</span> &nbsp; 5.58s</div>
+            </div>
+            <div class="vsep">→</div>
+            <div class="cver post-ver">
+              <div class="vlab">TinyLlama + LoRA (post-tuning)</div>
+              <div class="vtxt">SQL Injection</div>
+              <div class="vmeta"><span class="tok">✓</span> &nbsp; 5.15s</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="chead" style="border-left:4px solid #f97316;">
+            <span class="cnum">#10</span>
+            <span class="ctag" style="background:#f9731620;color:#f97316;">Java Spring Boot</span>
+            <span class="cexp">Expected: <strong>Command Injection</strong></span>
+          </div>
+          <div class="ccode"><pre>Runtime.getRuntime().exec(userInput);</pre></div>
+          <div class="cversus">
+            <div class="cver pre-ver">
+              <div class="vlab">Gemma 2B (Ollama · pre-LoRA)</div>
+              <div class="vtxt">## Security Vulnerabilities in the code</div>
+              <div class="vmeta"><span class="tmiss">✗</span> &nbsp; 9.31s</div>
+            </div>
+            <div class="vsep">→</div>
+            <div class="cver post-ver">
+              <div class="vlab">TinyLlama + LoRA (post-tuning)</div>
+              <div class="vtxt">CWE-200 Insufficient Input Validation</div>
+              <div class="vmeta"><span class="tmiss">✗</span> &nbsp; 5.15s</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="chead" style="border-left:4px solid #f97316;">
+            <span class="cnum">#11</span>
+            <span class="ctag" style="background:#f9731620;color:#f97316;">Java Spring Boot</span>
+            <span class="cexp">Expected: <strong>Overly Permissive Endpoint</strong></span>
+          </div>
+          <div class="ccode"><pre>@RequestMapping(value="/**")
+public ResponseEntity&lt;?&gt; handle(HttpServletRequest req) { ... }</pre></div>
+          <div class="cversus">
+            <div class="cver pre-ver">
+              <div class="vlab">Gemma 2B (Ollama · pre-LoRA)</div>
+              <div class="vtxt">**Vulnerability:** Cross-Site Request Forgery (CSRF)</div>
+              <div class="vmeta"><span class="tmiss">✗</span> &nbsp; 7.11s</div>
+            </div>
+            <div class="vsep">→</div>
+            <div class="cver post-ver">
+              <div class="vlab">TinyLlama + LoRA (post-tuning)</div>
+              <div class="vtxt">CWE-200 CWE-201 CWE-202 CWE-203 CWE-204 CWE-205 CWE-206 CWE-207 CWE-208 CWE-209 </div>
+              <div class="vmeta"><span class="tmiss">✗</span> &nbsp; 5.29s</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="chead" style="border-left:4px solid #f97316;">
+            <span class="cnum">#12</span>
+            <span class="ctag" style="background:#f9731620;color:#f97316;">Java Spring Boot</span>
+            <span class="cexp">Expected: <strong>Timing Attack</strong></span>
+          </div>
+          <div class="ccode"><pre>if (password.equals(inputPassword)) { grantAccess(); }</pre></div>
+          <div class="cversus">
+            <div class="cver pre-ver">
+              <div class="vlab">Gemma 2B (Ollama · pre-LoRA)</div>
+              <div class="vtxt">Sure, here's an analysis of the code you provided for security vulnerabilities:</div>
+              <div class="vmeta"><span class="tmiss">✗</span> &nbsp; 10.05s</div>
+            </div>
+            <div class="vsep">→</div>
+            <div class="cver post-ver">
+              <div class="vlab">TinyLlama + LoRA (post-tuning)</div>
+              <div class="vtxt">CWE-200 Incorrect Input Validation</div>
+              <div class="vmeta"><span class="tmiss">✗</span> &nbsp; 4.75s</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="chead" style="border-left:4px solid #a855f7;">
+            <span class="cnum">#13</span>
+            <span class="ctag" style="background:#a855f720;color:#a855f7;">Python</span>
+            <span class="cexp">Expected: <strong>Insecure Deserialization</strong></span>
+          </div>
+          <div class="ccode"><pre>import pickle
+obj = pickle.loads(user_data)</pre></div>
+          <div class="cversus">
+            <div class="cver pre-ver">
+              <div class="vlab">Gemma 2B (Ollama · pre-LoRA)</div>
+              <div class="vtxt">```python</div>
+              <div class="vmeta"><span class="tmiss">✗</span> &nbsp; 4.64s</div>
+            </div>
+            <div class="vsep">→</div>
+            <div class="cver post-ver">
+              <div class="vlab">TinyLlama + LoRA (post-tuning)</div>
+              <div class="vtxt">POSSIBLE_REPEAT_ATTACK</div>
+              <div class="vmeta"><span class="tmiss">✗</span> &nbsp; 5.02s</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="chead" style="border-left:4px solid #a855f7;">
+            <span class="cnum">#14</span>
+            <span class="ctag" style="background:#a855f720;color:#a855f7;">Python</span>
+            <span class="cexp">Expected: <strong>Command Injection</strong></span>
+          </div>
+          <div class="ccode"><pre>import subprocess
+subprocess.call(user_input, shell=True)</pre></div>
+          <div class="cversus">
+            <div class="cver pre-ver">
+              <div class="vlab">Gemma 2B (Ollama · pre-LoRA)</div>
+              <div class="vtxt">The given code imports the `subprocess` module and calls a command using the `su</div>
+              <div class="vmeta"><span class="tok">✓</span> &nbsp; 10.17s</div>
+            </div>
+            <div class="vsep">→</div>
+            <div class="cver post-ver">
+              <div class="vlab">TinyLlama + LoRA (post-tuning)</div>
+              <div class="vtxt">CWE-200 Insufficient Input Validation</div>
+              <div class="vmeta"><span class="tmiss">✗</span> &nbsp; 5.38s</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="chead" style="border-left:4px solid #a855f7;">
+            <span class="cnum">#15</span>
+            <span class="ctag" style="background:#a855f720;color:#a855f7;">Python</span>
+            <span class="cexp">Expected: <strong>Arbitrary Code Execution via YAML</strong></span>
+          </div>
+          <div class="ccode"><pre>import yaml
+data = yaml.load(user_input)  # not safe_load</pre></div>
+          <div class="cversus">
+            <div class="cver pre-ver">
+              <div class="vlab">Gemma 2B (Ollama · pre-LoRA)</div>
+              <div class="vtxt">The code you provided is loading a YAML string into a Python dictionary using th</div>
+              <div class="vmeta"><span class="tok">✓</span> &nbsp; 6.58s</div>
+            </div>
+            <div class="vsep">→</div>
+            <div class="cver post-ver">
+              <div class="vlab">TinyLlama + LoRA (post-tuning)</div>
+              <div class="vtxt">CWE-200 Security Reader/Writer Vulnerability</div>
+              <div class="vmeta"><span class="tmiss">✗</span> &nbsp; 6.03s</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="chead" style="border-left:4px solid #a855f7;">
+            <span class="cnum">#16</span>
+            <span class="ctag" style="background:#a855f720;color:#a855f7;">Python</span>
+            <span class="cexp">Expected: <strong>Command Injection</strong></span>
+          </div>
+          <div class="ccode"><pre>import os
+os.system(f"ping {host}")</pre></div>
+          <div class="cversus">
+            <div class="cver pre-ver">
+              <div class="vlab">Gemma 2B (Ollama · pre-LoRA)</div>
+              <div class="vtxt">## Security vulnerabilities in the code:</div>
+              <div class="vmeta"><span class="tmiss">✗</span> &nbsp; 11.33s</div>
+            </div>
+            <div class="vsep">→</div>
+            <div class="cver post-ver">
+              <div class="vlab">TinyLlama + LoRA (post-tuning)</div>
+              <div class="vtxt">CWE-200 Security Checksum Mismatch</div>
+              <div class="vmeta"><span class="tmiss">✗</span> &nbsp; 4.49s</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="chead" style="border-left:4px solid #64748b;">
+            <span class="cnum">#17</span>
+            <span class="ctag" style="background:#64748b20;color:#64748b;">C</span>
+            <span class="cexp">Expected: <strong>Format String Attack</strong></span>
+          </div>
+          <div class="ccode"><pre>printf(user_input);  // user-controlled format string</pre></div>
+          <div class="cversus">
+            <div class="cver pre-ver">
+              <div class="vlab">Gemma 2B (Ollama · pre-LoRA)</div>
+              <div class="vtxt">The provided C code is vulnerable to a **format string attack**. This attack can</div>
+              <div class="vmeta"><span class="tok">✓</span> &nbsp; 11.38s</div>
+            </div>
+            <div class="vsep">→</div>
+            <div class="cver post-ver">
+              <div class="vlab">TinyLlama + LoRA (post-tuning)</div>
+              <div class="vtxt">CWE-125 Format String Vulnerability</div>
+              <div class="vmeta"><span class="tok">✓</span> &nbsp; 5.13s</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="chead" style="border-left:4px solid #64748b;">
+            <span class="cnum">#18</span>
+            <span class="ctag" style="background:#64748b20;color:#64748b;">C</span>
+            <span class="cexp">Expected: <strong>Buffer Overflow</strong></span>
+          </div>
+          <div class="ccode"><pre>char buf[64];
+strcpy(buf, argv[1]);  // no bounds check</pre></div>
+          <div class="cversus">
+            <div class="cver pre-ver">
+              <div class="vlab">Gemma 2B (Ollama · pre-LoRA)</div>
+              <div class="vtxt">The provided C code overwrites the `buf` variable with the content of `argv[1]`.</div>
+              <div class="vmeta"><span class="tmiss">✗</span> &nbsp; 12.16s</div>
+            </div>
+            <div class="vsep">→</div>
+            <div class="cver post-ver">
+              <div class="vlab">TinyLlama + LoRA (post-tuning)</div>
+              <div class="vtxt">BUFFER_OVERFLOW</div>
+              <div class="vmeta"><span class="tok">✓</span> &nbsp; 4.93s</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="chead" style="border-left:4px solid #ec4899;">
+            <span class="cnum">#19</span>
+            <span class="ctag" style="background:#ec489920;color:#ec4899;">GitHub Actions YAML</span>
+            <span class="cexp">Expected: <strong>Script Injection via untrusted input</strong></span>
+          </div>
+          <div class="ccode"><pre>- run: echo ${{ github.event.issue.title }}</pre></div>
+          <div class="cversus">
+            <div class="cver pre-ver">
+              <div class="vlab">Gemma 2B (Ollama · pre-LoRA)</div>
+              <div class="vtxt">## Security Vulnerability Analysis</div>
+              <div class="vmeta"><span class="tmiss">✗</span> &nbsp; 10.63s</div>
+            </div>
+            <div class="vsep">→</div>
+            <div class="cver post-ver">
+              <div class="vlab">TinyLlama + LoRA (post-tuning)</div>
+              <div class="vtxt">CWE-79: Insufficient Access Control</div>
+              <div class="vmeta"><span class="tmiss">✗</span> &nbsp; 4.92s</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="chead" style="border-left:4px solid #ec4899;">
+            <span class="cnum">#20</span>
+            <span class="ctag" style="background:#ec489920;color:#ec4899;">GitHub Actions YAML</span>
+            <span class="cexp">Expected: <strong>Supply Chain Attack (unpinned action)</strong></span>
+          </div>
+          <div class="ccode"><pre>- uses: actions/checkout@main  # unpinned version</pre></div>
+          <div class="cversus">
+            <div class="cver pre-ver">
+              <div class="vlab">Gemma 2B (Ollama · pre-LoRA)</div>
+              <div class="vtxt">The provided YAML code snippet does not provide any sensitive information or vul</div>
+              <div class="vmeta"><span class="tmiss">✗</span> &nbsp; 0.99s</div>
+            </div>
+            <div class="vsep">→</div>
+            <div class="cver post-ver">
+              <div class="vlab">TinyLlama + LoRA (post-tuning)</div>
+              <div class="vtxt">CWE-79</div>
+              <div class="vmeta"><span class="tmiss">✗</span> &nbsp; 4.93s</div>
+            </div>
+          </div>
+        </div>
+
+<script>
+new Chart(document.getElementById('lossChart'), {
+  type: 'line',
+  data: {
+    labels: [5, 10, 15, 20, 25, 30, 35],
+    datasets: [{ label: 'Train Loss', data: [1.5253232955932616, 1.3648043632507325, 1.2389747619628906, 1.2285058975219727, 1.0795231819152833, 0.9902690887451172, 1.0486136436462403],
+      borderColor: '#7c3aed', backgroundColor: 'rgba(124,58,237,.1)',
+      tension: 0.3, fill: true, pointRadius: 4 }]
+  },
+  options: { responsive: true, plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: false } } }
+});
+
+const langs = ["React / Next.js", "Node.js / Express", "Java Spring Boot", "Python", "C", "GitHub Actions YAML"];
+const preD  = [1, 0, 0, 2, 1, 0];
+const postD = [3, 1, 1, 0, 2, 0];
+const lc    = ["#06b6d4", "#22c55e", "#f97316", "#a855f7", "#64748b", "#ec4899"];
+new Chart(document.getElementById('detChart'), {
+  type: 'bar',
+  data: { labels: langs,
+    datasets: [
+      { label:'Pre-LoRA',  data:preD,  backgroundColor:'rgba(220,38,38,.6)',
+         borderRadius:4, borderSkipped:false },
+      { label:'Post-LoRA', data:postD, backgroundColor:'rgba(34,197,94,.75)',
+         borderRadius:4, borderSkipped:false },
+    ]},
+  options: { responsive: true, plugins: { legend: { position:'top' } },
+    scales: { y: { beginAtZero:true, max:4 },
+               x: { grid: { display:false } } } }
+});
+</script>
+</body>
+</html>

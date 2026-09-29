@@ -1,0 +1,71 @@
+{
+  "pass": true,
+  "checks": {
+    "model_is_qwen38_max": true,
+    "critic_default_off": true,
+    "java_prompt_and_frontend": true,
+    "cross_file_vulnerability": true,
+    "safe_file_filtered": true,
+    "sink_line_present": true,
+    "path_present": true,
+    "frontend_cache": true
+  },
+  "findings": [
+    {
+      "file": "demo/App.java",
+      "category": "xss",
+      "cwe": "CWE-79",
+      "source": "getParameter(\"q\")",
+      "sink": "getWriter().println(value)",
+      "line": 7,
+      "source_file": "demo/Input.java",
+      "source_line": 3,
+      "rule_pattern": "(?s).*getWriter\\(\\)\\.print(ln)?\\(.*",
+      "rule_field": "code",
+      "sanitized": false,
+      "sanitizer_hits": [],
+      "path": [
+        {
+          "file": "demo/Input.java",
+          "line": 3,
+          "code": "getParameter(\"q\")",
+          "role": "source"
+        },
+        {
+          "file": "demo/Input.java",
+          "line": 3,
+          "code": "return req.getParameter(\"q\");",
+          "role": "intermediate"
+        },
+        {
+          "file": "demo/Input.java",
+          "line": 3,
+          "code": "RET",
+          "role": "intermediate"
+        },
+        {
+          "file": "demo/App.java",
+          "line": 6,
+          "code": "read(req)",
+          "role": "intermediate"
+        },
+        {
+          "file": "demo/App.java",
+          "line": 6,
+          "code": "value",
+          "role": "intermediate"
+        },
+        {
+          "file": "demo/App.java",
+          "line": 7,
+          "code": "value",
+          "role": "sink"
+        }
+      ],
+      "_dup_count": 1,
+      "_uid": 0
+    }
+  ],
+  "cache_path": "rebuild/out/java_qwen38/g0_product_cache_v3.json",
+  "model": "qwen3.8-max"
+}

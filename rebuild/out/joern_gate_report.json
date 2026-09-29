@@ -1,0 +1,88 @@
+{
+ "split": "report",
+ "overall": {
+  "n": 1878,
+  "joern_vuln": 738,
+  "joern_safe": 1126,
+  "joern_unknown": 14,
+  "unknown_rate": 0.0075,
+  "precision": 0.5068,
+  "precision_ci95": [
+   0.4715,
+   0.5434
+  ],
+  "graph_vuln": 20,
+  "graph_precision": 0.6,
+  "parse_fail": 14,
+  "timeout": 0,
+  "wrap1_used": 358,
+  "verdict": "JOERN-NO-BETTER"
+ },
+ "by_lang": {
+  "Java": {
+   "n": 890,
+   "joern_vuln": 390,
+   "joern_safe": 494,
+   "joern_unknown": 6,
+   "unknown_rate": 0.0067,
+   "precision": 0.5128,
+   "precision_ci95": [
+    0.4615,
+    0.5615
+   ],
+   "graph_vuln": 5,
+   "graph_precision": 0.6,
+   "parse_fail": 6,
+   "timeout": 0,
+   "wrap1_used": 350,
+   "verdict": "JOERN-NO-BETTER",
+   "parse_fail_rate": 0.0067,
+   "excluded_parse_fail_gt_30pct": false
+  },
+  "JavaScript": {
+   "n": 412,
+   "joern_vuln": 83,
+   "joern_safe": 325,
+   "joern_unknown": 4,
+   "unknown_rate": 0.0097,
+   "precision": 0.494,
+   "precision_ci95": [
+    0.3855,
+    0.6024
+   ],
+   "graph_vuln": 2,
+   "graph_precision": 1.0,
+   "parse_fail": 4,
+   "timeout": 0,
+   "wrap1_used": 4,
+   "verdict": "JOERN-NO-BETTER",
+   "parse_fail_rate": 0.0097,
+   "excluded_parse_fail_gt_30pct": false
+  },
+  "Python": {
+   "n": 576,
+   "joern_vuln": 265,
+   "joern_safe": 307,
+   "joern_unknown": 4,
+   "unknown_rate": 0.0069,
+   "precision": 0.5019,
+   "precision_ci95": [
+    0.4415,
+    0.5623
+   ],
+   "graph_vuln": 13,
+   "graph_precision": 0.5385,
+   "parse_fail": 4,
+   "timeout": 0,
+   "wrap1_used": 4,
+   "verdict": "JOERN-NO-BETTER",
+   "parse_fail_rate": 0.0069,
+   "excluded_parse_fail_gt_30pct": false
+  }
+ },
+ "languages_in_scope": [
+  "Java",
+  "JavaScript",
+  "Python"
+ ]
+}

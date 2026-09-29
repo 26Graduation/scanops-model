@@ -1,0 +1,252 @@
+{
+  "split": "sample",
+  "n": 240,
+  "critic_gate_verdict": "CRITIC-KILL",
+  "joern_v3_vuln": 46,
+  "joern_v3_precision": 0.5652,
+  "joern_v3_precision_ci95": [
+    0.413,
+    0.6957
+  ],
+  "verdict_dist": {
+    "safe": 188,
+    "safe_sanitized": 3,
+    "unknown": 3,
+    "vuln": 46
+  },
+  "arms": {
+    "all-vuln (자명)": {
+      "n": 240,
+      "tp": 120,
+      "fp": 120,
+      "fn": 0,
+      "tn": 0,
+      "precision": 0.5,
+      "recall": 1.0,
+      "fpr": 1.0,
+      "f1": 0.6667,
+      "precision_ci95": [
+        0.4333,
+        0.5625
+      ]
+    },
+    "all-safe (자명)": {
+      "n": 240,
+      "tp": 0,
+      "fp": 0,
+      "fn": 120,
+      "tn": 120,
+      "precision": 0.0,
+      "recall": 0.0,
+      "fpr": 0.0,
+      "f1": 0.0,
+      "precision_ci95": [
+        0.0,
+        0.0
+      ]
+    },
+    "b) LLM only": {
+      "n": 240,
+      "tp": 64,
+      "fp": 45,
+      "fn": 56,
+      "tn": 75,
+      "precision": 0.5872,
+      "recall": 0.5333,
+      "fpr": 0.375,
+      "f1": 0.559,
+      "precision_ci95": [
+        0.4954,
+        0.6789
+      ]
+    },
+    "a) LLM + 자체graph": {
+      "n": 240,
+      "tp": 65,
+      "fp": 45,
+      "fn": 55,
+      "tn": 75,
+      "precision": 0.5909,
+      "recall": 0.5417,
+      "fpr": 0.375,
+      "f1": 0.5652,
+      "precision_ci95": [
+        0.5091,
+        0.6909
+      ]
+    },
+    "j) Joern v3 단독": {
+      "n": 240,
+      "tp": 26,
+      "fp": 20,
+      "fn": 94,
+      "tn": 100,
+      "precision": 0.5652,
+      "recall": 0.2167,
+      "fpr": 0.1667,
+      "f1": 0.3133,
+      "precision_ci95": [
+        0.413,
+        0.6957
+      ]
+    },
+    "c) Joern v3 + Critic": {
+      "n": 240,
+      "tp": 77,
+      "fp": 56,
+      "fn": 43,
+      "tn": 64,
+      "precision": 0.5789,
+      "recall": 0.6417,
+      "fpr": 0.4667,
+      "f1": 0.6087,
+      "precision_ci95": [
+        0.4962,
+        0.6541
+      ]
+    }
+  },
+  "by_lang": {
+    "Java": {
+      "a) LLM + 자체graph": {
+        "n": 80,
+        "tp": 15,
+        "fp": 7,
+        "fn": 25,
+        "tn": 33,
+        "precision": 0.6818,
+        "recall": 0.375,
+        "fpr": 0.175,
+        "f1": 0.4839,
+        "precision_ci95": [
+          0.4545,
+          0.8636
+        ]
+      },
+      "j) Joern v3 단독": {
+        "n": 80,
+        "tp": 4,
+        "fp": 3,
+        "fn": 36,
+        "tn": 37,
+        "precision": 0.5714,
+        "recall": 0.1,
+        "fpr": 0.075,
+        "f1": 0.1702,
+        "precision_ci95": [
+          0.1429,
+          0.8571
+        ]
+      },
+      "c) Joern v3 + Critic": {
+        "n": 80,
+        "tp": 17,
+        "fp": 9,
+        "fn": 23,
+        "tn": 31,
+        "precision": 0.6538,
+        "recall": 0.425,
+        "fpr": 0.225,
+        "f1": 0.5152,
+        "precision_ci95": [
+          0.4615,
+          0.8077
+        ]
+      }
+    },
+    "JavaScript": {
+      "a) LLM + 자체graph": {
+        "n": 80,
+        "tp": 33,
+        "fp": 26,
+        "fn": 7,
+        "tn": 14,
+        "precision": 0.5593,
+        "recall": 0.825,
+        "fpr": 0.65,
+        "f1": 0.6667,
+        "precision_ci95": [
+          0.4237,
+          0.678
+        ]
+      },
+      "j) Joern v3 단독": {
+        "n": 80,
+        "tp": 6,
+        "fp": 4,
+        "fn": 34,
+        "tn": 36,
+        "precision": 0.6,
+        "recall": 0.15,
+        "fpr": 0.1,
+        "f1": 0.24,
+        "precision_ci95": [
+          0.3,
+          0.9
+        ]
+      },
+      "c) Joern v3 + Critic": {
+        "n": 80,
+        "tp": 33,
+        "fp": 28,
+        "fn": 7,
+        "tn": 12,
+        "precision": 0.541,
+        "recall": 0.825,
+        "fpr": 0.7,
+        "f1": 0.6535,
+        "precision_ci95": [
+          0.4098,
+          0.6721
+        ]
+      }
+    },
+    "Python": {
+      "a) LLM + 자체graph": {
+        "n": 80,
+        "tp": 17,
+        "fp": 12,
+        "fn": 23,
+        "tn": 28,
+        "precision": 0.5862,
+        "recall": 0.425,
+        "fpr": 0.3,
+        "f1": 0.4928,
+        "precision_ci95": [
+          0.4138,
+          0.7586
+        ]
+      },
+      "j) Joern v3 단독": {
+        "n": 80,
+        "tp": 16,
+        "fp": 13,
+        "fn": 24,
+        "tn": 27,
+        "precision": 0.5517,
+        "recall": 0.4,
+        "fpr": 0.325,
+        "f1": 0.4638,
+        "precision_ci95": [
+          0.3793,
+          0.7241
+        ]
+      },
+      "c) Joern v3 + Critic": {
+        "n": 80,
+        "tp": 27,
+        "fp": 19,
+        "fn": 13,
+        "tn": 21,
+        "precision": 0.587,
+        "recall": 0.675,
+        "fpr": 0.475,
+        "f1": 0.6279,
+        "precision_ci95": [
+          0.4348,
+          0.7174
+        ]
+      }
+    }
+  }
+}

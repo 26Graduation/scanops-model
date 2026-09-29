@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scanops"
+version = "0.1.0"
+description = "보안 취약점 진단 특화 LLM + RAG CLI 도구"
+requires-python = ">=3.10"
+dependencies = [
+    "typer>=0.12",
+    "rich>=13",
+    "sentence-transformers>=2.7",
+    "qdrant-client>=1.9",
+    "requests>=2.31",
+]
+
+[project.optional-dependencies]
+train = [
+    "torch>=2.2",
+    "transformers>=4.40",
+    "datasets>=2.18",
+    "peft>=0.10",
+    "accelerate>=0.28",
+    "bitsandbytes>=0.43",
+    "tqdm",
+]
+dev = ["pytest", "black", "ruff"]
+
+[project.scripts]
+scanops = "scanops.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["scanops*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"

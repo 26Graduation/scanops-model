@@ -1,0 +1,91 @@
+{
+  "_meta": {
+    "version": 2,
+    "base": "rule_golden_set_v1.json",
+    "purpose": "Audited reusable-API golden set. Apply these entries by exact api key over v1.",
+    "audited": "2026-09-05",
+    "resolved_entry_count": 41
+  },
+  "overrides": [
+    {
+      "api": "getParameterMap",
+      "confidence": "high",
+      "evidence": [
+        "basic/Basic26.java#L41-L46"
+      ],
+      "notes": "Manual source audit confirms the request parameter map reaches PrintWriter.println. The missing BAD marker is corpus metadata noise, not API-role ambiguity."
+    },
+    {
+      "api": "getCookies",
+      "confidence": "high",
+      "evidence": [
+        "basic/Basic31.java#L42-L57"
+      ],
+      "notes": "Manual source audit confirms cookie name, value, and comment reach three BAD println calls. The declared count of two is stale corpus metadata."
+    },
+    {
+      "api": "getAuthType",
+      "role": "none",
+      "confidence": "high",
+      "notes": "Returns a container-selected authentication mechanism such as BASIC or CLIENT_CERT, not attacker-controlled text. Corpus co-occurrence is not general source semantics."
+    },
+    {
+      "api": "getScheme",
+      "role": "none",
+      "confidence": "high",
+      "notes": "Returns the server-parsed request scheme from a constrained set. Treating every occurrence as arbitrary attacker input is not a reusable source rule."
+    },
+    {
+      "api": "getProtocol",
+      "role": "none",
+      "confidence": "high",
+      "notes": "Returns a constrained server-parsed protocol/version string, not general arbitrary attacker input."
+    },
+    {
+      "api": "getInitParameter",
+      "role": "none",
+      "confidence": "high",
+      "notes": "Servlet initialization parameters are deployment configuration. They are not request-controlled sources under the production threat model."
+    },
+    {
+      "api": "getInitParameterNames",
+      "role": "none",
+      "confidence": "high",
+      "notes": "Servlet initialization parameter names are deployment metadata, not request-controlled sources."
+    },
+    {
+      "api": "println",
+      "snippets": [
+        "PrintWriter writer = resp.getWriter(); writer.println(name);"
+      ],
+      "notes": "The production rule generator receives usage snippets. In an HttpServletResponse writer context, tainted println content is an XSS sink."
+    },
+    {
+      "api": "URLEncoder.encode",
+      "snippets": [
+        "String enc = URLEncoder.encode(name, \"UTF-8\"); resp.sendRedirect(enc);"
+      ]
+    },
+    {
+      "api": "clean",
+      "role": "none",
+      "cwe": null,
+      "category": null,
+      "confidence": "high",
+      "applies_to": [],
+      "evidence": [
+        "sanitizers/Sanitizers1.java#L41-L77",
+        "sanitizers/Sanitizers4.java#L41-L65"
+      ],
+      "notes": "Project-local method names are not reusable APIs. Different clean implementations are safe or buggy, so name-only sanitizer labeling violates the production anti-overfitting rule."
+    },
+    {
+      "api": "invoke / forName / getMethods / getField / newInstance",
+      "role": "sink",
+      "category": "reflection",
+      "cwe": "CWE-470",
+      "confidence": "high",
+      "notes": "Class.forName and reflective invocation/instantiation are CWE-470 sinks when attacker-controlled identifiers select code. The corpus uses them for propagation, but that does not erase their general sink semantics."
+    }
+  ]
+}

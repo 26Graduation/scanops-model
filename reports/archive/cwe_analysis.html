@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CWE Distribution Analysis — ScanOps</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f4f8;color:#1e293b;padding:24px}
+  h1{font-size:1.55rem;font-weight:800;margin-bottom:4px}
+  .sub{color:#64748b;font-size:.85rem;margin-bottom:24px}
+  code{font-family:'JetBrains Mono','Fira Code',monospace;font-size:.82em;
+        background:#f1f5f9;padding:1px 6px;border-radius:4px}
+
+  .heroes{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px}
+  .hero{border-radius:12px;padding:18px 24px;flex:1;min-width:130px;color:#fff}
+  .hero-lbl{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;opacity:.75}
+  .hero-val{font-size:2rem;font-weight:800;margin-top:2px}
+  .hero-sub{font-size:.72rem;opacity:.65;margin-top:2px}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px}
+  .chart-box{background:#fff;border-radius:12px;padding:20px;
+              box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  .chart-box h2{font-size:.88rem;font-weight:700;color:#334155;margin-bottom:14px}
+  .chart-box.wide{grid-column:1/-1}
+  canvas{max-height:240px}
+
+  .section-title{font-size:.82rem;font-weight:700;color:#475569;
+                  text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
+  .table-wrap{background:#fff;border-radius:12px;overflow:hidden;
+               box-shadow:0 1px 4px rgba(0,0,0,.08);margin-bottom:24px;overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:.83rem}
+  th{background:#f8fafc;padding:9px 14px;text-align:left;font-size:.7rem;font-weight:700;
+      text-transform:uppercase;letter-spacing:.05em;color:#64748b;border-bottom:1px solid #e2e8f0}
+  td{padding:10px 14px;border-bottom:1px solid #f1f5f9;vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  .score{font-weight:700;color:#1e293b}
+  .desc{color:#64748b;font-size:.8rem;max-width:300px}
+  .sev-badge{color:#fff;font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap}
+
+  @media(max-width:700px){
+    .grid2,.grid3{grid-template-columns:1fr}
+    .chart-box.wide{grid-column:auto}
+  }
+</style>
+</head>
+<body>
+<h1>CWE Distribution Analysis</h1>
+<p class="sub">ScanOps ChromaDB · 2026-05-06 16:17 · <code>cve_collection</code> · 전체 792개 CVE</p>
+
+<div class="heroes">
+  <div class="hero" style="background:#1e293b;">
+    <div class="hero-lbl">Total CVEs</div>
+    <div class="hero-val">792</div>
+  </div>
+  <div class="hero" style="background:#dc2626;">
+    <div class="hero-lbl">Avg CVSS Score</div>
+    <div class="hero-val">6.77</div>
+    <div class="hero-sub">max 10.0 · min 1.7</div>
+  </div>
+  <div class="hero" style="background:#2563eb;">
+    <div class="hero-lbl">Unique CWEs</div>
+    <div class="hero-val">133</div>
+  </div>
+  <div class="hero" style="background:#7c3aed;">
+    <div class="hero-lbl">CRITICAL + HIGH</div>
+    <div class="hero-val">374</div>
+    <div class="hero-sub">47.2% of total</div>
+  </div>
+</div>
+
+<div class="grid2">
+  <div class="chart-box">
+    <h2>Top 10 CWE — 건수 (Bar)</h2>
+    <canvas id="cweBar"></canvas>
+  </div>
+  <div class="chart-box">
+    <h2>Severity 분포 (Doughnut)</h2>
+    <canvas id="sevDoughnut"></canvas>
+  </div>
+  <div class="chart-box wide">
+    <h2>Top 10 CWE × Severity 스택 분포</h2>
+    <canvas id="cweStack"></canvas>
+  </div>
+  <div class="chart-box wide">
+    <h2>CVSS Score 히스토그램 (0.5 단위)</h2>
+    <canvas id="scoreHist"></canvas>
+  </div>
+</div>
+
+<p class="section-title">CVSS Score 상위 10개 CVE</p>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>CVE ID</th><th>Severity</th><th>Score</th><th>CWE</th><th>Description</th></tr></thead>
+    <tbody>
+        <tr>
+          <td><code>?</code></td>
+          <td><span class="sev-badge" style="background:#dc2626;">CRITICAL</span></td>
+          <td class="score">10.0</td>
+          <td>CWE-121</td>
+          <td class="desc">Storable versions before 3.05 for Perl has a stack overflow. The retrieve_hook function st…</td>
+        </tr>
+        <tr>
+          <td><code>?</code></td>
+          <td><span class="sev-badge" style="background:#dc2626;">CRITICAL</span></td>
+          <td class="score">10.0</td>
+          <td>UNKNOWN</td>
+          <td class="desc">Net::Dropbear versions before 0.14 for Perl contains a vulnerable version of libtomcrypt. …</td>
+        </tr>
+        <tr>
+          <td><code>?</code></td>
+          <td><span class="sev-badge" style="background:#dc2626;">CRITICAL</span></td>
+          <td class="score">10.0</td>
+          <td>CWE-94</td>
+          <td class="desc">WWBN AVideo is an open source video platform. In versions 29.0 and prior, the YPTSocket pl…</td>
+        </tr>
+        <tr>
+          <td><code>?</code></td>
+          <td><span class="sev-badge" style="background:#dc2626;">CRITICAL</span></td>
+          <td class="score">10.0</td>
+          <td>CWE-287</td>
+          <td class="desc">Paperclip is a Node.js server and React UI that orchestrates a team of AI agents to run a …</td>
+        </tr>
+        <tr>
+          <td><code>?</code></td>
+          <td><span class="sev-badge" style="background:#dc2626;">CRITICAL</span></td>
+          <td class="score">10.0</td>
+          <td>CWE-918</td>
+          <td class="desc">Server-side request forgery (ssrf) in Microsoft Entra ID Entitlement Management allows an …</td>
+        </tr>
+        <tr>
+          <td><code>?</code></td>
+          <td><span class="sev-badge" style="background:#dc2626;">CRITICAL</span></td>
+          <td class="score">10.0</td>
+          <td>CWE-915</td>
+          <td class="desc">Improperly Controlled Modification of Dynamically-Determined Object Attributes vulnerabili…</td>
+        </tr>
+        <tr>
+          <td><code>?</code></td>
+          <td><span class="sev-badge" style="background:#dc2626;">CRITICAL</span></td>
+          <td class="score">9.9</td>
+          <td>CWE-78</td>
+          <td class="desc">Flowise is a drag &amp; drop user interface to build a customized large language model flow. P…</td>
+        </tr>
+        <tr>
+          <td><code>?</code></td>
+          <td><span class="sev-badge" style="background:#dc2626;">CRITICAL</span></td>
+          <td class="score">9.9</td>
+          <td>CWE-98</td>
+          <td class="desc">Froxlor is open source server administration software. Prior to version 2.3.6, the Froxlor…</td>
+        </tr>
+        <tr>
+          <td><code>?</code></td>
+          <td><span class="sev-badge" style="background:#dc2626;">CRITICAL</span></td>
+          <td class="score">9.9</td>
+          <td>CWE-200</td>
+          <td class="desc">Exposure of sensitive information to an unauthorized actor in Azure IOT Central allows an …</td>
+        </tr>
+        <tr>
+          <td><code>?</code></td>
+          <td><span class="sev-badge" style="background:#dc2626;">CRITICAL</span></td>
+          <td class="score">9.9</td>
+          <td>CWE-89</td>
+          <td class="desc">Saltcorn is an extensible, open source, no-code database application builder. Prior to 1.4…</td>
+        </tr></tbody>
+  </table>
+</div>
+
+<script>
+const cweLabels  = ["UNKNOWN", "CWE-284", "CWE-416", "CWE-400", "CWE-476", "CWE-125", "CWE-200", "CWE-77", "CWE-190", "CWE-770"];
+const cweCounts  = [69, 58, 45, 29, 27, 27, 25, 22, 19, 18];
+const sevLabels  = ["CRITICAL", "HIGH", "MEDIUM", "LOW"];
+const sevCounts  = [80, 294, 378, 40];
+const sevColors  = ["#dc2626", "#ea580c", "#ca8a04", "#16a34a"];
+const stackDS    = [{"label": "CRITICAL", "data": [6, 2, 5, 0, 1, 2, 2, 4, 2, 0], "backgroundColor": "#dc2626", "borderRadius": 3, "borderSkipped": false}, {"label": "HIGH", "data": [17, 18, 37, 7, 3, 19, 10, 2, 7, 0], "backgroundColor": "#ea580c", "borderRadius": 3, "borderSkipped": false}, {"label": "MEDIUM", "data": [46, 34, 3, 22, 23, 4, 10, 16, 9, 17], "backgroundColor": "#ca8a04", "borderRadius": 3, "borderSkipped": false}, {"label": "LOW", "data": [0, 4, 0, 0, 0, 2, 3, 0, 1, 1], "backgroundColor": "#16a34a", "borderRadius": 3, "borderSkipped": false}];
+const histLabels = ["0.0\u20130.5", "0.5\u20131.0", "1.0\u20131.5", "1.5\u20132.0", "2.0\u20132.5", "2.5\u20133.0", "3.0\u20133.5", "3.5\u20134.0", "4.0\u20134.5", "4.5\u20135.0", "5.0\u20135.5", "5.5\u20136.0", "6.0\u20136.5", "6.5\u20137.0", "7.0\u20137.5", "7.5\u20138.0", "8.0\u20138.5", "8.5\u20139.0", "9.0\u20139.5", "9.5\u201310.0"];
+const histData   = [0, 0, 0, 2, 10, 6, 12, 10, 17, 36, 68, 122, 38, 97, 54, 138, 41, 61, 30, 50];
+
+// 1. CWE Bar
+new Chart(document.getElementById('cweBar'), {
+  type: 'bar',
+  data: { labels: cweLabels,
+    datasets: [{ label: 'CVE 수', data: cweCounts,
+      backgroundColor: 'rgba(37,99,235,.75)', borderRadius: 5, borderSkipped: false }] },
+  options: { indexAxis: 'y', responsive: true,
+    plugins: { legend: { display: false } },
+    scales: { x: { beginAtZero: true }, y: { grid: { display: false } } } }
+});
+
+// 2. Severity Doughnut
+new Chart(document.getElementById('sevDoughnut'), {
+  type: 'doughnut',
+  data: { labels: sevLabels, datasets: [{ data: sevCounts,
+    backgroundColor: sevColors, borderWidth: 2, borderColor: '#fff' }] },
+  options: { responsive: true, cutout: '60%',
+    plugins: { legend: { position: 'right' },
+      tooltip: { callbacks: { label: ctx =>
+        ` ${ctx.label}: ${ctx.parsed} (${(ctx.parsed/sevCounts.reduce((a,b)=>a+b,0)*100).toFixed(1)}%)` } } } }
+});
+
+// 3. Stacked Bar
+new Chart(document.getElementById('cweStack'), {
+  type: 'bar',
+  data: { labels: cweLabels, datasets: stackDS },
+  options: { responsive: true, scales: {
+    x: { stacked: true, grid: { display: false } },
+    y: { stacked: true, beginAtZero: true } },
+    plugins: { legend: { position: 'top' } } }
+});
+
+// 4. Score Histogram
+new Chart(document.getElementById('scoreHist'), {
+  type: 'bar',
+  data: { labels: histLabels,
+    datasets: [{ label: 'CVE 수', data: histData,
+      backgroundColor: histData.map((_, i) =>
+        i>=18?'#dc2626': i>=14?'#ea580c': i>=10?'#ca8a04':'#22c55e'),
+      borderRadius: 3, borderSkipped: false }] },
+  options: { responsive: true, plugins: { legend: { display: false } },
+    scales: { x: { grid: { display: false } }, y: { beginAtZero: true } } }
+});
+</script>
+</body>
+</html>

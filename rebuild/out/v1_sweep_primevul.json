@@ -1,0 +1,443 @@
+{
+  "tag": "v1",
+  "base": "primevul",
+  "chosen_tau": -2.625,
+  "auc_tune": 0.5806,
+  "auc_report": 0.5618,
+  "trivial_all_vuln_report": {
+    "n": 288,
+    "n_vuln": 144,
+    "n_safe": 144,
+    "recall": 1.0,
+    "fpr": 1.0,
+    "precision": 0.5,
+    "f1": 0.6667,
+    "parse_fail": 0
+  },
+  "tune": {
+    "n": 72,
+    "n_vuln": 36,
+    "n_safe": 36,
+    "recall": 1.0,
+    "fpr": 0.9444,
+    "precision": 0.5143,
+    "f1": 0.6792,
+    "parse_fail": 0,
+    "tau": -2.625
+  },
+  "report": {
+    "n": 288,
+    "n_vuln": 144,
+    "n_safe": 144,
+    "recall": 0.9653,
+    "fpr": 0.9375,
+    "precision": 0.5073,
+    "f1": 0.6651,
+    "parse_fail": 0,
+    "tau": -2.625
+  },
+  "capped_fpr35_tau": -0.625,
+  "capped_fpr35_tune": {
+    "n": 72,
+    "n_vuln": 36,
+    "n_safe": 36,
+    "recall": 0.4722,
+    "fpr": 0.3333,
+    "precision": 0.5862,
+    "f1": 0.5231,
+    "parse_fail": 0,
+    "tau": -0.625
+  },
+  "capped_fpr35_report": {
+    "n": 288,
+    "n_vuln": 144,
+    "n_safe": 144,
+    "recall": 0.4583,
+    "fpr": 0.3542,
+    "precision": 0.5641,
+    "f1": 0.5057,
+    "parse_fail": 0,
+    "tau": -0.625
+  },
+  "argmax_baseline_report": {
+    "n": 288,
+    "n_vuln": 144,
+    "n_safe": 144,
+    "recall": 0.2083,
+    "fpr": 0.1667,
+    "precision": 0.5556,
+    "f1": 0.303,
+    "parse_fail": 0
+  },
+  "curve_tune": [
+    {
+      "n": 72,
+      "n_vuln": 36,
+      "n_safe": 36,
+      "recall": 1.0,
+      "fpr": 1.0,
+      "precision": 0.5,
+      "f1": 0.6667,
+      "parse_fail": 0,
+      "tau": -4.25
+    },
+    {
+      "n": 72,
+      "n_vuln": 36,
+      "n_safe": 36,
+      "recall": 1.0,
+      "fpr": 0.9722,
+      "precision": 0.507,
+      "f1": 0.6729,
+      "parse_fail": 0,
+      "tau": -2.75
+    },
+    {
+      "n": 72,
+      "n_vuln": 36,
+      "n_safe": 36,
+      "recall": 1.0,
+      "fpr": 0.9444,
+      "precision": 0.5143,
+      "f1": 0.6792,
+      "parse_fail": 0,
+      "tau": -2.625
+    },
+    {
+      "n": 72,
+      "n_vuln": 36,
+      "n_safe": 36,
+      "recall": 0.9444,
+      "fpr": 0.9444,
+      "precision": 0.5,
+      "f1": 0.6538,
+      "parse_fail": 0,
+      "tau": -2.5
+    },
+    {
+      "n": 72,
+      "n_vuln": 36,
+      "n_safe": 36,
+      "recall": 0.9167,
+      "fpr": 0.9167,
+      "precision": 0.5,
+      "f1": 0.6471,
+      "parse_fail": 0,
+      "tau": -2.375
+    },
+    {
+      "n": 72,
+      "n_vuln": 36,
+      "n_safe": 36,
+      "recall": 0.8889,
+      "fpr": 0.8889,
+      "precision": 0.5,
+      "f1": 0.64,
+      "parse_fail": 0,
+      "tau": -2.25
+    },
+    {
+      "n": 72,
+      "n_vuln": 36,
+      "n_safe": 36,
+      "recall": 0.8611,
+      "fpr": 0.8333,
+      "precision": 0.5082,
+      "f1": 0.6392,
+      "parse_fail": 0,
+      "tau": -2.125
+    },
+    {
+      "n": 72,
+      "n_vuln": 36,
+      "n_safe": 36,
+      "recall": 0.8611,
+      "fpr": 0.8056,
+      "precision": 0.5167,
+      "f1": 0.6458,
+      "parse_fail": 0,
+      "tau": -2.0
+    },
+    {
+      "n": 72,
+      "n_vuln": 36,
+      "n_safe": 36,
+      "recall": 0.8611,
+      "fpr": 0.7778,
+      "precision": 0.5254,
+      "f1": 0.6526,
+      "parse_fail": 0,
+      "tau": -1.875
+    },
+    {
+      "n": 72,
+      "n_vuln": 36,
+      "n_safe": 36,
+      "recall": 0.8056,
+      "fpr": 0.7222,
+      "precision": 0.5273,
+      "f1": 0.6374,
+      "parse_fail": 0,
+      "tau": -1.75
+    },
+    {
+      "n": 72,
+      "n_vuln": 36,
+      "n_safe": 36,
+      "recall": 0.75,
+      "fpr": 0.6667,
+      "precision": 0.5294,
+      "f1": 0.6207,
+      "parse_fail": 0,
+      "tau": -1.625
+    },
+    {
+      "n": 72,
+      "n_vuln": 36,
+      "n_safe": 36,
+      "recall": 0.7222,
+      "fpr": 0.6389,
+      "precision": 0.5306,
+      "f1": 0.6118,
+      "parse_fail": 0,
+      "tau": -1.5
+    },
+    {
+      "n": 72,
+      "n_vuln": 36,
+      "n_safe": 36,
+      "recall": 0.6944,
+      "fpr": 0.6111,
+      "precision": 0.5319,
+      "f1": 0.6024,
+      "parse_fail": 0,
+      "tau": -1.375
+    },
+    {
+      "n": 72,
+      "n_vuln": 36,
+      "n_safe": 36,
+      "recall": 0.6389,
+      "fpr": 0.5833,
+      "precision": 0.5227,
+      "f1": 0.575,
+      "parse_fail": 0,
+      "tau": -1.25
+    },
+    {
+      "n": 72,
+      "n_vuln": 36,
+      "n_safe": 36,
+      "recall": 0.6389,
+      "fpr": 0.5278,
+      "precision": 0.5476,
+      "f1": 0.5897,
+      "parse_fail": 0,
+      "tau": -1.125
+    },
+    {
+      "n": 72,
+      "n_vuln": 36,
+      "n_safe": 36,
+      "recall": 0.5556,
+      "fpr": 0.4722,
+      "precision": 0.5405,
+      "f1": 0.5479,
+      "parse_fail": 0,
+      "tau": -1.0
+    },
+    {
+      "n": 72,
+      "n_vuln": 36,
+      "n_safe": 36,
+      "recall": 0.5278,
+      "fpr": 0.4444,
+      "precision": 0.5429,
+      "f1": 0.5352,
+      "parse_fail": 0,
+      "tau": -0.875
+    },
+    {
+      "n": 72,
+      "n_vuln": 36,
+      "n_safe": 36,
+      "recall": 0.4722,
+      "fpr": 0.3889,
+      "precision": 0.5484,
+      "f1": 0.5075,
+      "parse_fail": 0,
+      "tau": -0.75
+    },
+    {
+      "n": 72,
+      "n_vuln": 36,
+      "n_safe": 36,
+      "recall": 0.4722,
+      "fpr": 0.3333,
+      "precision": 0.5862,
+      "f1": 0.5231,
+      "parse_fail": 0,
+      "tau": -0.625
+    },
+    {
+      "n": 72,
+      "n_vuln": 36,
+      "n_safe": 36,
+      "recall": 0.3889,
+      "fpr": 0.3056,
+      "precision": 0.56,
+      "f1": 0.459,
+      "parse_fail": 0,
+      "tau": -0.5
+    },
+    {
+      "n": 72,
+      "n_vuln": 36,
+      "n_safe": 36,
+      "recall": 0.3611,
+      "fpr": 0.2222,
+      "precision": 0.619,
+      "f1": 0.4561,
+      "parse_fail": 0,
+      "tau": -0.375
+    },
+    {
+      "n": 72,
+      "n_vuln": 36,
+      "n_safe": 36,
+      "recall": 0.3056,
+      "fpr": 0.1667,
+      "precision": 0.6471,
+      "f1": 0.4151,
+      "parse_fail": 0,
+      "tau": -0.25
+    },
+    {
+      "n": 72,
+      "n_vuln": 36,
+      "n_safe": 36,
+      "recall": 0.25,
+      "fpr": 0.1111,
+      "precision": 0.6923,
+      "f1": 0.3673,
+      "parse_fail": 0,
+      "tau": -0.125
+    },
+    {
+      "n": 72,
+      "n_vuln": 36,
+      "n_safe": 36,
+      "recall": 0.1944,
+      "fpr": 0.0556,
+      "precision": 0.7778,
+      "f1": 0.3111,
+      "parse_fail": 0,
+      "tau": 0.0
+    },
+    {
+      "n": 72,
+      "n_vuln": 36,
+      "n_safe": 36,
+      "recall": 0.1389,
+      "fpr": 0.0556,
+      "precision": 0.7143,
+      "f1": 0.2326,
+      "parse_fail": 0,
+      "tau": 0.125
+    },
+    {
+      "n": 72,
+      "n_vuln": 36,
+      "n_safe": 36,
+      "recall": 0.0833,
+      "fpr": 0.0556,
+      "precision": 0.6,
+      "f1": 0.1463,
+      "parse_fail": 0,
+      "tau": 0.375
+    },
+    {
+      "n": 72,
+      "n_vuln": 36,
+      "n_safe": 36,
+      "recall": 0.0278,
+      "fpr": 0.0278,
+      "precision": 0.5,
+      "f1": 0.0526,
+      "parse_fail": 0,
+      "tau": 0.5
+    },
+    {
+      "n": 72,
+      "n_vuln": 36,
+      "n_safe": 36,
+      "recall": 0.0278,
+      "fpr": 0.0,
+      "precision": 1.0,
+      "f1": 0.0541,
+      "parse_fail": 0,
+      "tau": 0.625
+    }
+  ],
+  "report_pairwise": {
+    "n_pairs": 144,
+    "pair_correct": {
+      "n": 4,
+      "rate": 0.0278
+    },
+    "pair_vulnerable": {
+      "n": 135,
+      "rate": 0.9375
+    },
+    "pair_benign": {
+      "n": 5,
+      "rate": 0.0347
+    },
+    "pair_reversed": {
+      "n": 0,
+      "rate": 0.0
+    },
+    "pair_parse_fail": 0
+  },
+  "tune_pairwise": {
+    "n_pairs": 36,
+    "pair_correct": {
+      "n": 2,
+      "rate": 0.0556
+    },
+    "pair_vulnerable": {
+      "n": 34,
+      "rate": 0.9444
+    },
+    "pair_benign": {
+      "n": 0,
+      "rate": 0.0
+    },
+    "pair_reversed": {
+      "n": 0,
+      "rate": 0.0
+    },
+    "pair_parse_fail": 0
+  },
+  "best_pair_tau": -0.25,
+  "report_pairwise_at_best_pair_tau": {
+    "n_pairs": 144,
+    "pair_correct": {
+      "n": 8,
+      "rate": 0.0556
+    },
+    "pair_vulnerable": {
+      "n": 32,
+      "rate": 0.2222
+    },
+    "pair_benign": {
+      "n": 104,
+      "rate": 0.7222
+    },
+    "pair_reversed": {
+      "n": 0,
+      "rate": 0.0
+    },
+    "pair_parse_fail": 0
+  }
+}

@@ -1,28 +1,79 @@
-.gradle/
-build/
-*.class
-# 빌드 산출물 jar만 제외 (gradle-wrapper.jar는 포함)
-build/**/*.jar
-!gradle/wrapper/gradle-wrapper.jar
-.env
-.env.local
-*.log
-.DS_Store
-HELP.md
-
-# 다른 레포/Python 모델 자산은 이 백엔드 레포에서 추적하지 않음 (각자 별도 레포)
-scripts/
-scanops-backend/
-scanops-frontend/
-scanops-infra/
-scanops-model/
 __pycache__/
 *.pyc
+*.pth
+*.bin
+.env
+.DS_Store
 
-# 비밀키/인증서 (커밋 금지)
-*.pem
-*.key
-*private-key*
+# 데이터/인덱스 (로컬 생성물)
+data/*.json
+data/*.jsonl
+data/*.faiss
+*.egg-info/
 
-# IDE compiled resources
-bin/
+# 가상환경
+.venv/
+
+# 벡터DB 로컬 스토리지
+qdrant_storage/
+qdrant_local/
+chroma_db/
+
+# 모델 파일 (대용량 바이너리)
+models/
+*.gguf
+*.safetensors
+*.pt
+*.bin
+
+# 리포트/결과물
+reports/*.json
+reports/*.log
+reports/*.docx
+reports/*.pdf
+reports/charts/
+
+# 노트북 체크포인트
+.ipynb_checkpoints/
+.cache/
+
+# 배포 산출물(대용량 — gguf 포함 zip)
+*.zip
+data/*.jsonl.*_bak
+
+# rebuild 외부 벤치마크 대용량 (빌더로 재생성 가능)
+rebuild/data/raw/
+rebuild/data/primevul_test.jsonl
+rebuild/data/cleanvul_test.jsonl
+rebuild/out/adapter/
+rebuild/out/*.id
+rebuild/out/*.log
+rebuild/data/train_v2.jsonl
+rebuild/data/val_v2.jsonl
+rebuild/data/cleanvul_v2_test.jsonl
+rebuild/data/cleanvul_heldout_raw.json
+llama.cpp/
+
+# 모델 가중치·대용량 예측 산출물 (로컬 보관, 깃 제외)
+rebuild/out/adapter/
+rebuild/out/v3_s42_*/
+rebuild/out/*.safetensors
+rebuild/out/*_predictions.jsonl
+rebuild/out/*_logprob_*.jsonl
+rebuild/out/*_votes_k*.jsonl
+rebuild/out/*.csv
+
+# 1GB 원시 수집 파일 — 깃 제외 (GitHub 100MB 한도 초과). 로컬 보관.
+rebuild/data/v4_files.jsonl
+
+# 2026-08-17 diff-aware 실험의 생성 데이터 — 스크립트로 재생성 가능(깃 제외)
+#   build_diff_prompts.py / build_diff_cb.py / build_gate_set.py / build_train_v5.py
+rebuild/data/dw_*.jsonl
+rebuild/data/gate_*.jsonl
+rebuild/data/train_v5.jsonl
+rebuild/data/val_v5.jsonl
+# Downloaded upstream benchmark checkout (repro script fetches it separately).
+benchmarks/securibench-micro/source/
+benchmarks/cwe-bench-java/upstream/
+benchmarks/cwe-bench-java/project-sources/
+benchmarks/juliet-java/out_g2_*/

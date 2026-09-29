@@ -1,0 +1,12 @@
+{
+  "spec": "V5_TRAIN_RUN_SPEC §10-3",
+  "n_pairs": 131,
+  "acc_X": 0.6336,
+  "acc_Y": 0.6794,
+  "acc_cb": 0.6565,
+  "pos_gap": 0.0458,
+  "tie": 0.1679,
+  "threshold": 0.5,
+  "gate": "GO",
+  "note": "게이트는 CleanVul_v2 tune 에서만 잰다 — report 를 쓰면 최종 판정이 오염된다."
+}

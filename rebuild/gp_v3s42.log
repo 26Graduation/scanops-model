@@ -1,0 +1,16 @@
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+==((====))==  Unsloth 2026.8.15: Fast Qwen3_5 patching. Transformers: 5.5.0.
+   \\   /|    NVIDIA A100-SXM4-80GB. Num GPUs = 1. Max memory: 79.25 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.11.0+cu130. CUDA: 8.0. CUDA Toolkit: 13.0. Triton: 3.6.0
+\        /    Bfloat16 = TRUE. FA [Xformers = 0.0.35. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Unsloth: Fast downloading is enabled - ignore downloading bars which are red colored!
+The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+Loading weights:   0%|          | 0/760 [00:00<?, ?it/s]Loading weights:   0%|          | 1/760 [00:00<02:36,  4.84it/s]Loading weights:   0%|          | 2/760 [00:00<02:29,  5.07it/s]Loading weights:   2%|▏         | 13/760 [00:00<00:21, 35.44it/s]Loading weights:   5%|▌         | 38/760 [00:00<00:07, 97.21it/s]Loading weights:   8%|▊         | 63/760 [00:00<00:04, 140.14it/s]Loading weights:  12%|█▏        | 90/760 [00:00<00:03, 177.45it/s]Loading weights:  15%|█▌        | 116/760 [00:00<00:03, 200.30it/s]Loading weights:  19%|█▉        | 143/760 [00:01<00:02, 220.41it/s]Loading weights:  22%|██▏       | 168/760 [00:01<00:02, 223.31it/s]Loading weights:  26%|██▌       | 197/760 [00:01<00:02, 239.26it/s]Loading weights:  29%|██▉       | 222/760 [00:01<00:02, 235.18it/s]Loading weights:  32%|███▏      | 246/760 [00:01<00:02, 234.23it/s]Loading weights:  36%|███▌      | 270/760 [00:01<00:02, 203.26it/s]Loading weights:  39%|███▊      | 294/760 [00:01<00:02, 207.14it/s]Loading weights:  42%|████▏     | 316/760 [00:01<00:02, 209.75it/s]Loading weights:  45%|████▌     | 345/760 [00:01<00:01, 227.21it/s]Loading weights:  49%|████▊     | 369/760 [00:02<00:01, 213.31it/s]Loading weights:  52%|█████▎    | 399/760 [00:02<00:01, 235.06it/s]Loading weights:  56%|█████▌    | 424/760 [00:02<00:01, 234.83it/s]Loading weights:  78%|███████▊  | 589/760 [00:02<00:00, 628.55it/s]Loading weights: 100%|██████████| 760/760 [00:02<00:00, 309.53it/s]
+primevul_tune 8/72 (25s)
+{"overall": {"n": 72, "n_vuln": 36, "n_safe": 36, "recall": 0.9167, "fpr": 0.8611, "precision": 0.5156, "f1": 0.66, "parse_fail": 0}, "cost": {"mode": "greedy", "k": 1, "n": 72, "total_secs": 97.0, "secs_per_case": 1.347, "samples_per_case": 1, "max_new_tokens": 180}, "pairwise": {"n": 2, "rate": 0.0556}}
+primevul_report 8/288 (8s)
+primevul_report 168/288 (185s)
+{"overall": {"n": 288, "n_vuln": 144, "n_safe": 144, "recall": 0.9375, "fpr": 0.8889, "precision": 0.5133, "f1": 0.6634, "parse_fail": 2}, "cost": {"mode": "greedy", "k": 1, "n": 288, "total_secs": 330.8, "secs_per_case": 1.148, "samples_per_case": 1, "max_new_tokens": 180}, "pairwise": {"n": 8, "rate": 0.0556}}
+EVAL_V3_DONE

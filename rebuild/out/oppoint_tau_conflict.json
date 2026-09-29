@@ -1,0 +1,113 @@
+{
+  "WARNING": "사후 참고. τ 선정·판정에 쓰지 않는다.",
+  "single_source_tau": {
+    "cleanvul_v2_tune@FPR<=0.15": {
+      "tau": 1.0,
+      "tune:cleanvul_v2_tune": {
+        "recall": 0.2544,
+        "fpr": 0.145,
+        "precision": 0.637,
+        "f1": 0.3636
+      },
+      "tune:val": {
+        "recall": 0.6313,
+        "fpr": 0.0962,
+        "precision": 0.8363,
+        "f1": 0.7195
+      },
+      "report:내부 test": {
+        "recall": 0.6377,
+        "fpr": 0.0729,
+        "precision": 0.8822,
+        "f1": 0.7403
+      },
+      "report:CleanVul_v2 report": {
+        "recall": 0.2203,
+        "fpr": 0.1308,
+        "precision": 0.6274,
+        "f1": 0.326
+      }
+    },
+    "cleanvul_v2_tune@FPR<=0.1": {
+      "tau": 1.25,
+      "tune:cleanvul_v2_tune": {
+        "recall": 0.1923,
+        "fpr": 0.0917,
+        "precision": 0.6771,
+        "f1": 0.2995
+      },
+      "tune:val": {
+        "recall": 0.5541,
+        "fpr": 0.0722,
+        "precision": 0.8567,
+        "f1": 0.6729
+      },
+      "report:내부 test": {
+        "recall": 0.5652,
+        "fpr": 0.0543,
+        "precision": 0.8991,
+        "f1": 0.6941
+      },
+      "report:CleanVul_v2 report": {
+        "recall": 0.167,
+        "fpr": 0.0998,
+        "precision": 0.626,
+        "f1": 0.2637
+      }
+    },
+    "val@FPR<=0.15": {
+      "tau": 0.625,
+      "tune:cleanvul_v2_tune": {
+        "recall": 0.3254,
+        "fpr": 0.1805,
+        "precision": 0.6433,
+        "f1": 0.4322
+      },
+      "tune:val": {
+        "recall": 0.7162,
+        "fpr": 0.1474,
+        "precision": 0.791,
+        "f1": 0.7518
+      },
+      "report:내부 test": {
+        "recall": 0.7373,
+        "fpr": 0.1008,
+        "precision": 0.8623,
+        "f1": 0.7949
+      },
+      "report:CleanVul_v2 report": {
+        "recall": 0.2846,
+        "fpr": 0.1685,
+        "precision": 0.6281,
+        "f1": 0.3917
+      }
+    },
+    "val@FPR<=0.1": {
+      "tau": 1.0,
+      "tune:cleanvul_v2_tune": {
+        "recall": 0.2544,
+        "fpr": 0.145,
+        "precision": 0.637,
+        "f1": 0.3636
+      },
+      "tune:val": {
+        "recall": 0.6313,
+        "fpr": 0.0962,
+        "precision": 0.8363,
+        "f1": 0.7195
+      },
+      "report:내부 test": {
+        "recall": 0.6377,
+        "fpr": 0.0729,
+        "precision": 0.8822,
+        "f1": 0.7403
+      },
+      "report:CleanVul_v2 report": {
+        "recall": 0.2203,
+        "fpr": 0.1308,
+        "precision": 0.6274,
+        "f1": 0.326
+      }
+    }
+  }
+}

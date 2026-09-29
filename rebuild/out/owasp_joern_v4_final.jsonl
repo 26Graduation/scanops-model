@@ -1,0 +1,110 @@
+{"case_id": "owasp_0", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["cmdi", "xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_1", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["cmdi"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_2", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["cmdi"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_3", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["cmdi"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_4", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["cmdi"], "sanitized_categories": [], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_5", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["cmdi"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_6", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["cmdi"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_7", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["cmdi"], "sanitized_categories": [], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_8", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["cmdi", "xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_9", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["cmdi"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_10", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["crypto", "xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_11", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["crypto", "xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_12", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["crypto", "xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_13", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["crypto", "xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_14", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["crypto", "xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_15", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_16", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["crypto", "xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_17", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["crypto", "xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_18", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_19", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_20", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["hash", "xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_21", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["pathtraver", "xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_22", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["hash", "xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_23", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["hash", "xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_24", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_25", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_26", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_27", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_28", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["hash", "xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_29", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_30", "label": "safe", "lang": "Java", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_31", "label": "vuln", "lang": "Java", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_32", "label": "safe", "lang": "Java", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_33", "label": "vuln", "lang": "Java", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_34", "label": "vuln", "lang": "Java", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_35", "label": "vuln", "lang": "Java", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_36", "label": "safe", "lang": "Java", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_37", "label": "safe", "lang": "Java", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_38", "label": "vuln", "lang": "Java", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_39", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_40", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["pathtraver"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_41", "label": "safe", "lang": "Java", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_42", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["pathtraver", "xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_43", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["pathtraver", "xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_44", "label": "vuln", "lang": "Java", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_45", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["pathtraver"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_46", "label": "safe", "lang": "Java", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_47", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_48", "label": "safe", "lang": "Java", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_49", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["pathtraver"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_50", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_51", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_52", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_53", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_54", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_55", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_56", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_57", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_58", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_59", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_60", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_61", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["sqli", "xss"], "sanitized_categories": [], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_62", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": [], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_63", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_64", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["sqli", "xss"], "sanitized_categories": [], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_65", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": [], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_66", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_67", "label": "safe", "lang": "Java", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_68", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["sqli", "xss"], "sanitized_categories": [], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_69", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_70", "label": "vuln", "lang": "Java", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_71", "label": "vuln", "lang": "Java", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_72", "label": "safe", "lang": "Java", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_73", "label": "vuln", "lang": "Java", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_74", "label": "safe", "lang": "Java", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_75", "label": "safe", "lang": "Java", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_76", "label": "vuln", "lang": "Java", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_77", "label": "safe", "lang": "Java", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_78", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_79", "label": "safe", "lang": "Java", "joern_verdict": "safe_sanitized", "categories": [], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_80", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["weakrand", "xss"], "sanitized_categories": [], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_81", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": [], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_82", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": [], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_83", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": [], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_84", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["weakrand", "xss"], "sanitized_categories": [], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_85", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["weakrand", "xss"], "sanitized_categories": [], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_86", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": [], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_87", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["weakrand", "xss"], "sanitized_categories": [], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_88", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": [], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_89", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": [], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_90", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_91", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_92", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_93", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_94", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_95", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_96", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_97", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_98", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_99", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_100", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": [], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_101", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": [], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_102", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": [], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_103", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": [], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_104", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": [], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_105", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": ["xss"], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_106", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": [], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_107", "label": "vuln", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": [], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_108", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": [], "unknown_reason": null, "wrap_level": 0}
+{"case_id": "owasp_109", "label": "safe", "lang": "Java", "joern_verdict": "vuln", "categories": ["xss"], "sanitized_categories": [], "unknown_reason": null, "wrap_level": 0}
