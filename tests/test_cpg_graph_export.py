@@ -65,3 +65,33 @@ class Demo {
                 else:
                     self.assertFalse(any(n['role'] == 'source' for n in graph['nodes']))
                     self.assertTrue(any(n['role'] == 'sink' for n in graph['nodes']))
+
+    def test_semantic_context_uses_real_nodes_without_claiming_taint(self):
+        from joern.handler_joern import run_repo_script
+        code = """import java.security.MessageDigest;
+class HashDemo {
+
+    // Password hashing example
+    String hashPassword(String password) throws Exception {
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        return new String(md.digest(password.getBytes()));
+    }
+}"""
+        result = run_repo_script('context-integration', 'context', 'Java',
+            [{'path':'HashDemo.java','content':code}], targets=[
+              {'id':'blank','file':'HashDemo.java','line':3},
+              {'id':'exact','file':'HashDemo.java','line':7},
+              {'id':'missing','file':'HashDemo.java','line':100}])
+        self.assertEqual(0, result['rc'], result.get('stdout_tail'))
+        contexts = {c['id']:c['graph'] for c in result['data']['contexts']}
+        self.assertIsNone(contexts['missing'])
+        self.assertEqual(6, contexts['blank']['anchorLine'])
+        self.assertEqual(7, contexts['exact']['anchorLine'])
+        for graph in (contexts['blank'], contexts['exact']):
+            self.assertEqual('joern', graph['origin'])
+            self.assertEqual('code-context', graph['evidence'])
+            self.assertGreater(len(graph['nodes']), 1)
+            self.assertGreater(len(graph['edges']), 0)
+            self.assertEqual({'intermediate'}, {n['role'] for n in graph['nodes']})
+            ids = {n['id'] for n in graph['nodes']}
+            self.assertTrue(all(e['source'] in ids and e['target'] in ids for e in graph['edges']))

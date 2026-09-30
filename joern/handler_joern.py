@@ -337,14 +337,19 @@ def run_repo_script(job_id: str, mode: str, language: str, files: list[dict],
                      prop_file: str = "", prop_text: str = "",
                      candidate_schema: str = "v1",
                      src_mode: str = "params", arm: str = "S2C",
-                     timeout: int | None = None) -> dict:
+                     timeout: int | None = None, targets: list[dict] | None = None) -> dict:
     """레포 파일 전체를 한 디렉터리에 써서 Joern을 **한 번만** 돌린다.
 
     mode="candidates" → dump_candidates.sc (룰 생성 대상 후보 추출)
     mode="taint"       → taint_spec.sc (LLM이 만든 spec_text로 taint 쿼리, line 단위 findings)
     """
-    if mode not in ("candidates", "taint"):
+    if mode not in ("candidates", "taint", "context"):
         return {"error": f"unknown mode: {mode}"}
+    if mode == "context" and (not targets or len(targets) > 128 or any(
+            not isinstance(t, dict) or not isinstance(t.get("id"), str)
+            or t.get("file") not in {f.get("path") for f in files}
+            or type(t.get("line")) is not int or t["line"] <= 0 for t in targets)):
+        return {"error": "invalid context targets"}
     resolved = resolve(language)
     if resolved is None:
         return {"error": f"unsupported_lang: {language}"}
@@ -389,6 +394,10 @@ def run_repo_script(job_id: str, mode: str, language: str, files: list[dict],
                    "--param", f"inDir={in_dir}", "--param", f"lang={joern_lang}",
                    "--param", f"outFile={out_file}", "--param", f"specFile={spec_path}",
                    "--param", f"arm={arm}", "--param", f"srcMode={src_mode}"]
+            if mode == "context":
+                targets_path = root / "targets.json"
+                targets_path.write_text(json.dumps(targets))
+                cmd += ["--param", f"targetsFile={targets_path}"]
             effective_san_file = san_file
             if san_text:
                 san_path = root / "sanitizers.tsv"
@@ -470,7 +479,7 @@ def handler(job: dict) -> dict:
         return {"error": "files required"}
 
     mode = inp.get("mode")
-    if mode in ("candidates", "taint"):
+    if mode in ("candidates", "taint", "context"):
         try:
             return run_repo_script(
                 job_id, mode, language, files,
@@ -482,7 +491,7 @@ def handler(job: dict) -> dict:
                 candidate_schema=inp.get("candidate_schema", "v1"),
                 src_mode=inp.get("src_mode", "params"),
                 arm=inp.get("arm", "S2C"),
-                timeout=inp.get("timeout"),
+                timeout=inp.get("timeout"), targets=inp.get("targets"),
             )
         except ValueError as e:
             return {"error": str(e)}
@@ -507,7 +516,7 @@ def handler(job: dict) -> dict:
 # ── 진입점 2: 온프레미스 HTTP (FastAPI) ─────────────────────────────────────
 
 try:  # 요청 모델은 **모듈 레벨**이어야 한다.
-    from pydantic import BaseModel
+    from pydantic import BaseModel, Field
 
     class FileIn(BaseModel):
         path: str
@@ -523,6 +532,7 @@ try:  # 요청 모델은 **모듈 레벨**이어야 한다.
         mode: str
         language: str
         files: list[FileIn]
+        targets: list[dict] = Field(default_factory=list)
         spec_text: str = ""
         san_file: str = ""
         san_text: str = ""
@@ -587,7 +597,7 @@ def _build_app():
                 spec_text=req.spec_text, san_file=req.san_file, san_text=req.san_text,
                 prop_file=req.prop_file, prop_text=req.prop_text,
                 candidate_schema=req.candidate_schema,
-                src_mode=req.src_mode, arm=req.arm)
+                src_mode=req.src_mode, arm=req.arm, targets=req.targets)
         except ValueError as e:
             raise HTTPException(409, str(e))
 

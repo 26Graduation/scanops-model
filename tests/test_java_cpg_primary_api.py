@@ -89,6 +89,21 @@ class JavaCpgPrimaryApiTests(unittest.TestCase):
         self.assertEqual(strong["path"][0]["code"], result["path"][0]["code"])
         self.assertEqual("explicit_source_api", result["path"][0]["source_kind"])
 
+    def test_batch_attaches_context_to_semantic_findings(self):
+        request = api.BatchRequest(files=[api.AnalyzeRequest(language="Java", code="class Demo {}", file_path="Demo.java")])
+        result = api.AnalyzeResponse(language="Java", file_path="Demo.java", detected=True, vulnerability="CWE-328",
+            severity="UNKNOWN", elapsed=0, findings=[{"source":"qwen-semantic","line":1,"cwe":"CWE-328"}])
+        graph = {"origin":"joern","evidence":"code-context","nodes":[{"id":"1"}]}
+        with patch.object(api, "JAVA_ENGINE", "cpg-qwen38-ensemble"), \
+             patch.object(api.graph_spec_prod, "analyze_repo", return_value=[]), \
+             patch.object(api, "_analyze_one", return_value=result), \
+             patch.object(api.graph_spec_prod, "call_joern_repo", return_value={"data":{"contexts":[{"id":"0","graph":graph}]}}) as worker:
+            response = api.analyze_batch(request, None)
+        worker.assert_called_once()
+        finding = response.results[0].findings[0]
+        self.assertEqual("qwen-semantic", finding["source"])
+        self.assertEqual(graph, finding["cpg_graph"])
+
 
 if __name__ == "__main__":
     unittest.main()

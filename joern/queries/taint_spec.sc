@@ -99,7 +99,7 @@ def readLines(p: String): List[String] =
  * "r2" 로 재실행하면 이전과 바이트 단위로 같은 결과가 나와야 한다. */
 @main def exec(inDir: String, lang: String, outFile: String, specFile: String,
                sanFile: String = "", propFile: String = "", arm: String = "?",
-               srcMode: String = "params"): Unit = {
+               srcMode: String = "params", targetsFile: String = ""): Unit = {
   val proj = "spec"
 
   // ── 스펙 로드 ──────────────────────────────────────────────────────────────
@@ -308,6 +308,37 @@ def readLines(p: String): List[String] =
     case scala.util.control.NonFatal(e) =>
       System.err.println("[cpg-graph] export failed: " + e.getClass.getSimpleName)
       "null"
+  }
+
+  // Context export is independent of vulnerability rules. Every node/edge comes from Joern.
+  if (targetsFile.nonEmpty) {
+    val targets = ujson.read(java.nio.file.Files.readString(java.nio.file.Paths.get(targetsFile))).arr
+    val calls = cpg.call.l
+    val contexts = targets.map { t =>
+      val file = t("file").str
+      val requested = t("line").num.toInt
+      val nearby = calls.filter(c => fileOf(c) == file && math.abs(lineOf(c) - requested) <= 5)
+      // Prefer the next executable call for blank/comment lines, then preceding calls.
+      val anchor = nearby.sortBy(c => (if (lineOf(c) >= requested) 0 else 1,
+        math.abs(lineOf(c) - requested), if (c.name.startsWith("<operator>")) 1 else 0, c.id)).headOption
+      val graph = anchor.map { a =>
+        val seeds = nearby.filter(c => lineOf(c) == lineOf(a)).take(16)
+        val raw = graphFor(seeds, None, None)
+        if (raw == "null") ujson.Null else {
+          val g = ujson.read(raw)
+          g("origin") = ujson.Str("joern")
+          g("evidence") = ujson.Str("code-context")
+          g("requestedLine") = ujson.Num(requested)
+          g("anchorLine") = ujson.Num(lineOf(a))
+          g
+        }
+      }.getOrElse(ujson.Null)
+      ujson.Obj("id" -> t("id"), "graph" -> graph)
+    }
+    java.nio.file.Files.writeString(java.nio.file.Paths.get(outFile),
+      ujson.write(ujson.Obj("contexts" -> ujson.Arr.from(contexts))))
+    try { close(proj) } catch { case _: Throwable => () }
+    return
   }
 
   // source = 명시적 파라미터(암묵 수신자 제외) + 스펙이 지정한 source 호출.

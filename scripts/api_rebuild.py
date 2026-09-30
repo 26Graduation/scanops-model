@@ -46,7 +46,7 @@ from scanops.core.llm_client import (chat as llm_chat, completion as llm_complet
                                      completion_logprobs, tokenize, use_runpod)
 from scanops.core import hybrid as hybrid_mod
 from scanops.core import graph_spec_prod
-from scanops.core import java_semantic
+from scanops.core import java_semantic, cpg_context
 from scanops.core import java_resource_context
 from scanops.core.logprob_score import PREFIX as SCORE_PREFIX, score_from_probs, verify_token_ids
 
@@ -823,7 +823,11 @@ def analyze(req: AnalyzeRequest, _=Security(_require_api_key)):
                 override = _findings_to_overrides(graph_files, findings)[graph_files[0]["path"]]
             except Exception as e:  # unavailable is explicit PARTIAL, never legacy-LLM fallback
                 print(f"[java-cpg] single-file analysis unavailable: {e}", flush=True)
-        return _analyze_one(req.language, req.code, req.file_path, joern_override=override)
+        result = _analyze_one(req.language, req.code, req.file_path, joern_override=override)
+        if _java_cpg_primary(req.language):
+            result.file_path = req.file_path or "snippet.java"
+            cpg_context.attach(graph_files, [result], graph_spec_prod.call_joern_repo)
+        return result
     except Exception as e:  # noqa: BLE001
         raise HTTPException(status_code=502, detail="model backend analysis failed") from e
 
@@ -885,6 +889,10 @@ def analyze_batch(req: BatchRequest, _=Security(_require_api_key)):
         results.append(r)
         if req.stop_on_first and r.detected:
             break
+    context_files = [{"path": f.file_path, "content": f.code} for f in req.files
+                     if f.file_path and f.code.strip() and _java_cpg_primary(f.language)]
+    if context_files:
+        cpg_context.attach(context_files, results, graph_spec_prod.call_joern_repo)
     return BatchResponse(total=len(req.files),
                          detected_count=sum(1 for r in results if r.detected),
                          results=results, elapsed=round(time.time() - t0, 2))
