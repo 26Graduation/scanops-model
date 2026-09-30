@@ -261,8 +261,54 @@ def readLines(p: String): List[String] =
                      line: Int, srcFile: String, srcLine: Int, srcKind: String,
                      sinkMethod: String, sinkMethodFullName: String, sinkMethodSignature: String,
                      path: List[Step], sanitized: Boolean, sanHits: List[SanHit],
-                     rulePat: String, ruleField: String, ruleEndpoint: String, ruleId: String)
+                     rulePat: String, ruleField: String, ruleEndpoint: String, ruleId: String,
+                     graphJson: String = "null")
   var findings = List.empty[Finding]
+
+  // Bounded, induced subgraph from real CPG edges. Never infer an edge from code text.
+  def graphFor(seeds: List[io.shiftleft.codepropertygraph.generated.nodes.AstNode],
+               sourceId: Option[Long], sinkId: Option[Long]): String = try {
+    import io.shiftleft.codepropertygraph.generated.nodes.AstNode
+    val kinds = Set("AST", "CFG", "REACHING_DEF")
+    def adjacent(n: AstNode) = new flatgraph.traversal.NodeMethods(n).bothE
+      .filter(e => kinds.contains(e.label)).toList
+    def eligible(n: AstNode) = lineOf(n) > 0 && fileOf(n).nonEmpty && n.code.nonEmpty
+    val kept = scala.collection.mutable.LinkedHashMap.empty[Long, AstNode]
+    var limited = false
+    def add(n: AstNode): Boolean = {
+      if (!eligible(n) || kept.contains(n.id)) false
+      else if (kept.size >= 64) { limited = true; false }
+      else { kept(n.id) = n; true }
+    }
+    seeds.foreach(add)
+    var frontier = kept.values.toList
+    for (_ <- 0 until 2) {
+      val next = scala.collection.mutable.ListBuffer.empty[AstNode]
+      for (n <- frontier; e <- adjacent(n); raw <- List(e.src, e.dst)) raw match {
+        case a: AstNode if add(a) => next += a
+        case _ => ()
+      }
+      frontier = next.toList
+    }
+    val pathIds = seeds.map(_.id).toSet
+    val nodes = kept.values.map { n =>
+      val role = if (sourceId.contains(n.id)) "source" else if (sinkId.contains(n.id)) "sink" else "intermediate"
+      s"""{"id":"${n.id}","role":"$role","label":"${esc(n.label)}","file":"${esc(fileOf(n))}","line":${lineOf(n)},"code":"${esc(n.code.take(500))}","onPath":${pathIds.contains(n.id)}}"""
+    }.mkString(",")
+    val allEdges = kept.values.toList.flatMap(n => new flatgraph.traversal.NodeMethods(n).outE
+      .filter(e => kinds.contains(e.label) && kept.contains(e.dst.id))
+      .map(e => (e.src.id, e.dst.id, e.label)).toList).distinct
+    if (allEdges.size > 256) limited = true
+    val edges = allEdges.take(256).map { case (src, dst, kind) =>
+      s"""{"source":"$src","target":"$dst","kind":"$kind"}"""
+    }.mkString(",")
+    s"""{"version":2,"kind":"cpg","scope":"finding-neighborhood","truncated":$limited,"nodes":[$nodes],"edges":[$edges]}"""
+  } catch {
+    // Visualization failure must never remove a security finding.
+    case scala.util.control.NonFatal(e) =>
+      System.err.println("[cpg-graph] export failed: " + e.getClass.getSimpleName)
+      "null"
+  }
 
   // source = 명시적 파라미터(암묵 수신자 제외) + 스펙이 지정한 source 호출.
   // srcMode="calls"는 source API call만 사용한다. Java 제품 경로에서 모든 메서드
@@ -377,7 +423,7 @@ def readLines(p: String): List[String] =
               fileName, lineOf(c), "call_site_only",
               methodNameOf(c), methodFullNameOf(c), methodSignatureOf(c),
               List(Step(fileName, lineOf(c), c.code.take(200), "sink")),
-              hits.nonEmpty, hits.take(6), r.sink, r.field, "call", r.ruleId)
+              hits.nonEmpty, hits.take(6), r.sink, r.field, "call", r.ruleId, graphFor(List(c), None, Some(c.id)))
           }
         }
       } else if (r.field == "arg_literal" || r.field == "arg_literal_full") {
@@ -400,7 +446,7 @@ def readLines(p: String): List[String] =
                   fileName, lineOf(c), "argument_literal",
                   methodNameOf(c), methodFullNameOf(c), methodSignatureOf(c),
                   List(Step(fileName, lineOf(c), c.code.take(200), "sink")),
-                  hits.nonEmpty, hits.take(6), r.sink, r.field, "literal", r.ruleId)
+                  hits.nonEmpty, hits.take(6), r.sink, r.field, "literal", r.ruleId, graphFor(List(c), None, Some(c.id)))
               }
             }
           }
@@ -429,7 +475,7 @@ def readLines(p: String): List[String] =
                   fileName, lineOf(c), "argument_count",
                   methodNameOf(c), methodFullNameOf(c), methodSignatureOf(c),
                   List(Step(fileName, lineOf(c), c.code.take(200), "sink")),
-                  hits.nonEmpty, hits.take(6), r.sink, r.field, "argument_count", r.ruleId)
+                  hits.nonEmpty, hits.take(6), r.sink, r.field, "argument_count", r.ruleId, graphFor(List(c), None, Some(c.id)))
               }
             }
           }
@@ -510,12 +556,17 @@ def readLines(p: String): List[String] =
               else if (javaStateSources.exists(_.id == elems.head.id)) "instance_state"
               else if (faSources.exists(_.id == elems.head.id)) "parameter_field_access"
               else "unknown"
+            val sinkNode = try {
+              val parent = lastNode.astParent
+              if (r.endpoint != "call" && parent.isInstanceOf[Call]) parent else lastNode
+            } catch { case _: Throwable => lastNode }
+            val graph = graphFor((elems.toList :+ sinkNode).distinctBy(_.id), Some(elems.head.id), Some(sinkNode.id))
             findings ::= Finding(
               fileName, r.cat, r.cwe,
               elems.head.code.take(160), sinkDisplayCode.take(160), lineOf(lastNode),
               fileOf(elems.head), lineOf(elems.head), srcKind,
               methodNameOf(lastNode), methodFullNameOf(lastNode), methodSignatureOf(lastNode),
-              steps, hits.nonEmpty, hits.take(6), r.sink, r.field, r.endpoint, r.ruleId)
+              steps, hits.nonEmpty, hits.take(6), r.sink, r.field, r.endpoint, r.ruleId, graph)
           }
         }
       }
@@ -567,7 +618,7 @@ def readLines(p: String): List[String] =
     s""""rule_pattern":"${esc(f.rulePat)}","rule_field":"${esc(f.ruleField)}",""" +
     s""""rule_endpoint":"${esc(f.ruleEndpoint)}","rule_id":"${esc(f.ruleId)}",""" +
     s""""sanitized":${f.sanitized},"sanitizer_hits":[${hitsJson}],""" +
-    s""""path":[${pathJson}]}"""
+    s""""path":[${pathJson}],"cpg_graph":${f.graphJson}}"""
   }.mkString(","))
   sb.append("]}")
 
